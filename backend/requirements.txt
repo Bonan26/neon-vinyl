@@ -1,0 +1,20 @@
+# NEON VINYL: GHOST GROOVES - Backend Dependencies
+# Stake Engine (Carrot) Standard
+
+# Web Framework
+fastapi>=0.104.0
+uvicorn[standard]>=0.24.0
+
+# Data Validation
+pydantic>=2.5.0
+
+# CORS
+python-multipart>=0.0.6
+
+# Testing
+pytest>=7.4.0
+pytest-asyncio>=0.21.0
+httpx>=0.25.0
+
+# Development
+python-dotenv>=1.0.0

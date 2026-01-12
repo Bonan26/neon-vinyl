@@ -1,0 +1,566 @@
+/* NEON VINYL: GHOST GROOVES - Professional HUD Styles */
+
+.control-panel.hud-professional {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  padding: 15px 25px;
+  background: linear-gradient(180deg, rgba(18, 18, 31, 0.95) 0%, rgba(10, 10, 21, 0.98) 100%);
+  border-top: 2px solid rgba(255, 0, 255, 0.3);
+  border-radius: 15px 15px 0 0;
+  box-shadow:
+    0 -4px 30px rgba(255, 0, 255, 0.15),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  backdrop-filter: blur(10px);
+}
+
+/* HUD Sections */
+.hud-section {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.hud-left {
+  flex: 0 0 auto;
+}
+
+.hud-center {
+  flex: 1;
+  justify-content: center;
+  gap: 30px;
+}
+
+.hud-right {
+  flex: 0 0 auto;
+}
+
+/* HUD Button Wrapper */
+.hud-btn-wrapper {
+  position: relative;
+}
+
+/* HUD Buttons */
+.hud-btn {
+  width: 44px;
+  height: 44px;
+  border: 1px solid rgba(255, 0, 255, 0.4);
+  border-radius: 12px;
+  background: rgba(255, 0, 255, 0.1);
+  color: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+}
+
+.hud-btn svg {
+  width: 22px;
+  height: 22px;
+}
+
+.hud-btn:hover:not(:disabled) {
+  background: rgba(255, 0, 255, 0.25);
+  border-color: #ff00ff;
+  box-shadow: 0 0 15px rgba(255, 0, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+.hud-btn:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.hud-btn:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+/* Menu Button */
+.menu-btn {
+  border-color: rgba(0, 255, 255, 0.4);
+  background: rgba(0, 255, 255, 0.1);
+}
+
+.menu-btn:hover:not(:disabled) {
+  border-color: #00ffff;
+  background: rgba(0, 255, 255, 0.25);
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+}
+
+.menu-btn svg {
+  color: #00ffff;
+}
+
+/* Mute Button */
+.mute-btn.muted {
+  border-color: rgba(255, 68, 68, 0.5);
+  background: rgba(255, 68, 68, 0.2);
+}
+
+.mute-btn.muted svg {
+  color: #ff4444;
+}
+
+/* Info Button */
+.info-btn {
+  border-color: rgba(255, 215, 0, 0.4);
+  background: rgba(255, 215, 0, 0.1);
+}
+
+.info-btn:hover:not(:disabled) {
+  border-color: #ffd700;
+  background: rgba(255, 215, 0, 0.25);
+  box-shadow: 0 0 15px rgba(255, 215, 0, 0.3);
+}
+
+.info-btn svg {
+  color: #ffd700;
+}
+
+/* Bonus Button - Prominent neon style */
+.bonus-btn {
+  width: auto !important;
+  padding: 0 16px;
+  height: 44px;
+  border: 2px solid #ff00ff;
+  background: linear-gradient(135deg, rgba(255, 0, 255, 0.3) 0%, rgba(191, 0, 255, 0.2) 100%);
+  position: relative;
+  overflow: hidden;
+}
+
+.bonus-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  animation: bonusBtnShine 3s ease-in-out infinite;
+}
+
+@keyframes bonusBtnShine {
+  0%, 100% { left: -100%; }
+  50% { left: 100%; }
+}
+
+.bonus-btn:hover:not(:disabled) {
+  background: linear-gradient(135deg, rgba(255, 0, 255, 0.5) 0%, rgba(191, 0, 255, 0.4) 100%);
+  border-color: #ff66ff;
+  box-shadow:
+    0 0 20px rgba(255, 0, 255, 0.5),
+    0 0 40px rgba(255, 0, 255, 0.3);
+  transform: translateY(-2px) scale(1.05);
+}
+
+.bonus-btn-text {
+  font-family: 'Orbitron', 'Press Start 2P', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: #ff00ff;
+  letter-spacing: 2px;
+  text-shadow:
+    0 0 10px rgba(255, 0, 255, 0.8),
+    0 0 20px rgba(255, 0, 255, 0.4);
+}
+
+.bonus-btn:hover:not(:disabled) .bonus-btn-text {
+  color: #fff;
+  text-shadow:
+    0 0 15px rgba(255, 0, 255, 1),
+    0 0 30px rgba(255, 0, 255, 0.7);
+}
+
+.bonus-btn:disabled .bonus-btn-text {
+  color: #666;
+  text-shadow: none;
+}
+
+/* Auto-Spin Button */
+.auto-spin-btn {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  font-family: 'Press Start 2P', monospace;
+}
+
+.auto-spin-btn.active {
+  border-color: #00ff00;
+  background: rgba(0, 255, 0, 0.2);
+  animation: autoSpinPulse 1s ease-in-out infinite;
+}
+
+.auto-spin-btn .auto-count {
+  font-size: 0.7rem;
+  color: #00ff00;
+  text-shadow: 0 0 10px #00ff00;
+}
+
+@keyframes autoSpinPulse {
+  0%, 100% { box-shadow: 0 0 10px rgba(0, 255, 0, 0.3); }
+  50% { box-shadow: 0 0 20px rgba(0, 255, 0, 0.6); }
+}
+
+/* Auto-Spin Menu */
+.auto-spin-menu {
+  position: absolute;
+  bottom: 100%;
+  right: 0;
+  margin-bottom: 10px;
+  background: linear-gradient(135deg, #1a0030, #0a0020);
+  border: 2px solid #ff00ff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 0 30px rgba(255, 0, 255, 0.3);
+  z-index: 100;
+}
+
+.auto-spin-header {
+  padding: 10px 20px;
+  background: rgba(255, 0, 255, 0.1);
+  border-bottom: 1px solid rgba(255, 0, 255, 0.3);
+  font-size: 0.75rem;
+  color: #ff00ff;
+  text-align: center;
+}
+
+.auto-spin-option {
+  display: block;
+  width: 100%;
+  padding: 12px 30px;
+  border: none;
+  background: transparent;
+  color: #fff;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.auto-spin-option:hover {
+  background: rgba(255, 0, 255, 0.2);
+  color: #ff00ff;
+}
+
+/* Speed Options */
+.speed-options {
+  display: flex;
+  gap: 5px;
+  padding: 10px;
+  background: rgba(0, 0, 0, 0.3);
+}
+
+.speed-option {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 12px;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.4);
+  color: #fff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.speed-option:hover {
+  border-color: var(--speed-color, #ff00ff);
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.speed-option.selected {
+  border-color: var(--speed-color, #ff00ff);
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 0 15px color-mix(in srgb, var(--speed-color, #ff00ff) 40%, transparent);
+}
+
+.speed-icon {
+  font-size: 12px;
+  color: var(--speed-color, #fff);
+}
+
+.speed-option.selected .speed-icon {
+  text-shadow: 0 0 10px var(--speed-color, #ff00ff);
+}
+
+.speed-label {
+  font-size: 9px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  opacity: 0.8;
+}
+
+.speed-option.selected .speed-label {
+  color: var(--speed-color, #ff00ff);
+  opacity: 1;
+}
+
+/* Spin Count Options */
+.spin-count-options {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  padding: 10px;
+}
+
+.spin-count-options .auto-spin-option {
+  flex: 1;
+  min-width: 45px;
+  padding: 10px 15px;
+  border-radius: 6px;
+  background: rgba(255, 0, 255, 0.1);
+  border: 1px solid rgba(255, 0, 255, 0.3);
+}
+
+.spin-count-options .auto-spin-option:hover {
+  border-color: #ff00ff;
+  background: rgba(255, 0, 255, 0.3);
+}
+
+/* HUD Displays */
+.hud-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  padding: 8px 20px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 10px;
+  min-width: 100px;
+}
+
+.display-label {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  color: #666;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.display-value {
+  font-family: 'Orbitron', monospace;
+  font-size: 18px;
+  font-weight: bold;
+  color: #fff;
+}
+
+/* Balance Display */
+.balance-display {
+  border-color: rgba(0, 255, 255, 0.2);
+}
+
+.balance-display .display-value {
+  color: #00ffff;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+}
+
+/* Win Display */
+.win-display.has-win {
+  border-color: rgba(255, 215, 0, 0.4);
+  background: rgba(255, 215, 0, 0.1);
+}
+
+.win-display.has-win .display-value {
+  color: #ffd700;
+  text-shadow: 0 0 15px rgba(255, 215, 0, 0.7);
+  animation: winPulse 1s ease-in-out infinite;
+}
+
+@keyframes winPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+/* Bet Selector Inline */
+.bet-selector-inline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bet-btn-sm {
+  width: 28px;
+  height: 28px;
+  border: 1px solid rgba(255, 0, 255, 0.5);
+  border-radius: 6px;
+  background: transparent;
+  color: #ff00ff;
+  font-size: 18px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.bet-btn-sm:hover:not(:disabled) {
+  background: #ff00ff;
+  color: #000;
+  box-shadow: 0 0 10px rgba(255, 0, 255, 0.5);
+}
+
+.bet-btn-sm:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* Spin Button */
+.spin-button {
+  position: relative;
+  width: 70px;
+  height: 70px;
+  border: none;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #ff00ff 0%, #bf00ff 50%, #ff00ff 100%);
+  cursor: pointer;
+  overflow: hidden;
+  transition: all 0.3s ease;
+  box-shadow:
+    0 0 25px rgba(255, 0, 255, 0.5),
+    inset 0 2px 10px rgba(255, 255, 255, 0.2);
+}
+
+.spin-button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.3),
+    transparent
+  );
+  transition: left 0.5s ease;
+}
+
+.spin-button:hover:not(:disabled)::before {
+  left: 100%;
+}
+
+.spin-button:hover:not(:disabled) {
+  transform: scale(1.1);
+  box-shadow:
+    0 0 40px rgba(255, 0, 255, 0.7),
+    inset 0 2px 15px rgba(255, 255, 255, 0.3);
+}
+
+.spin-button:active:not(:disabled) {
+  transform: scale(0.95);
+}
+
+.spin-button.disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+  background: linear-gradient(135deg, #666 0%, #444 100%);
+  box-shadow: none;
+}
+
+.spin-button.spinning {
+  animation: spinGlow 1s ease-in-out infinite;
+}
+
+@keyframes spinGlow {
+  0%, 100% {
+    box-shadow:
+      0 0 25px rgba(255, 0, 255, 0.5),
+      inset 0 2px 10px rgba(255, 255, 255, 0.2);
+  }
+  50% {
+    box-shadow:
+      0 0 50px rgba(255, 0, 255, 0.9),
+      inset 0 2px 20px rgba(255, 255, 255, 0.4);
+  }
+}
+
+.spin-inner {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.spin-icon {
+  width: 32px;
+  height: 32px;
+  color: #fff;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
+}
+
+.spin-icon.rotating {
+  animation: rotate 0.8s linear infinite;
+}
+
+@keyframes rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Legacy support for old panel-section classes */
+.panel-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.section-label {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: #606080;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .control-panel.hud-professional {
+    flex-wrap: wrap;
+    gap: 15px;
+    padding: 15px;
+  }
+
+  .hud-center {
+    order: 2;
+    width: 100%;
+    justify-content: space-around;
+    gap: 15px;
+  }
+
+  .hud-left {
+    order: 1;
+  }
+
+  .hud-right {
+    order: 3;
+  }
+
+  .hud-display {
+    min-width: 80px;
+    padding: 6px 12px;
+  }
+
+  .display-value {
+    font-size: 14px;
+  }
+
+  .spin-button {
+    width: 60px;
+    height: 60px;
+  }
+
+  .spin-icon {
+    width: 26px;
+    height: 26px;
+  }
+}

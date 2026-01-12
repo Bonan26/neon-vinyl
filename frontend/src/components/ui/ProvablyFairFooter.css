@@ -1,0 +1,262 @@
+/* NEON VINYL: GHOST GROOVES - Provably Fair Footer Styles */
+
+.pf-footer {
+  position: fixed;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 700px;
+  background: rgba(10, 10, 18, 0.98);
+  border-top: 1px solid #333366;
+  border-radius: 12px 12px 0 0;
+  z-index: 100;
+  transition: all 0.3s ease;
+}
+
+.pf-footer.expanded {
+  box-shadow:
+    0 -10px 40px rgba(0, 0, 0, 0.5),
+    0 0 30px rgba(0, 255, 255, 0.1);
+}
+
+/* Toggle Bar */
+.pf-footer-toggle {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px 20px;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pf-footer-toggle:hover {
+  background: rgba(0, 255, 255, 0.05);
+}
+
+.pf-lock-icon {
+  font-size: 14px;
+}
+
+.pf-toggle-label {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #808090;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.pf-toggle-arrow {
+  font-size: 10px;
+  color: #606080;
+  transition: transform 0.2s ease;
+}
+
+.pf-footer.expanded .pf-toggle-arrow {
+  transform: rotate(180deg);
+}
+
+/* Content */
+.pf-footer-content {
+  padding: 0 24px 20px;
+  border-top: 1px solid #252540;
+}
+
+/* Rows */
+.pf-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid #1a1a2f;
+}
+
+.pf-row:last-of-type {
+  border-bottom: none;
+}
+
+.pf-row.pf-revealed {
+  background: rgba(0, 255, 102, 0.05);
+  margin: 0 -24px;
+  padding: 12px 24px;
+  border: 1px solid rgba(0, 255, 102, 0.2);
+  border-radius: 6px;
+}
+
+.pf-label {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: #606080;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  min-width: 140px;
+}
+
+.pf-value-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+  justify-content: flex-end;
+}
+
+/* Hash display */
+.pf-hash {
+  font-family: 'Fira Code', 'Consolas', monospace;
+  font-size: 12px;
+  color: #b0b0c0;
+  background: #0d0d1a;
+  padding: 8px 12px;
+  border-radius: 4px;
+  border: 1px solid #252540;
+}
+
+.pf-hash.revealed {
+  color: #00ff66;
+  border-color: rgba(0, 255, 102, 0.3);
+}
+
+/* Input */
+.pf-input {
+  font-family: 'Fira Code', 'Consolas', monospace;
+  font-size: 12px;
+  color: #ffffff;
+  background: #0d0d1a;
+  padding: 8px 12px;
+  border-radius: 4px;
+  border: 1px solid #252540;
+  width: 200px;
+  transition: border-color 0.2s ease;
+}
+
+.pf-input:focus {
+  outline: none;
+  border-color: #00ffff;
+}
+
+.pf-input::placeholder {
+  color: #404060;
+}
+
+/* Nonce */
+.pf-nonce {
+  font-family: 'Orbitron', monospace;
+  font-size: 16px;
+  font-weight: bold;
+  color: #00ffff;
+}
+
+/* Copy button */
+.pf-copy-btn {
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: 1px solid #333355;
+  border-radius: 4px;
+  color: #808090;
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pf-copy-btn:hover {
+  background: #1a1a2f;
+  border-color: #00ffff;
+  color: #00ffff;
+}
+
+.pf-copy-btn.copied {
+  background: rgba(0, 255, 102, 0.1);
+  border-color: #00ff66;
+  color: #00ff66;
+}
+
+/* Actions */
+.pf-actions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid #252540;
+}
+
+.pf-rotate-btn {
+  padding: 10px 20px;
+  background: linear-gradient(135deg, #ff00ff, #bf00ff);
+  border: none;
+  border-radius: 6px;
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: #ffffff;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.pf-rotate-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 15px rgba(255, 0, 255, 0.3);
+}
+
+.pf-verify-link {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 13px;
+  color: #00ffff;
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.pf-verify-link:hover {
+  color: #ffffff;
+  text-decoration: underline;
+}
+
+/* Info text */
+.pf-info {
+  margin-top: 16px;
+  padding: 12px;
+  background: rgba(0, 255, 255, 0.03);
+  border: 1px solid rgba(0, 255, 255, 0.1);
+  border-radius: 6px;
+}
+
+.pf-info p {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 12px;
+  color: #606080;
+  line-height: 1.6;
+  margin: 0;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .pf-footer {
+    max-width: 100%;
+    border-radius: 0;
+  }
+
+  .pf-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+
+  .pf-value-container {
+    width: 100%;
+    justify-content: flex-start;
+  }
+
+  .pf-input {
+    width: 100%;
+  }
+}

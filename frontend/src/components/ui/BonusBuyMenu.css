@@ -1,0 +1,564 @@
+/**
+ * NEON VINYL: GHOST GROOVES - Bonus Buy Menu Styles
+ * Dynamic popup with integrated bet selector
+ */
+
+/* Overlay */
+.bonus-popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: bonusFadeIn 0.3s ease-out;
+  backdrop-filter: blur(8px);
+}
+
+@keyframes bonusFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+/* Main Popup */
+.bonus-popup {
+  background: linear-gradient(180deg, #1a0a2e 0%, #0d0518 100%);
+  border: 2px solid #ff00ff;
+  border-radius: 20px;
+  padding: 0;
+  width: 90%;
+  max-width: 520px;
+  box-shadow:
+    0 0 60px rgba(255, 0, 255, 0.4),
+    0 0 120px rgba(255, 0, 255, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+  animation: bonusPopIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  overflow: hidden;
+}
+
+@keyframes bonusPopIn {
+  from {
+    transform: scale(0.8) translateY(30px);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1) translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Header */
+.bonus-popup-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  background: linear-gradient(90deg, rgba(255, 0, 255, 0.2) 0%, transparent 100%);
+  border-bottom: 1px solid rgba(255, 0, 255, 0.3);
+}
+
+.bonus-popup-header h2 {
+  margin: 0;
+  font-size: 22px;
+  color: #ff00ff;
+  text-shadow:
+    0 0 10px rgba(255, 0, 255, 0.8),
+    0 0 30px rgba(255, 0, 255, 0.4);
+  letter-spacing: 4px;
+  font-weight: 700;
+}
+
+.bonus-close-btn {
+  background: none;
+  border: none;
+  width: 36px;
+  height: 36px;
+  padding: 0;
+  cursor: pointer;
+  color: #ff6699;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bonus-close-btn svg {
+  width: 24px;
+  height: 24px;
+}
+
+.bonus-close-btn:hover {
+  color: #ff00ff;
+  transform: scale(1.2);
+}
+
+/* Warning */
+.bonus-warning {
+  background: rgba(255, 0, 0, 0.15);
+  border: 1px solid rgba(255, 0, 0, 0.4);
+  margin: 16px 24px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  color: #ff6666;
+  text-align: center;
+  font-weight: 600;
+  font-size: 14px;
+  animation: warningPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes warningPulse {
+  0%, 100% { opacity: 0.8; }
+  50% { opacity: 1; }
+}
+
+/* Bet Selector */
+.bonus-bet-selector {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 16px 24px;
+  background: rgba(0, 0, 0, 0.3);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.bet-label {
+  color: #888;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 2px;
+}
+
+.bet-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.bonus-bet-selector .bet-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 2px solid #ff00ff;
+  background: transparent;
+  color: #ff00ff;
+  font-size: 20px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bonus-bet-selector .bet-btn:hover:not(:disabled) {
+  background: rgba(255, 0, 255, 0.2);
+  transform: scale(1.1);
+  box-shadow: 0 0 15px rgba(255, 0, 255, 0.5);
+}
+
+.bonus-bet-selector .bet-btn:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+.bet-value {
+  font-size: 24px;
+  font-weight: 700;
+  color: #ffffff;
+  min-width: 100px;
+  text-align: center;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+}
+
+/* Bonus Options Grid */
+.bonus-options {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 24px;
+}
+
+/* Bonus Card */
+.bonus-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
+  border: 1px solid var(--accent-color);
+  border-radius: 12px;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s;
+}
+
+.bonus-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, var(--accent-color) 0%, transparent 60%);
+  opacity: 0.1;
+  transition: opacity 0.3s;
+}
+
+.bonus-card.clickable {
+  cursor: pointer;
+}
+
+.bonus-card.clickable:hover {
+  transform: translateY(-4px) scale(1.02);
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.4),
+    0 0 40px color-mix(in srgb, var(--accent-color) 40%, transparent);
+  border-color: var(--accent-color);
+}
+
+.bonus-card.clickable:hover::before {
+  opacity: 0.25;
+}
+
+.bonus-card.clickable:active {
+  transform: translateY(-2px) scale(1.01);
+}
+
+.bonus-card.disabled {
+  opacity: 0.5;
+  filter: grayscale(0.5);
+  cursor: not-allowed;
+}
+
+/* Bonus Icon */
+.bonus-icon {
+  flex-shrink: 0;
+  width: 70px;
+  height: 70px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, var(--accent-color) 0%, color-mix(in srgb, var(--accent-color) 60%, black) 100%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  box-shadow:
+    0 4px 15px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.scatter-count {
+  font-size: 28px;
+  font-weight: 900;
+  color: #000;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.3);
+  line-height: 1;
+}
+
+.scatter-label {
+  font-size: 8px;
+  font-weight: 700;
+  color: #000;
+  letter-spacing: 1px;
+  opacity: 0.8;
+  margin-top: 2px;
+}
+
+/* Bonus Info */
+.bonus-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.bonus-info h3 {
+  margin: 0 0 4px 0;
+  font-size: 16px;
+  color: var(--accent-color);
+  font-weight: 700;
+}
+
+.bonus-info p {
+  margin: 0 0 8px 0;
+  font-size: 12px;
+  color: #aaa;
+  line-height: 1.4;
+}
+
+.bonus-multiplier {
+  font-size: 11px;
+  color: #666;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Price Display */
+.bonus-price-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 12px 16px;
+  background: rgba(0, 0, 0, 0.4);
+  border-radius: 10px;
+  border: 1px solid var(--accent-color);
+  min-width: 100px;
+}
+
+.bonus-price-display .price-label {
+  font-size: 10px;
+  font-weight: 600;
+  color: #888;
+  letter-spacing: 2px;
+  margin-bottom: 4px;
+}
+
+.bonus-price-display .price-value {
+  font-size: 22px;
+  font-weight: 900;
+  color: var(--accent-color);
+  text-shadow: 0 0 15px var(--accent-color);
+  line-height: 1;
+}
+
+/* Buy Button */
+.bonus-buy-btn {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 24px;
+  min-width: 100px;
+  border: none;
+  border-radius: 8px;
+  background: linear-gradient(180deg, var(--accent-color) 0%, color-mix(in srgb, var(--accent-color) 70%, black) 100%);
+  cursor: pointer;
+  transition: all 0.2s;
+  position: relative;
+  overflow: hidden;
+}
+
+.bonus-buy-btn::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.3), transparent);
+  transition: left 0.5s;
+}
+
+.bonus-buy-btn:not(:disabled):hover::after {
+  left: 100%;
+}
+
+.bonus-buy-btn:not(:disabled):hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 20px var(--accent-color);
+}
+
+.bonus-buy-btn:disabled {
+  background: #333;
+  cursor: not-allowed;
+}
+
+.bonus-buy-btn .buy-text {
+  font-size: 14px;
+  font-weight: 800;
+  color: #000;
+  letter-spacing: 2px;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.3);
+}
+
+.bonus-buy-btn .buy-price {
+  font-size: 18px;
+  font-weight: 900;
+  color: #000;
+  text-shadow: 0 1px 2px rgba(255, 255, 255, 0.3);
+}
+
+.bonus-buy-btn .insufficient {
+  font-size: 11px;
+  font-weight: 600;
+  color: #ff6666;
+}
+
+/* Footer */
+.bonus-footer {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 24px;
+  background: rgba(0, 0, 0, 0.4);
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.balance-label {
+  color: #888;
+  font-size: 14px;
+}
+
+.balance-value {
+  color: #ffd700;
+  font-size: 20px;
+  font-weight: 700;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+/* Bonus Status Indicator */
+.bonus-status {
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.bonus-status.insufficient {
+  background: rgba(255, 0, 0, 0.2);
+  color: #ff6666;
+  border: 1px solid rgba(255, 0, 0, 0.3);
+}
+
+/* Confirmation Popup */
+.confirm-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1100;
+  animation: bonusFadeIn 0.2s ease-out;
+}
+
+.confirm-popup {
+  background: linear-gradient(180deg, #1a0a2e 0%, #0d0518 100%);
+  border: 2px solid #ff00ff;
+  border-radius: 16px;
+  padding: 28px 32px;
+  max-width: 400px;
+  width: 90%;
+  text-align: center;
+  box-shadow:
+    0 0 60px rgba(255, 0, 255, 0.4),
+    0 0 120px rgba(255, 0, 255, 0.2);
+  animation: bonusPopIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.confirm-popup h3 {
+  margin: 0 0 16px 0;
+  font-size: 20px;
+  color: #ffffff;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+}
+
+.confirm-popup p {
+  margin: 0 0 24px 0;
+  font-size: 16px;
+  color: #ccc;
+  line-height: 1.6;
+}
+
+.confirm-popup .confirm-price {
+  font-weight: 900;
+  font-size: 20px;
+  text-shadow: 0 0 15px currentColor;
+}
+
+.confirm-buttons {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+}
+
+.confirm-btn {
+  flex: 1;
+  padding: 14px 24px;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.confirm-btn.cancel {
+  background: transparent;
+  border: 2px solid #666;
+  color: #999;
+}
+
+.confirm-btn.cancel:hover {
+  border-color: #888;
+  color: #fff;
+  background: rgba(255, 255, 255, 0.1);
+}
+
+.confirm-btn.confirm {
+  background: linear-gradient(180deg, var(--accent-color) 0%, color-mix(in srgb, var(--accent-color) 70%, black) 100%);
+  color: #000;
+  box-shadow: 0 0 20px color-mix(in srgb, var(--accent-color) 50%, transparent);
+}
+
+.confirm-btn.confirm:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 30px var(--accent-color);
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .bonus-popup {
+    max-width: 95%;
+    margin: 10px;
+  }
+
+  .bonus-card {
+    flex-wrap: wrap;
+    justify-content: center;
+    text-align: center;
+    gap: 12px;
+  }
+
+  .bonus-info {
+    width: 100%;
+    order: 2;
+  }
+
+  .bonus-icon {
+    order: 1;
+  }
+
+  .bonus-price-display {
+    order: 3;
+    flex: 1;
+    min-width: 80px;
+  }
+
+  .bonus-status {
+    order: 4;
+    width: 100%;
+  }
+
+  .confirm-popup {
+    padding: 20px;
+  }
+
+  .confirm-buttons {
+    flex-direction: column;
+  }
+}
