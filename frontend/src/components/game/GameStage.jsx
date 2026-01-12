@@ -43,27 +43,40 @@ const GameStage = ({ onSpriteReady }) => {
     loadAssets();
   }, []);
 
-  // Draw background with ambient glow
+  // Draw background with vibrant ambient glow
   const drawBackground = useCallback((g) => {
     g.clear();
 
-    // Dark gradient background
-    g.beginFill(0x0a0a12);
+    // Rich purple gradient background
+    g.beginFill(0x0d0518);
     g.drawRect(0, 0, STAGE_WIDTH, STAGE_HEIGHT);
     g.endFill();
 
-    // Ambient glow spots (neon atmosphere)
+    // Subtle grid pattern
+    g.lineStyle(1, 0x2a1040, 0.3);
+    for (let i = 0; i < STAGE_WIDTH; i += 40) {
+      g.moveTo(i, 0);
+      g.lineTo(i, STAGE_HEIGHT);
+    }
+    for (let j = 0; j < STAGE_HEIGHT; j += 40) {
+      g.moveTo(0, j);
+      g.lineTo(STAGE_WIDTH, j);
+    }
+
+    // Vibrant ambient glow spots (neon atmosphere)
     const glowSpots = [
-      { x: 80, y: 80, color: 0xff00ff, radius: 180, alpha: 0.08 },
-      { x: STAGE_WIDTH - 80, y: 120, color: 0x00ffff, radius: 160, alpha: 0.08 },
-      { x: STAGE_WIDTH / 2, y: STAGE_HEIGHT - 80, color: 0xbf00ff, radius: 200, alpha: 0.06 },
-      { x: STAGE_WIDTH / 2, y: STAGE_HEIGHT / 2, color: 0x00ffff, radius: 300, alpha: 0.03 },
+      { x: 60, y: 60, color: 0xff00ff, radius: 200, alpha: 0.15 },
+      { x: STAGE_WIDTH - 60, y: 100, color: 0x00ffff, radius: 180, alpha: 0.15 },
+      { x: STAGE_WIDTH / 2, y: STAGE_HEIGHT - 60, color: 0xbf00ff, radius: 220, alpha: 0.12 },
+      { x: STAGE_WIDTH / 2, y: STAGE_HEIGHT / 2, color: 0xff00ff, radius: 350, alpha: 0.06 },
+      { x: 100, y: STAGE_HEIGHT - 100, color: 0xffd700, radius: 150, alpha: 0.08 },
+      { x: STAGE_WIDTH - 100, y: STAGE_HEIGHT - 150, color: 0x00ff88, radius: 140, alpha: 0.08 },
     ];
 
     glowSpots.forEach((spot) => {
-      for (let i = 5; i > 0; i--) {
-        g.beginFill(spot.color, spot.alpha * (i / 5));
-        g.drawCircle(spot.x, spot.y, spot.radius * (i / 5));
+      for (let i = 6; i > 0; i--) {
+        g.beginFill(spot.color, spot.alpha * (i / 6));
+        g.drawCircle(spot.x, spot.y, spot.radius * (i / 6));
         g.endFill();
       }
     });
@@ -73,15 +86,25 @@ const GameStage = ({ onSpriteReady }) => {
   const drawTitleBanner = useCallback((g) => {
     g.clear();
 
-    // Title background
-    g.beginFill(0x000000, 0.6);
-    g.lineStyle(2, 0xff00ff, 0.6);
-    g.drawRoundedRect(STAGE_WIDTH / 2 - 180, 12, 360, 54, 12);
+    // Outer glow
+    g.beginFill(0xff00ff, 0.1);
+    g.drawRoundedRect(STAGE_WIDTH / 2 - 190, 6, 380, 64, 16);
+    g.endFill();
+
+    // Title background with gradient effect
+    g.beginFill(0x1a0a2e, 0.9);
+    g.lineStyle(3, 0xff00ff, 0.8);
+    g.drawRoundedRect(STAGE_WIDTH / 2 - 180, 12, 360, 54, 14);
+    g.endFill();
+
+    // Inner highlight
+    g.beginFill(0x2d1050, 0.4);
+    g.drawRoundedRect(STAGE_WIDTH / 2 - 174, 16, 348, 20, 10);
     g.endFill();
 
     // Inner glow line
-    g.lineStyle(1, 0x00ffff, 0.3);
-    g.drawRoundedRect(STAGE_WIDTH / 2 - 176, 16, 352, 46, 10);
+    g.lineStyle(2, 0x00ffff, 0.5);
+    g.drawRoundedRect(STAGE_WIDTH / 2 - 174, 16, 348, 46, 12);
   }, []);
 
   // Draw tumble/multiplier info
@@ -90,52 +113,72 @@ const GameStage = ({ onSpriteReady }) => {
 
     if (tumbleCount === 0 && maxMultiplier <= 1) return;
 
-    // Info panel background
-    g.beginFill(0x0a0a15, 0.9);
-    g.lineStyle(1, 0x333366, 0.8);
-    g.drawRoundedRect(GRID_X + GRID_WIDTH + 15, GRID_Y, 100, 60, 8);
+    // Info panel background - more vibrant
+    g.beginFill(0x1a0a2e, 0.95);
+    g.lineStyle(2, 0xff00ff, 0.5);
+    g.drawRoundedRect(GRID_X + GRID_WIDTH + 15, GRID_Y, 100, 60, 10);
+    g.endFill();
+
+    // Inner highlight
+    g.beginFill(0x2d1050, 0.3);
+    g.drawRoundedRect(GRID_X + GRID_WIDTH + 18, GRID_Y + 3, 94, 20, 7);
     g.endFill();
   }, [tumbleCount, maxMultiplier]);
 
   // Text styles
   const titleStyle = new TextStyle({
     fontFamily: 'Orbitron, monospace',
-    fontSize: 28,
+    fontSize: 30,
     fontWeight: 'bold',
-    fill: ['#ff00ff', '#00ffff'],
-    fillGradientStops: [0, 1],
+    fill: ['#ff66ff', '#ffffff', '#00ffff'],
+    fillGradientStops: [0, 0.5, 1],
     dropShadow: true,
     dropShadowColor: '#ff00ff',
-    dropShadowBlur: 12,
+    dropShadowBlur: 20,
     dropShadowDistance: 0,
   });
 
   const subtitleStyle = new TextStyle({
     fontFamily: 'Rajdhani, sans-serif',
-    fontSize: 11,
-    letterSpacing: 6,
-    fill: '#808090',
+    fontSize: 12,
+    fontWeight: 'bold',
+    letterSpacing: 8,
+    fill: '#ffd700',
+    dropShadow: true,
+    dropShadowColor: '#ff9900',
+    dropShadowBlur: 8,
+    dropShadowDistance: 0,
   });
 
   const infoLabelStyle = new TextStyle({
     fontFamily: 'Rajdhani, sans-serif',
     fontSize: 11,
-    fill: '#606080',
+    fontWeight: 'bold',
+    fill: '#a080c0',
     letterSpacing: 1,
   });
 
   const infoValueStyle = new TextStyle({
     fontFamily: 'Orbitron, monospace',
-    fontSize: 14,
+    fontSize: 16,
     fontWeight: 'bold',
     fill: '#00ffff',
+    dropShadow: true,
+    dropShadowColor: '#00ffff',
+    dropShadowBlur: 8,
+    dropShadowDistance: 0,
   });
 
   const spinningStyle = new TextStyle({
     fontFamily: 'Orbitron, monospace',
     fontSize: 14,
+    fontWeight: 'bold',
     fill: '#00ffff',
-    letterSpacing: 3,
+    letterSpacing: 4,
+    dropShadow: true,
+    dropShadowColor: '#00ffff',
+    dropShadowBlur: 10,
+    dropShadowDistance: 0,
   });
 
   // Loading state
@@ -144,7 +187,7 @@ const GameStage = ({ onSpriteReady }) => {
       <Stage
         width={STAGE_WIDTH}
         height={STAGE_HEIGHT}
-        options={{ backgroundColor: 0x0a0a12, antialias: true }}
+        options={{ backgroundColor: 0x0d0518, antialias: true }}
       >
         <Graphics draw={drawBackground} />
         <Text
@@ -168,7 +211,7 @@ const GameStage = ({ onSpriteReady }) => {
       width={STAGE_WIDTH}
       height={STAGE_HEIGHT}
       options={{
-        backgroundColor: 0x0a0a12,
+        backgroundColor: 0x0d0518,
         antialias: true,
         resolution: window.devicePixelRatio || 1,
       }}
@@ -179,14 +222,14 @@ const GameStage = ({ onSpriteReady }) => {
       {/* Title Banner */}
       <Graphics draw={drawTitleBanner} />
       <Text
-        text="NEON VINYL"
+        text="WOLFIE"
         x={STAGE_WIDTH / 2}
         y={28}
         anchor={[0.5, 0]}
         style={titleStyle}
       />
       <Text
-        text="GHOST GROOVES"
+        text="GROOVE"
         x={STAGE_WIDTH / 2}
         y={52}
         anchor={[0.5, 0]}

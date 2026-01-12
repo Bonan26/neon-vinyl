@@ -37,9 +37,58 @@ const Cell = ({
   const [offsetY, setOffsetY] = useState(0);
   const prevSymbolRef = useRef(symbol);
 
+  // Scatter animation state
+  const [scatterAnim, setScatterAnim] = useState({ scale: 1, glow: 0, rotation: 0 });
+  const scatterAnimRef = useRef(null);
+
   // Calculate position
   const x = col * (CELL_SIZE + 4);
   const y = row * (CELL_SIZE + 4);
+
+  // Scatter continuous animation
+  useEffect(() => {
+    if (symbol === 'SC') {
+      // Create continuous pulsing animation for scatter
+      const anim = { scale: 1, glow: 0, rotation: 0 };
+      scatterAnimRef.current = gsap.timeline({ repeat: -1 })
+        // Pulse up with glow
+        .to(anim, {
+          scale: 1.15,
+          glow: 1,
+          rotation: 0.05,
+          duration: 0.8,
+          ease: 'sine.inOut',
+          onUpdate: () => {
+            setScatterAnim({ scale: anim.scale, glow: anim.glow, rotation: anim.rotation });
+          },
+        })
+        // Pulse down
+        .to(anim, {
+          scale: 1,
+          glow: 0.3,
+          rotation: -0.05,
+          duration: 0.8,
+          ease: 'sine.inOut',
+          onUpdate: () => {
+            setScatterAnim({ scale: anim.scale, glow: anim.glow, rotation: anim.rotation });
+          },
+        });
+    } else {
+      // Kill animation if symbol changes
+      if (scatterAnimRef.current) {
+        scatterAnimRef.current.kill();
+        scatterAnimRef.current = null;
+        setScatterAnim({ scale: 1, glow: 0, rotation: 0 });
+      }
+    }
+
+    return () => {
+      if (scatterAnimRef.current) {
+        scatterAnimRef.current.kill();
+        scatterAnimRef.current = null;
+      }
+    };
+  }, [symbol]);
 
   // Get symbol config and texture
   const symbolConfig = symbol ? SYMBOLS[symbol] : null;
@@ -95,23 +144,98 @@ const Cell = ({
     prevSymbolRef.current = symbol;
   }, [symbol, isNew]);
 
-  // Animate winning pulse
+  // State for winning explosion effect on symbol
+  const [winExplosion, setWinExplosion] = useState({
+    scale: 1,
+    rotation: 0,
+    flash: 0,
+  });
+
+  // Animate winning with explosion effect on the symbol (not the border)
   useEffect(() => {
     if (isWinning && containerRef.current) {
-      const anim = { scale: 1 };
-      gsap.to(anim, {
-        scale: 1.15,
-        duration: 0.25,
-        ease: 'sine.inOut',
-        yoyo: true,
-        repeat: 3,
-        onUpdate: () => {
-          setAnimatedScale(anim.scale);
-        },
-        onComplete: () => {
-          setAnimatedScale(1);
-        },
-      });
+      // Explosion animation on the symbol
+      const anim = { scale: 1, rotation: 0, flash: 0 };
+
+      gsap.timeline()
+        // Phase 1: Quick burst outward with flash
+        .to(anim, {
+          scale: 1.5,
+          rotation: 0.1,
+          flash: 1,
+          duration: 0.12,
+          ease: 'power2.out',
+          onUpdate: () => {
+            setWinExplosion({
+              scale: anim.scale,
+              rotation: anim.rotation,
+              flash: anim.flash,
+            });
+          },
+        })
+        // Phase 2: Shake and contract
+        .to(anim, {
+          scale: 0.8,
+          rotation: -0.15,
+          flash: 0.5,
+          duration: 0.1,
+          ease: 'power2.in',
+          onUpdate: () => {
+            setWinExplosion({
+              scale: anim.scale,
+              rotation: anim.rotation,
+              flash: anim.flash,
+            });
+          },
+        })
+        // Phase 3: Bounce back with shake
+        .to(anim, {
+          scale: 1.3,
+          rotation: 0.08,
+          flash: 0.3,
+          duration: 0.15,
+          ease: 'back.out(2)',
+          onUpdate: () => {
+            setWinExplosion({
+              scale: anim.scale,
+              rotation: anim.rotation,
+              flash: anim.flash,
+            });
+          },
+        })
+        // Phase 4: Settle with small pulses
+        .to(anim, {
+          scale: 1.1,
+          rotation: -0.05,
+          flash: 0,
+          duration: 0.2,
+          ease: 'elastic.out(1, 0.5)',
+          onUpdate: () => {
+            setWinExplosion({
+              scale: anim.scale,
+              rotation: anim.rotation,
+              flash: anim.flash,
+            });
+          },
+        })
+        // Phase 5: Final settle
+        .to(anim, {
+          scale: 1,
+          rotation: 0,
+          flash: 0,
+          duration: 0.15,
+          ease: 'power2.out',
+          onUpdate: () => {
+            setWinExplosion({
+              scale: anim.scale,
+              rotation: anim.rotation,
+              flash: anim.flash,
+            });
+          },
+          onComplete: () => {
+            setWinExplosion({ scale: 1, rotation: 0, flash: 0 });
+          },
+        });
     }
   }, [isWinning]);
 
@@ -168,45 +292,63 @@ const Cell = ({
   const drawCell = (g) => {
     g.clear();
 
-    // Base background - dark purple
-    g.beginFill(0x1a1a2f, 0.9);
-    g.drawRoundedRect(0, 0, CELL_SIZE, CELL_SIZE, 8);
+    // Base background - rich purple with gradient effect
+    g.beginFill(0x1a0a2e, 0.95);
+    g.drawRoundedRect(0, 0, CELL_SIZE, CELL_SIZE, 10);
     g.endFill();
 
-    // Border
-    const borderColor = isWinning ? 0xffffff : (symbolConfig ? symbolConfig.color : 0x333355);
-    const borderAlpha = isWinning ? 1 : 0.5;
-    g.lineStyle(isWinning ? 3 : 1, borderColor, borderAlpha);
-    g.drawRoundedRect(0, 0, CELL_SIZE, CELL_SIZE, 8);
+    // Inner highlight (top)
+    g.beginFill(0x2d1050, 0.5);
+    g.drawRoundedRect(2, 2, CELL_SIZE - 4, CELL_SIZE / 3, 8);
+    g.endFill();
 
-    // Winning glow effect
-    if (isWinning) {
-      g.lineStyle(4, 0xffffff, 0.5);
-      g.drawRoundedRect(-2, -2, CELL_SIZE + 4, CELL_SIZE + 4, 10);
-      g.lineStyle(8, 0xffd700, 0.3);
-      g.drawRoundedRect(-4, -4, CELL_SIZE + 8, CELL_SIZE + 8, 12);
+    // Border - more colorful
+    const borderColor = isWinning ? 0xffffff : (symbolConfig ? symbolConfig.color : 0x4a2070);
+    const borderAlpha = isWinning ? 1 : 0.7;
+    g.lineStyle(isWinning ? 3 : 2, borderColor, borderAlpha);
+    g.drawRoundedRect(0, 0, CELL_SIZE, CELL_SIZE, 10);
+
+    // Subtle inner glow for all cells
+    if (!isWinning && !multiplier) {
+      g.lineStyle(1, 0xff00ff, 0.15);
+      g.drawRoundedRect(3, 3, CELL_SIZE - 6, CELL_SIZE - 6, 7);
     }
 
-    // Multiplier glow (Ghost Spot)
+    // Winning glow effect - more intense
+    if (isWinning) {
+      g.lineStyle(5, 0xffffff, 0.7);
+      g.drawRoundedRect(-3, -3, CELL_SIZE + 6, CELL_SIZE + 6, 12);
+      g.lineStyle(10, 0xffd700, 0.5);
+      g.drawRoundedRect(-6, -6, CELL_SIZE + 12, CELL_SIZE + 12, 14);
+      g.lineStyle(15, 0xff00ff, 0.25);
+      g.drawRoundedRect(-10, -10, CELL_SIZE + 20, CELL_SIZE + 20, 18);
+    }
+
+    // Multiplier glow (Ghost Spot) - more vibrant
     if (multiplier > 1 && glowColor) {
-      g.lineStyle(3, glowColor, 0.9);
-      g.drawRoundedRect(2, 2, CELL_SIZE - 4, CELL_SIZE - 4, 6);
-      g.lineStyle(1, glowColor, 0.4);
-      g.drawRoundedRect(4, 4, CELL_SIZE - 8, CELL_SIZE - 8, 4);
+      // Inner fill with color
+      g.beginFill(glowColor, 0.1);
+      g.drawRoundedRect(2, 2, CELL_SIZE - 4, CELL_SIZE - 4, 8);
+      g.endFill();
+      // Border glow
+      g.lineStyle(4, glowColor, 1);
+      g.drawRoundedRect(1, 1, CELL_SIZE - 2, CELL_SIZE - 2, 9);
+      g.lineStyle(2, glowColor, 0.6);
+      g.drawRoundedRect(4, 4, CELL_SIZE - 8, CELL_SIZE - 8, 6);
     }
 
     // Explosion effect (Wild explosion - dramatic neon glow)
     if (explosionGlow > 0) {
       const explosionColor = 0xff00ff; // Neon magenta
       // Inner glow
-      g.lineStyle(6, explosionColor, explosionGlow * 0.9);
-      g.drawRoundedRect(-2, -2, CELL_SIZE + 4, CELL_SIZE + 4, 10);
+      g.lineStyle(8, explosionColor, explosionGlow);
+      g.drawRoundedRect(-3, -3, CELL_SIZE + 6, CELL_SIZE + 6, 12);
       // Middle glow
-      g.lineStyle(10, explosionColor, explosionGlow * 0.5);
-      g.drawRoundedRect(-6, -6, CELL_SIZE + 12, CELL_SIZE + 12, 14);
+      g.lineStyle(12, explosionColor, explosionGlow * 0.6);
+      g.drawRoundedRect(-8, -8, CELL_SIZE + 16, CELL_SIZE + 16, 16);
       // Outer glow
-      g.lineStyle(16, 0xffff00, explosionGlow * 0.3); // Yellow outer ring
-      g.drawRoundedRect(-10, -10, CELL_SIZE + 20, CELL_SIZE + 20, 18);
+      g.lineStyle(20, 0xffee00, explosionGlow * 0.4); // Yellow outer ring
+      g.drawRoundedRect(-14, -14, CELL_SIZE + 28, CELL_SIZE + 28, 20);
     }
   };
 
@@ -239,8 +381,22 @@ const Cell = ({
           x={CELL_SIZE / 2}
           y={CELL_SIZE / 2 + offsetY}
           alpha={animatedAlpha}
-          scale={animatedScale}
+          scale={animatedScale * winExplosion.scale * (symbol === 'SC' ? scatterAnim.scale : 1)}
+          rotation={winExplosion.rotation + (symbol === 'SC' ? scatterAnim.rotation : 0)}
         >
+          {/* Scatter glow effect */}
+          {symbol === 'SC' && scatterAnim.glow > 0 && (
+            <Graphics
+              draw={(g) => {
+                g.clear();
+                // Cyan/blue outer glow to match the orb
+                g.beginFill(0x00ddff, scatterAnim.glow * 0.25);
+                g.drawCircle(0, 0, spriteSize * 0.75);
+                g.endFill();
+              }}
+            />
+          )}
+
           {/* Symbol image or placeholder - offset to center around pivot */}
           {symbolTexture ? (
             <Sprite
@@ -285,6 +441,22 @@ const Cell = ({
                 })}
               />
             </>
+          )}
+
+          {/* Flash overlay for explosion effect */}
+          {winExplosion.flash > 0 && (
+            <Graphics
+              draw={(g) => {
+                g.clear();
+                g.beginFill(0xffffff, winExplosion.flash * 0.7);
+                g.drawCircle(0, 0, spriteSize * 0.6);
+                g.endFill();
+                // Outer glow ring
+                g.beginFill(0xffff00, winExplosion.flash * 0.4);
+                g.drawCircle(0, 0, spriteSize * 0.8);
+                g.endFill();
+              }}
+            />
           )}
         </Container>
       )}

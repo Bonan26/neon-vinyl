@@ -6,12 +6,13 @@
   justify-content: space-between;
   gap: 20px;
   padding: 15px 25px;
-  background: linear-gradient(180deg, rgba(18, 18, 31, 0.95) 0%, rgba(10, 10, 21, 0.98) 100%);
-  border-top: 2px solid rgba(255, 0, 255, 0.3);
-  border-radius: 15px 15px 0 0;
+  background: linear-gradient(180deg, rgba(26, 10, 46, 0.95) 0%, rgba(13, 5, 24, 0.98) 100%);
+  border-top: 3px solid rgba(255, 0, 255, 0.5);
+  border-radius: 0 0 20px 20px;
   box-shadow:
-    0 -4px 30px rgba(255, 0, 255, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    0 4px 40px rgba(255, 0, 255, 0.25),
+    0 0 60px rgba(0, 255, 255, 0.1),
+    inset 0 -1px 0 rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
 }
 
@@ -192,6 +193,32 @@
   animation: autoSpinPulse 1s ease-in-out infinite;
 }
 
+.auto-spin-btn.pending {
+  border-color: var(--pending-color, #ff00ff);
+  background: color-mix(in srgb, var(--pending-color, #ff00ff) 20%, transparent);
+  animation: autoSpinPendingPulse 0.8s ease-in-out infinite;
+}
+
+.auto-spin-btn.pending svg {
+  animation: pendingIconPulse 0.5s ease-in-out infinite;
+}
+
+@keyframes autoSpinPendingPulse {
+  0%, 100% {
+    box-shadow: 0 0 15px color-mix(in srgb, var(--pending-color, #ff00ff) 50%, transparent);
+    transform: translateY(0);
+  }
+  50% {
+    box-shadow: 0 0 25px var(--pending-color, #ff00ff);
+    transform: translateY(-2px);
+  }
+}
+
+@keyframes pendingIconPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.2); }
+}
+
 .auto-spin-btn .auto-count {
   font-size: 0.7rem;
   color: #00ff00;
@@ -327,18 +354,19 @@
   flex-direction: column;
   align-items: center;
   gap: 4px;
-  padding: 8px 20px;
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
+  padding: 10px 22px;
+  background: linear-gradient(180deg, rgba(26, 10, 46, 0.8) 0%, rgba(13, 5, 24, 0.9) 100%);
+  border: 2px solid rgba(255, 0, 255, 0.3);
+  border-radius: 12px;
   min-width: 100px;
+  box-shadow: 0 0 15px rgba(255, 0, 255, 0.1);
 }
 
 .display-label {
   font-family: 'Rajdhani', sans-serif;
-  font-size: 10px;
+  font-size: 11px;
   font-weight: 600;
-  color: #666;
+  color: #a080c0;
   letter-spacing: 2px;
   text-transform: uppercase;
 }
@@ -348,33 +376,36 @@
   font-size: 18px;
   font-weight: bold;
   color: #fff;
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.3);
 }
 
 /* Balance Display */
 .balance-display {
-  border-color: rgba(0, 255, 255, 0.2);
+  border-color: rgba(0, 255, 255, 0.4);
+  box-shadow: 0 0 20px rgba(0, 255, 255, 0.15);
 }
 
 .balance-display .display-value {
   color: #00ffff;
-  text-shadow: 0 0 10px rgba(0, 255, 255, 0.5);
+  text-shadow: 0 0 15px rgba(0, 255, 255, 0.7);
 }
 
 /* Win Display */
 .win-display.has-win {
-  border-color: rgba(255, 215, 0, 0.4);
-  background: rgba(255, 215, 0, 0.1);
+  border-color: rgba(255, 215, 0, 0.6);
+  background: linear-gradient(180deg, rgba(255, 215, 0, 0.15) 0%, rgba(255, 100, 0, 0.1) 100%);
+  box-shadow: 0 0 25px rgba(255, 215, 0, 0.3);
 }
 
 .win-display.has-win .display-value {
   color: #ffd700;
-  text-shadow: 0 0 15px rgba(255, 215, 0, 0.7);
-  animation: winPulse 1s ease-in-out infinite;
+  text-shadow: 0 0 20px rgba(255, 215, 0, 0.9), 0 0 40px rgba(255, 215, 0, 0.5);
+  animation: winPulse 0.8s ease-in-out infinite;
 }
 
 @keyframes winPulse {
   0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
+  50% { transform: scale(1.08); }
 }
 
 /* Bet Selector Inline */
@@ -412,20 +443,107 @@
   cursor: not-allowed;
 }
 
+/* Spin Button Wrapper */
+.spin-button-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Pending Autospin Ring Animation */
+.spin-pending-ring {
+  position: absolute;
+  width: 100px;
+  height: 100px;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.pending-ring-inner {
+  position: absolute;
+  inset: 0;
+  border: 4px solid transparent;
+  border-top-color: var(--pending-color, #ff00ff);
+  border-right-color: var(--pending-color, #ff00ff);
+  border-radius: 50%;
+  animation: pendingRingSpin 1s linear infinite;
+  filter: drop-shadow(0 0 8px var(--pending-color, #ff00ff));
+}
+
+.pending-ring-outer {
+  position: absolute;
+  inset: -6px;
+  border: 3px solid transparent;
+  border-bottom-color: var(--pending-color, #ff00ff);
+  border-left-color: var(--pending-color, #ff00ff);
+  border-radius: 50%;
+  animation: pendingRingSpin 1.5s linear infinite reverse;
+  opacity: 0.6;
+  filter: drop-shadow(0 0 12px var(--pending-color, #ff00ff));
+}
+
+.pending-count {
+  position: absolute;
+  top: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--pending-color, #ff00ff);
+  color: #000;
+  font-family: 'Orbitron', monospace;
+  font-size: 12px;
+  font-weight: 900;
+  padding: 2px 8px;
+  border-radius: 10px;
+  box-shadow: 0 0 15px var(--pending-color, #ff00ff);
+  animation: pendingCountPulse 0.8s ease-in-out infinite;
+}
+
+@keyframes pendingRingSpin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+@keyframes pendingCountPulse {
+  0%, 100% { transform: translateX(-50%) scale(1); opacity: 1; }
+  50% { transform: translateX(-50%) scale(1.1); opacity: 0.8; }
+}
+
 /* Spin Button */
 .spin-button {
   position: relative;
-  width: 70px;
-  height: 70px;
-  border: none;
+  width: 75px;
+  height: 75px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
   border-radius: 50%;
-  background: linear-gradient(135deg, #ff00ff 0%, #bf00ff 50%, #ff00ff 100%);
+  background: linear-gradient(135deg, #ff00ff 0%, #bf00ff 40%, #ff00ff 80%, #ff66ff 100%);
   cursor: pointer;
   overflow: hidden;
   transition: all 0.3s ease;
   box-shadow:
-    0 0 25px rgba(255, 0, 255, 0.5),
-    inset 0 2px 10px rgba(255, 255, 255, 0.2);
+    0 0 40px rgba(255, 0, 255, 0.7),
+    0 0 80px rgba(255, 0, 255, 0.3),
+    inset 0 3px 15px rgba(255, 255, 255, 0.4);
+  z-index: 2;
+}
+
+/* Spin button when autospin is pending */
+.spin-button.has-pending {
+  animation: pendingButtonPulse 1s ease-in-out infinite;
+  border-color: var(--pending-color, #ff00ff);
+  box-shadow:
+    0 0 50px var(--pending-color, #ff00ff),
+    0 0 100px color-mix(in srgb, var(--pending-color, #ff00ff) 50%, transparent),
+    inset 0 3px 15px rgba(255, 255, 255, 0.4);
+}
+
+@keyframes pendingButtonPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.05);
+  }
 }
 
 .spin-button::before {
@@ -449,10 +567,12 @@
 }
 
 .spin-button:hover:not(:disabled) {
-  transform: scale(1.1);
+  transform: scale(1.12);
+  border-color: rgba(255, 255, 255, 0.5);
   box-shadow:
-    0 0 40px rgba(255, 0, 255, 0.7),
-    inset 0 2px 15px rgba(255, 255, 255, 0.3);
+    0 0 60px rgba(255, 0, 255, 0.9),
+    0 0 100px rgba(255, 0, 255, 0.5),
+    inset 0 3px 20px rgba(255, 255, 255, 0.5);
 }
 
 .spin-button:active:not(:disabled) {
@@ -462,8 +582,9 @@
 .spin-button.disabled {
   opacity: 0.4;
   cursor: not-allowed;
-  background: linear-gradient(135deg, #666 0%, #444 100%);
-  box-shadow: none;
+  background: linear-gradient(135deg, #555 0%, #333 100%);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  border-color: rgba(255, 255, 255, 0.1);
 }
 
 .spin-button.spinning {

@@ -1,5 +1,5 @@
 """
-NEON VINYL: GHOST GROOVES - FastAPI Wrapper
+Wolfie Groove - FastAPI Wrapper
 Stake Engine (Carrot) Standard - RGS API
 
 This module wraps the Math SDK for the dev environment.
@@ -17,7 +17,7 @@ from app.game_config import (
     GRID_ROWS, GRID_COLS, Symbol, PAYTABLE,
     BONUS_BUY_OPTIONS, JACKPOT_TIERS, SCATTER_FREE_SPINS
 )
-from app.gamestate import run_spin, verify_spin, SpinResult
+from app.gamestate import run_spin, verify_spin, run_bonus_trigger_spin, SpinResult
 from app.random_generator import generate_server_seed, hash_server_seed
 
 
@@ -26,7 +26,7 @@ from app.random_generator import generate_server_seed, hash_server_seed
 # =============================================================================
 
 app = FastAPI(
-    title="NEON VINYL: GHOST GROOVES",
+    title="Wolfie Groove",
     description="High-volatility 7x7 Cluster Pays Slot Game - Stake Engine API",
     version="1.0.0",
     docs_url="/docs",
@@ -217,7 +217,7 @@ async def root():
     """Health check endpoint."""
     return {
         "status": "ok",
-        "game": "NEON VINYL: GHOST GROOVES",
+        "game": "Wolfie Groove",
         "version": "1.0.0",
         "engine": "Stake Engine (Carrot)"
     }
@@ -237,7 +237,7 @@ async def health_check():
 async def get_game_info():
     """Get game configuration and paytable."""
     return GameInfoResponse(
-        name="NEON VINYL: GHOST GROOVES",
+        name="Wolfie Groove",
         version="1.0.0",
         gridSize={"rows": GRID_ROWS, "cols": GRID_COLS},
         minBet=MIN_BET,
@@ -616,6 +616,122 @@ async def buy_bonus(request: BonusBuyRequest):
     )
 
 
+class BonusTriggerSpinRequest(BaseModel):
+    """Request for bonus trigger spin (shows scatters landing)."""
+    sessionID: str
+    bonusId: str  # e.g., "free_spins_8" or "free_spins_12"
+    clientSeed: str
+    betAmount: float = Field(DEFAULT_BET)
+
+
+class BonusTriggerSpinResponse(BaseModel):
+    """Response for bonus trigger spin."""
+    success: bool
+    cost: float
+    balance: float
+    # Spin result to animate
+    payoutMultiplier: float
+    payoutAmount: float
+    events: List[Dict[str, Any]]
+    initialGrid: List[List[str]]
+    finalGrid: List[List[str]]
+    finalMultipliers: List[List[int]]
+    tumbleCount: int
+    maxMultiplier: int
+    seedInfo: Dict[str, Any]
+    nonce: int
+    freeSpinsTriggered: int
+    freeSpinsRemaining: int
+    scatterCount: int
+
+
+@app.post("/bonus/trigger-spin", response_model=BonusTriggerSpinResponse, tags=["Bonus"])
+async def bonus_trigger_spin(request: BonusTriggerSpinRequest):
+    """
+    Execute a bonus trigger spin - shows the grid spinning and landing on scatters.
+
+    This endpoint:
+    1. Deducts the bonus cost
+    2. Generates a grid with forced scatters (3 or 4)
+    3. Returns the spin result for animation
+    4. Sets up free spins state
+
+    The frontend should animate the real grid with this result,
+    then show the rules popup.
+    """
+    if request.bonusId not in BONUS_BUY_OPTIONS:
+        raise StakeError(StakeErrorCode.ERR_VAL, f"Invalid bonus ID: {request.bonusId}")
+
+    session = get_or_create_session(request.sessionID)
+    bonus = BONUS_BUY_OPTIONS[request.bonusId]
+
+    # Check if already in free spins
+    if session["free_spins_remaining"] > 0:
+        raise StakeError(StakeErrorCode.ERR_VAL, "Cannot buy bonus during free spins")
+
+    # Determine scatter count from bonus type
+    scatter_count = 4 if request.bonusId == "free_spins_12" else 3
+
+    # Calculate cost
+    bet_amount = request.betAmount
+    cost = bonus.cost_multiplier * bet_amount
+
+    # Check balance
+    if session["balance"] < cost:
+        raise StakeError(
+            StakeErrorCode.ERR_IPB,
+            f"Insufficient balance. Required: {cost}, Available: {session['balance']}"
+        )
+
+    # Deduct cost
+    session["balance"] -= cost
+
+    # Get nonce
+    nonce = session["nonce"]
+
+    # Run the bonus trigger spin (forced scatters)
+    result = run_bonus_trigger_spin(
+        server_seed=session["server_seed"],
+        client_seed=request.clientSeed,
+        nonce=nonce,
+        bet_amount=bet_amount,
+        scatter_count=scatter_count
+    )
+
+    # Update nonce
+    session["nonce"] = nonce + 1
+
+    # Set up free spins state
+    session["free_spins_remaining"] = result.free_spins_triggered
+    session["free_spin_bet_amount"] = bet_amount
+    session["free_spin_total_win"] = 0.0
+
+    # For super bonus (4 scatters), start with x2 multipliers
+    if scatter_count == 4:
+        session["free_spin_multipliers"] = [[2 for _ in range(GRID_COLS)] for _ in range(GRID_ROWS)]
+    else:
+        session["free_spin_multipliers"] = None
+
+    return BonusTriggerSpinResponse(
+        success=True,
+        cost=cost,
+        balance=session["balance"],
+        payoutMultiplier=result.payout_multiplier,
+        payoutAmount=0.0,
+        events=[e.to_dict() for e in result.events],
+        initialGrid=result.initial_grid,
+        finalGrid=result.final_grid,
+        finalMultipliers=result.final_multipliers,
+        tumbleCount=result.tumble_count,
+        maxMultiplier=result.max_multiplier,
+        seedInfo=result.seed_data.to_dict(),
+        nonce=nonce,
+        freeSpinsTriggered=result.free_spins_triggered,
+        freeSpinsRemaining=result.free_spins_remaining,
+        scatterCount=scatter_count
+    )
+
+
 @app.get("/jackpot/info", tags=["Jackpot"])
 async def get_jackpot_info(session_id: Optional[str] = None):
     """
@@ -679,7 +795,7 @@ async def list_sessions():
 async def startup_event():
     """Initialize on startup."""
     print("=" * 60)
-    print("NEON VINYL: GHOST GROOVES - Stake Engine")
+    print("Wolfie Groove - Stake Engine")
     print("=" * 60)
     print(f"Grid: {GRID_ROWS}x{GRID_COLS}")
     print(f"Min Bet: {MIN_BET} | Max Bet: {MAX_BET}")

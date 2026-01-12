@@ -1,0 +1,191 @@
+/* WILD WHEEL - Simple & Working */
+
+.ww-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.92);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s;
+}
+
+.ww-overlay.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.ww-modal {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 20px;
+}
+
+.ww-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 38px;
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 0 0 20px #ff00ff, 0 0 40px #ff00ff;
+}
+
+/* Wheel container */
+.ww-wheel-area {
+  position: relative;
+  width: 300px;
+  height: 300px;
+}
+
+/* Pointer - triangle at top */
+.ww-pointer {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  width: 0;
+  height: 0;
+  border-left: 18px solid transparent;
+  border-right: 18px solid transparent;
+  border-top: 40px solid #ffd700;
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.5)) drop-shadow(0 0 15px #ffd700);
+}
+
+/* The wheel */
+.ww-wheel {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  position: relative;
+  background: conic-gradient(
+    from 0deg,
+    #e74c3c 0deg 45deg,
+    #3498db 45deg 90deg,
+    #2ecc71 90deg 135deg,
+    #9b59b6 135deg 180deg,
+    #f39c12 180deg 225deg,
+    #1abc9c 225deg 270deg,
+    #e91e63 270deg 315deg,
+    #f1c40f 315deg 360deg
+  );
+  box-shadow:
+    0 0 0 6px #333,
+    0 0 0 10px #ff00ff,
+    0 0 30px rgba(255, 0, 255, 0.5),
+    inset 0 0 30px rgba(0,0,0,0.3);
+}
+
+/* Labels positioned around the wheel */
+.ww-label {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 60px;
+  height: 30px;
+  margin-left: -30px;
+  margin-top: -15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 18px;
+  font-weight: 900;
+  color: #fff;
+  text-shadow: 1px 1px 2px #000, -1px -1px 2px #000, 0 0 10px rgba(0,0,0,0.8);
+  transform: rotate(calc(var(--i) * 45deg + 22.5deg)) translateY(-100px) rotate(calc(var(--i) * -45deg - 22.5deg));
+}
+
+/* Center circle */
+.ww-center {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 70px;
+  height: 70px;
+  background: linear-gradient(135deg, #1a0030 0%, #0a0015 100%);
+  border: 4px solid #ff00ff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 12px;
+  font-weight: 900;
+  color: #ff00ff;
+  text-shadow: 0 0 10px #ff00ff;
+  box-shadow: 0 0 20px #ff00ff;
+}
+
+/* Spin button */
+.ww-spin-btn {
+  padding: 16px 60px;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 22px;
+  font-weight: 900;
+  color: #000;
+  background: linear-gradient(180deg, #ffd700, #ff9500);
+  border: none;
+  border-radius: 40px;
+  cursor: pointer;
+  box-shadow: 0 5px 0 #b37400, 0 0 25px rgba(255, 200, 0, 0.5);
+  transition: transform 0.1s, box-shadow 0.1s;
+}
+
+.ww-spin-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 7px 0 #b37400, 0 0 35px rgba(255, 200, 0, 0.7);
+}
+
+.ww-spin-btn:active {
+  transform: translateY(3px);
+  box-shadow: 0 2px 0 #b37400;
+}
+
+/* Spinning text */
+.ww-spinning {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 20px;
+  color: #ffd700;
+  animation: blink 0.6s infinite;
+}
+
+@keyframes blink {
+  50% { opacity: 0.4; }
+}
+
+/* Result display */
+.ww-result {
+  text-align: center;
+  animation: popUp 0.4s ease-out;
+}
+
+@keyframes popUp {
+  0% { transform: scale(0); opacity: 0; }
+  80% { transform: scale(1.1); }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.ww-result-value {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 64px;
+  font-weight: 900;
+  color: #ffd700;
+  text-shadow: 0 0 30px #ffd700, 0 0 60px #ffd700;
+  animation: pulse 0.5s infinite alternate;
+}
+
+@keyframes pulse {
+  to { transform: scale(1.08); }
+}
+
+.ww-result-text {
+  font-family: 'Rajdhani', sans-serif;
+  font-size: 18px;
+  color: #fff;
+  margin-top: 8px;
+}

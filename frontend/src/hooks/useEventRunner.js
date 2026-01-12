@@ -241,10 +241,11 @@ const useEventRunner = () => {
 
   /**
    * Process FREE_SPINS_TRIGGER event
+   * @param {boolean} skipPopup - If true, don't show bonus trigger popup (used for bonus buy)
    */
-  const processFreeSpinsTrigger = useCallback(async (event) => {
-    console.log('EventRunner: FREE SPINS TRIGGERED!', event);
-    const { freeSpinsAwarded, positions, scatterCount, isRetrigger = false } = event;
+  const processFreeSpinsTrigger = useCallback(async (event, skipPopup = false) => {
+    console.log('EventRunner: FREE SPINS TRIGGERED!', event, 'skipPopup:', skipPopup);
+    const { freeSpinsAwarded, positions, scatterCount, isRetrigger = false, isBonusBuy = false } = event;
 
     // Play appropriate sound
     if (isRetrigger) {
@@ -259,10 +260,10 @@ const useEventRunner = () => {
     }
 
     // Wait a moment for scatter highlight
-    await sleep(500);
+    await sleep(800);
 
-    // Trigger bonus overlay (pass isRetrigger flag for different handling)
-    if (onBonusTriggerRef.current) {
+    // Trigger bonus overlay ONLY if not skipping and not a bonus buy
+    if (!skipPopup && !isBonusBuy && onBonusTriggerRef.current) {
       await onBonusTriggerRef.current({
         freeSpinsAwarded,
         scatterCount,
@@ -290,20 +291,24 @@ const useEventRunner = () => {
   }, [setCellMultiplier, getSpeedMultiplier]);
 
   /**
-   * Process WILD_EXPLOSION event - Wild explodes and multiplies adjacent cells by 64
+   * Process WILD_EXPLOSION event - Wild explodes and multiplies adjacent cells
+   * The multiplier is determined by a spinning wheel (from backend: wheelMultiplier)
    */
   const processWildExplosion = useCallback(async (event) => {
     const TIMING = getTiming(getSpeedMultiplier());
     console.log('EventRunner: Processing WILD EXPLOSION!', event);
-    const { wildPosition, affectedCells, cellDetails, explosionFactor } = event;
+    const { wildPosition, affectedCells, cellDetails, wheelMultiplier, explosionFactor } = event;
 
-    // Trigger explosion animation popup (awaits completion)
+    // Use wheelMultiplier from backend (new system) or fallback to explosionFactor (old system)
+    const multiplier = wheelMultiplier || explosionFactor || 64;
+
+    // Trigger wheel popup animation (awaits completion)
     if (onWildExplosionRef.current) {
       // Start the popup animation - this returns a promise that resolves when popup completes
       const popupPromise = onWildExplosionRef.current({
         wildPosition,
         affectedCells,
-        explosionFactor: explosionFactor || 64,
+        wheelMultiplier: multiplier,
         cellDetails,
       });
 
@@ -457,8 +462,9 @@ const useEventRunner = () => {
   /**
    * Process a single event
    * @param {boolean} skipWinRemoval - If true, don't remove symbols on win (handled separately)
+   * @param {boolean} isBonusBuy - If true, skip bonus trigger popup
    */
-  const processEvent = useCallback(async (event, skipWinRemoval = false) => {
+  const processEvent = useCallback(async (event, skipWinRemoval = false, isBonusBuy = false) => {
     switch (event.type) {
       case 'reveal':
         await processReveal(event);
@@ -476,7 +482,7 @@ const useEventRunner = () => {
         await processFill(event);
         break;
       case 'free_spins_trigger':
-        await processFreeSpinsTrigger(event);
+        await processFreeSpinsTrigger(event, isBonusBuy);
         break;
       case 'wild_explosion':
         await processWildExplosion(event);
@@ -499,9 +505,9 @@ const useEventRunner = () => {
       return;
     }
 
-    const { isBonusEnd = false, bonusTotalWin = 0 } = options;
+    const { isBonusEnd = false, bonusTotalWin = 0, isBonusBuy = false } = options;
 
-    console.log('EventRunner: Starting playback', response.events?.length, 'events');
+    console.log('EventRunner: Starting playback', response.events?.length, 'events', 'isBonusBuy:', isBonusBuy);
     setIsRunning(true);
     resetForNewSpin();
 
@@ -535,7 +541,7 @@ const useEventRunner = () => {
         // Non-win/multiplier events are processed directly
         if (event.type !== 'win' && event.type !== 'multiplier_upgrade') {
           console.log(`EventRunner: Processing ${event.type}`);
-          await processEvent(event);
+          await processEvent(event, false, isBonusBuy);
           i++;
           continue;
         }
@@ -565,24 +571,13 @@ const useEventRunner = () => {
 
         console.log(`EventRunner: Phase with ${phaseMultipliers.length} multipliers and ${phaseWins.length} wins`);
 
-        // Step 1: Show ALL multipliers first
-        for (const mult of phaseMultipliers) {
-          console.log(`EventRunner: Multiplier upgrade at [${mult.position}] to x${mult.value}`);
-          await processMultiplierUpgrade(mult);
-        }
-
-        // Small pause after multipliers to let them be visible
-        if (phaseMultipliers.length > 0) {
-          await sleep(200);
-        }
-
-        // Step 2: Play ALL win animations (without removal)
+        // Step 1: Play ALL win animations (without removal)
         for (const win of phaseWins) {
           console.log(`EventRunner: Win animation for ${win.symbol}`);
           await processWin(win, false); // false = don't remove
         }
 
-        // Step 3: Remove all winning cells at once
+        // Step 2: Remove all winning cells at once
         if (allWinPositions.size > 0) {
           const positionsToRemove = Array.from(allWinPositions).map(key => {
             const [row, col] = key.split('-').map(Number);
@@ -590,6 +585,17 @@ const useEventRunner = () => {
           });
           console.log(`EventRunner: Removing ${positionsToRemove.length} cells`);
           await removeCells(positionsToRemove);
+        }
+
+        // Step 3: Show ALL multipliers at once AFTER cells are removed
+        if (phaseMultipliers.length > 0) {
+          console.log(`EventRunner: Updating ${phaseMultipliers.length} multipliers at once`);
+          for (const mult of phaseMultipliers) {
+            const [row, col] = mult.position;
+            setCellMultiplier(row, col, mult.value);
+          }
+          // Brief pause to let multipliers be visible
+          await sleep(150);
         }
       }
 
@@ -656,8 +662,9 @@ const useEventRunner = () => {
         await onBonusEndRef.current({ totalWin: actualBonusTotalWin });
         // Reset free spins state AFTER summary is dismissed
         setFreeSpins(0, 0);
-      } else {
+      } else if (!isBonusBuy) {
         // Update free spins state normally (during bonus or when triggered)
+        // BUT NOT for bonus buy - App.jsx handles that when user clicks COMMENCER
         if (freeSpinsTriggered > 0 || isFreeSpin) {
           setFreeSpins(newFreeSpinsRemaining, freeSpinTotalWin);
         } else if (newFreeSpinsRemaining <= 0 && freeSpinsRemaining > 0) {
@@ -665,6 +672,7 @@ const useEventRunner = () => {
           setFreeSpins(0, 0);
         }
       }
+      // For isBonusBuy, App.jsx will call setFreeSpins when user clicks COMMENCER
 
     } catch (error) {
       console.error('EventRunner: Error', error);

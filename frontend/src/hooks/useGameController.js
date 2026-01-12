@@ -200,11 +200,56 @@ const useGameController = () => {
     }
   }, [sessionId, setSession]);
 
+  /**
+   * Bonus trigger spin - spins the grid and lands on scatters
+   * Returns result that can be animated with useEventRunner
+   * NOTE: Does NOT activate free spins - that happens when player clicks COMMENCER
+   */
+  const bonusTriggerSpin = useCallback(async (bonusId) => {
+    if (!sessionId) {
+      console.error('GameController: No session');
+      return null;
+    }
+
+    try {
+      console.log('GameController: Bonus trigger spin', bonusId);
+      setIsSpinning(true);
+
+      const result = await apiService.bonusTriggerSpin({
+        sessionID: sessionId,
+        bonusId,
+        clientSeed,
+        betAmount,
+      });
+
+      console.log('GameController: Bonus trigger result', {
+        scatterCount: result.scatterCount,
+        freeSpins: result.freeSpinsTriggered,
+        cost: result.cost,
+      });
+
+      // Update balance only - don't set free spins yet!
+      // Free spins will be activated when player clicks COMMENCER
+      setBalance(result.balance);
+
+      setIsSpinning(false);
+
+      // Return result for animation (includes freeSpinsTriggered for later use)
+      return result;
+
+    } catch (error) {
+      console.error('GameController: Bonus trigger spin error', error);
+      setIsSpinning(false);
+      throw error;
+    }
+  }, [sessionId, clientSeed, betAmount, setIsSpinning, setBalance]);
+
   return {
     spin,
     rotateSeed,
     initSession,
     buyBonus,
+    bonusTriggerSpin,
   };
 };
 

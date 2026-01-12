@@ -16,6 +16,36 @@ GRID_SIZE = 7
 MIN_CLUSTER_SIZE = 5
 MAX_MULTIPLIER = 1024
 
+# Wild Wheel multiplier weights (lower weight = rarer)
+# This determines what multiplier the wheel can land on
+WILD_WHEEL_MULTIPLIERS = [
+    (2, 30),      # x2 - most common (30%)
+    (4, 25),      # x4 - common (25%)
+    (8, 18),      # x8 - uncommon (18%)
+    (16, 12),     # x16 - rare (12%)
+    (32, 8),      # x32 - very rare (8%)
+    (64, 4),      # x64 - epic (4%)
+    (128, 2),     # x128 - legendary (2%)
+    (256, 0.8),   # x256 - mythic (0.8%)
+    (512, 0.15),  # x512 - ultra rare (0.15%)
+    (1024, 0.05), # x1024 - jackpot (0.05%)
+]
+
+def get_wild_wheel_multiplier() -> int:
+    """
+    Select a random multiplier for the Wild Wheel based on weighted probabilities.
+    Lower weights mean rarer (higher) multipliers.
+    """
+    total_weight = sum(weight for _, weight in WILD_WHEEL_MULTIPLIERS)
+    rand = random.random() * total_weight
+
+    for multiplier, weight in WILD_WHEEL_MULTIPLIERS:
+        rand -= weight
+        if rand <= 0:
+            return multiplier
+
+    return WILD_WHEEL_MULTIPLIERS[0][0]  # Fallback to lowest multiplier
+
 # Free spins configuration
 FREE_SPINS_TRIGGER = 3  # Minimum scatters to trigger
 FREE_SPINS_AWARDED = {
@@ -60,7 +90,8 @@ class Cluster:
 class WildExplosion:
     """Represents a Wild symbol explosion with affected cells."""
     wild_position: Tuple[int, int]  # Position where Wild exploded
-    affected_cells: List[Tuple[int, int]]  # Adjacent cells set to max multiplier
+    affected_cells: List[Tuple[int, int]]  # Adjacent cells affected by explosion
+    wheel_multiplier: int = 64  # The multiplier determined by the Wild Wheel
 
 
 @dataclass
@@ -364,10 +395,12 @@ class Grid:
     def apply_wild_explosions(self, wild_positions: List[Tuple[int, int]]) -> List[WildExplosion]:
         """
         Apply Wild explosion mechanic: when a Wild tumbles, all adjacent cells
-        get set to MAX_MULTIPLIER (x1024).
+        get a multiplier determined by the Wild Wheel (random weighted selection).
 
         Uses 8-directional adjacency (including diagonals).
         Returns list of WildExplosion objects for animation.
+        The wheel_multiplier is pre-determined here for provably fair gameplay,
+        but the frontend will show a spinning wheel animation.
         """
         explosions = []
 
@@ -380,21 +413,25 @@ class Grid:
         for wild_row, wild_col in wild_positions:
             affected_cells = []
 
+            # Get the wheel multiplier for this Wild explosion
+            wheel_multiplier = get_wild_wheel_multiplier()
+
             for dr, dc in directions:
                 new_row, new_col = wild_row + dr, wild_col + dc
 
                 # Check bounds
                 if 0 <= new_row < GRID_SIZE and 0 <= new_col < GRID_SIZE:
                     cell = self.cells[new_row][new_col]
-                    # Set to max multiplier
-                    cell.multiplier = MAX_MULTIPLIER
+                    # Set to the wheel-determined multiplier
+                    cell.multiplier = wheel_multiplier
                     cell.is_ghost_spot = True
                     affected_cells.append((new_row, new_col))
 
             if affected_cells:
                 explosions.append(WildExplosion(
                     wild_position=(wild_row, wild_col),
-                    affected_cells=affected_cells
+                    affected_cells=affected_cells,
+                    wheel_multiplier=wheel_multiplier
                 ))
 
         return explosions

@@ -1,24 +1,26 @@
 /* NEON VINYL: GHOST GROOVES - Global Styles */
 
 :root {
-  /* Neon Colors */
+  /* Neon Colors - More vibrant */
   --neon-pink: #ff00ff;
   --neon-blue: #00ffff;
   --neon-purple: #bf00ff;
-  --neon-green: #00ff66;
-  --neon-orange: #ff6600;
-  --neon-yellow: #ffff00;
+  --neon-green: #00ff88;
+  --neon-orange: #ff6b00;
+  --neon-yellow: #ffee00;
+  --neon-gold: #ffd700;
+  --neon-red: #ff3366;
 
-  /* Background Colors */
-  --bg-dark: #0a0a12;
-  --bg-darker: #050508;
-  --bg-card: #12121f;
-  --bg-card-hover: #1a1a2f;
+  /* Background Colors - Richer purples */
+  --bg-dark: #0d0518;
+  --bg-darker: #08020f;
+  --bg-card: #1a0a2e;
+  --bg-card-hover: #2d1050;
 
   /* Text Colors */
   --text-primary: #ffffff;
-  --text-secondary: #b0b0c0;
-  --text-muted: #606080;
+  --text-secondary: #c0b0d0;
+  --text-muted: #8070a0;
 
   /* Multiplier Colors */
   --mult-2x: #00ffff;

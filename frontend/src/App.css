@@ -26,36 +26,46 @@
 .glow {
   position: absolute;
   border-radius: 50%;
-  filter: blur(100px);
-  opacity: 0.3;
-  animation: float 20s ease-in-out infinite;
+  filter: blur(80px);
+  opacity: 0.5;
+  animation: float 15s ease-in-out infinite;
 }
 
 .glow-1 {
-  width: 400px;
-  height: 400px;
+  width: 500px;
+  height: 500px;
   background: var(--neon-pink);
-  top: -100px;
-  left: -100px;
+  top: -150px;
+  left: -150px;
   animation-delay: 0s;
 }
 
 .glow-2 {
-  width: 350px;
-  height: 350px;
+  width: 450px;
+  height: 450px;
   background: var(--neon-blue);
-  top: 50%;
-  right: -100px;
-  animation-delay: -7s;
+  top: 40%;
+  right: -150px;
+  animation-delay: -5s;
 }
 
 .glow-3 {
+  width: 400px;
+  height: 400px;
+  background: var(--neon-purple);
+  bottom: -100px;
+  left: 25%;
+  animation-delay: -10s;
+}
+
+.glow-4 {
   width: 300px;
   height: 300px;
-  background: var(--neon-purple);
-  bottom: -50px;
-  left: 30%;
-  animation-delay: -14s;
+  background: #ffd700;
+  top: 20%;
+  left: 60%;
+  opacity: 0.3;
+  animation-delay: -3s;
 }
 
 @keyframes float {
@@ -81,13 +91,13 @@
   align-items: center;
   gap: 0;
   z-index: 1;
-  background: rgba(10, 10, 18, 0.8);
-  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(26, 10, 46, 0.9) 0%, rgba(13, 5, 24, 0.95) 100%);
+  border-radius: 20px;
   box-shadow:
-    0 0 40px rgba(0, 0, 0, 0.5),
-    0 0 80px rgba(0, 255, 255, 0.1),
-    inset 0 0 60px rgba(0, 0, 0, 0.3);
-  border: 1px solid #333355;
+    0 0 60px rgba(255, 0, 255, 0.3),
+    0 0 100px rgba(0, 255, 255, 0.15),
+    inset 0 0 40px rgba(255, 0, 255, 0.1);
+  border: 2px solid rgba(255, 0, 255, 0.4);
   margin-top: 60px; /* Space for free spins counter */
 }
 

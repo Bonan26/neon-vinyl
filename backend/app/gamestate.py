@@ -1,5 +1,5 @@
 """
-NEON VINYL: GHOST GROOVES - Game State Engine
+Wolfie Groove - Game State Engine
 Stake Engine (Carrot) Standard - Math SDK Core
 
 This module contains the deterministic game logic.
@@ -394,20 +394,35 @@ class GridState:
             self.symbols[row][col] = None
         return wild_positions
 
-    def apply_wild_explosions(self, wild_positions: List[Tuple[int, int]]) -> List[Dict[str, Any]]:
+    def apply_wild_explosions(self, wild_positions: List[Tuple[int, int]], rng) -> List[Dict[str, Any]]:
         """
-        Apply Wild explosion mechanic: when a Wild tumbles, the Wild cell itself
-        plus all 8 adjacent cells (9 total) get their multiplier MULTIPLIED by 64.
+        Apply Wild Wheel mechanic: when a Wild tumbles, a wheel spins to determine
+        the multiplier for the Wild cell and all 8 adjacent cells (9 total).
 
-        Example: x2 becomes x128, x4 becomes x256, x1 becomes x64
+        Wheel probabilities (weighted):
+        - x2: 35%, x4: 25%, x8: 18%, x16: 10%
+        - x32: 6%, x64: 3.5%, x128: 1.5%, x256: 1%
 
         Args:
             wild_positions: List of positions where Wilds were removed
+            rng: Provably fair RNG for wheel spin
 
         Returns:
             List of explosion data for events
         """
-        WILD_EXPLOSION_FACTOR = 64  # Multiply existing multiplier by 64
+        # Wheel multipliers with weights (higher weight = more common)
+        WHEEL_OPTIONS = [
+            (2, 35),     # x2: 35%
+            (4, 25),     # x4: 25%
+            (8, 18),     # x8: 18%
+            (16, 10),    # x16: 10%
+            (32, 6),     # x32: 6%
+            (64, 3.5),   # x64: 3.5%
+            (128, 1.5),  # x128: 1.5%
+            (256, 1),    # x256: 1%
+        ]
+        TOTAL_WEIGHT = sum(w for _, w in WHEEL_OPTIONS)
+
         explosions = []
 
         # 8-directional: cardinal + diagonals
@@ -418,11 +433,20 @@ class GridState:
 
         for wild_row, wild_col in wild_positions:
             affected_cells = []
-            cell_details = []  # Track old and new multipliers for animation
+            cell_details = []
+
+            # Spin the wheel (provably fair)
+            wheel_roll = rng.random_float() * TOTAL_WEIGHT
+            wheel_multiplier = WHEEL_OPTIONS[0][0]
+            for mult, weight in WHEEL_OPTIONS:
+                wheel_roll -= weight
+                if wheel_roll <= 0:
+                    wheel_multiplier = mult
+                    break
 
             # First, include the Wild cell itself
             old_mult = self.multipliers[wild_row][wild_col]
-            new_mult = min(old_mult * WILD_EXPLOSION_FACTOR, MAX_MULTIPLIER)  # Cap at max
+            new_mult = min(old_mult * wheel_multiplier, MAX_MULTIPLIER)
             self.multipliers[wild_row][wild_col] = new_mult
             affected_cells.append([wild_row, wild_col])
             cell_details.append({
@@ -435,11 +459,9 @@ class GridState:
             for dr, dc in directions:
                 new_row, new_col = wild_row + dr, wild_col + dc
 
-                # Check bounds
                 if 0 <= new_row < self.rows and 0 <= new_col < self.cols:
-                    # Multiply existing multiplier by 64
                     old_mult = self.multipliers[new_row][new_col]
-                    new_mult = min(old_mult * WILD_EXPLOSION_FACTOR, MAX_MULTIPLIER)
+                    new_mult = min(old_mult * wheel_multiplier, MAX_MULTIPLIER)
                     self.multipliers[new_row][new_col] = new_mult
                     affected_cells.append([new_row, new_col])
                     cell_details.append({
@@ -448,12 +470,12 @@ class GridState:
                         "newMultiplier": new_mult
                     })
 
-            max_new_mult = max(d["newMultiplier"] for d in cell_details) if cell_details else WILD_EXPLOSION_FACTOR
+            max_new_mult = max(d["newMultiplier"] for d in cell_details) if cell_details else wheel_multiplier
             explosions.append({
                 "wildPosition": [wild_row, wild_col],
                 "affectedCells": affected_cells,
                 "cellDetails": cell_details,
-                "explosionFactor": WILD_EXPLOSION_FACTOR,
+                "wheelMultiplier": wheel_multiplier,
                 "maxNewMultiplier": max_new_mult
             })
 
@@ -740,9 +762,9 @@ def run_spin(
         # Remove winning symbols (returns Wild positions)
         wild_positions = grid_state.remove_symbols(all_winning_positions)
 
-        # Apply Wild explosions - set adjacent cells to MAX_MULTIPLIER
+        # Apply Wild Wheel - spin wheel to determine multiplier for 9 cells
         if wild_positions:
-            wild_explosions = grid_state.apply_wild_explosions(wild_positions)
+            wild_explosions = grid_state.apply_wild_explosions(wild_positions, rng)
             for explosion in wild_explosions:
                 events.append(GameEvent(
                     type=EventType.WILD_EXPLOSION.value,
@@ -841,3 +863,104 @@ def verify_spin(
     is_valid = abs(result.payout_multiplier - expected_payout) < 0.001
 
     return is_valid, result
+
+
+# =============================================================================
+# BONUS TRIGGER SPIN (Forced Scatters)
+# =============================================================================
+
+def run_bonus_trigger_spin(
+    server_seed: str,
+    client_seed: str,
+    nonce: int,
+    bet_amount: float,
+    scatter_count: int = 3
+) -> SpinResult:
+    """
+    Execute a spin that is guaranteed to land on exactly scatter_count scatters.
+    Used when buying a bonus - shows the grid spinning and landing on scatters.
+
+    Args:
+        server_seed: Server-generated secret seed
+        client_seed: Client-provided seed
+        nonce: Incrementing bet counter
+        bet_amount: Bet amount
+        scatter_count: Number of scatters to force (3 or 4)
+
+    Returns:
+        SpinResult with scatters on the grid (no tumble processing)
+    """
+    import random as py_random
+
+    # Initialize RNG
+    rng = create_rng(server_seed, client_seed, nonce)
+
+    # Generate initial grid (base game weights)
+    initial_symbols = rng.generate_grid(free_spin_mode=False)
+    grid_state = GridState(initial_symbols)
+
+    # Force exactly scatter_count scatters on random positions
+    # First, remove any existing scatters
+    for row in range(GRID_ROWS):
+        for col in range(GRID_COLS):
+            if grid_state.symbols[row][col] == Symbol.SCATTER:
+                # Replace with a random non-scatter symbol
+                grid_state.symbols[row][col] = rng.get_symbol(free_spin_mode=True)
+
+    # Now place exactly scatter_count scatters at random positions
+    # Use a seeded random for reproducibility
+    py_random.seed(f"{server_seed}{client_seed}{nonce}")
+    all_positions = [(r, c) for r in range(GRID_ROWS) for c in range(GRID_COLS)]
+    scatter_positions = py_random.sample(all_positions, scatter_count)
+
+    for row, col in scatter_positions:
+        grid_state.symbols[row][col] = Symbol.SCATTER
+
+    # Store final grid state
+    final_grid = grid_state.get_symbol_grid()
+
+    # Event collection
+    events: List[GameEvent] = []
+
+    # Add reveal event
+    events.append(GameEvent(
+        type=EventType.REVEAL.value,
+        data={
+            "positions": [[r, c] for r in range(GRID_ROWS) for c in range(GRID_COLS)],
+            "symbols": [s for row in final_grid for s in row]
+        }
+    ))
+
+    # Determine free spins from scatter count
+    free_spins_triggered = SCATTER_FREE_SPINS.get(
+        min(scatter_count, 6),
+        SCATTER_FREE_SPINS[6]
+    )
+
+    # Add free spins trigger event
+    events.append(GameEvent(
+        type=EventType.FREE_SPINS_TRIGGER.value,
+        data={
+            "scatterCount": scatter_count,
+            "positions": [[r, c] for r, c in scatter_positions],
+            "freeSpinsAwarded": free_spins_triggered,
+            "isRetrigger": False,
+            "isBonusBuy": True
+        }
+    ))
+
+    return SpinResult(
+        payout_multiplier=0.0,  # No payout for trigger spin
+        events=events,
+        initial_grid=final_grid,  # Same as final (no tumbles)
+        final_grid=final_grid,
+        final_multipliers=grid_state.get_multiplier_grid(),
+        tumble_count=0,
+        max_multiplier=1,
+        seed_data=rng.seed_data,
+        free_spins_triggered=free_spins_triggered,
+        free_spins_remaining=free_spins_triggered,
+        is_free_spin=False,
+        jackpot_won=None,
+        jackpot_amount=0.0
+    )

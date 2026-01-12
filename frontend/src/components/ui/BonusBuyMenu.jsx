@@ -29,7 +29,7 @@ const BONUS_OPTIONS = [
   },
 ];
 
-const BonusBuyMenu = ({ onBuyBonus, onStartBonusIntro, disabled }) => {
+const BonusBuyMenu = ({ onBuyBonus, onBonusTriggerSpin, disabled }) => {
   const showBonusMenu = useGameStore((state) => state.showBonusMenu);
   const toggleBonusMenu = useGameStore((state) => state.toggleBonusMenu);
   const balance = useGameStore((state) => state.balance);
@@ -62,24 +62,20 @@ const BonusBuyMenu = ({ onBuyBonus, onStartBonusIntro, disabled }) => {
 
     const bonusType = selectedBonus.id;
     const scatterCount = selectedBonus.scatters;
+    const bonusId = scatterCount === 3 ? 'free_spins_8' : 'free_spins_12';
 
     setSelectedBonus(null);
     toggleBonusMenu();
 
-    // Start the intro animation sequence
-    onStartBonusIntro?.({
+    // Call the trigger spin - this will:
+    // 1. Spin the real grid and land on scatters
+    // 2. Show the rules popup after animation
+    onBonusTriggerSpin?.({
+      bonusId,
       bonusType,
       scatterCount,
-      onComplete: async () => {
-        try {
-          const backendId = scatterCount === 3 ? 'free_spins_8' : 'free_spins_12';
-          await onBuyBonus(backendId);
-        } catch (error) {
-          alert('Échec de l\'achat: ' + error.message);
-        }
-      },
     });
-  }, [selectedBonus, onBuyBonus, onStartBonusIntro, toggleBonusMenu]);
+  }, [selectedBonus, onBonusTriggerSpin, toggleBonusMenu]);
 
   const handleCancelBuy = useCallback(() => {
     setSelectedBonus(null);

@@ -3,7 +3,7 @@
 # Starts both backend (FastAPI) and frontend (Vite) servers
 
 echo "========================================"
-echo "  NEON VINYL: GHOST GROOVES"
+echo "  WOLFIE GROOVE"
 echo "  Development Environment"
 echo "========================================"
 

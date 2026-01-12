@@ -548,6 +548,111 @@ class AudioService {
   }
 
   /**
+   * Play Wild Wheel spin sound - Epic wheel spinning experience
+   */
+  playWheelSpinSound() {
+    if (!this.isInitialized || !this.sfxEnabled) return;
+
+    const now = Tone.now();
+
+    // Epic intro fanfare
+    const fanfare = ['C4', 'E4', 'G4', 'C5', 'E5'];
+    fanfare.forEach((note, i) => {
+      this.sfxSynths.winChime.triggerAttackRelease(note, '16n', now + i * 0.1, 0.6);
+    });
+
+    // Dramatic building pad
+    this.sfxSynths.bigWin.triggerAttackRelease(['C3', 'G3', 'C4'], '2n', now, 0.4);
+
+    // Wheel clicking sounds - accelerating then decelerating
+    // Fast at start
+    for (let i = 0; i < 25; i++) {
+      const speed = Math.max(0.03, 0.03 + (i * 0.002));
+      const delay = i * speed;
+      const volume = 0.15 + (i * 0.01);
+      this.sfxSynths.coin.triggerAttackRelease('B6', '64n', now + 0.6 + delay, Math.min(volume, 0.35));
+    }
+
+    // Middle section - steady fast clicks
+    for (let i = 0; i < 30; i++) {
+      const delay = 1.2 + (i * 0.05);
+      this.sfxSynths.coin.triggerAttackRelease('A6', '64n', now + delay, 0.3);
+    }
+
+    // Slowing down - dramatic deceleration
+    for (let i = 0; i < 20; i++) {
+      const baseDelay = 2.7;
+      const decel = i * 0.08 + (i * i * 0.012);
+      this.sfxSynths.coin.triggerAttackRelease('G6', '32n', now + baseDelay + decel, 0.35);
+    }
+
+    // Tension building chord progression
+    this.sfxSynths.bigWin.triggerAttackRelease(['E3', 'B3', 'E4'], '2n', now + 1.5, 0.3);
+    this.sfxSynths.bigWin.triggerAttackRelease(['F3', 'C4', 'F4'], '2n', now + 2.5, 0.35);
+    this.sfxSynths.bigWin.triggerAttackRelease(['G3', 'D4', 'G4'], '1n', now + 3.5, 0.4);
+
+    // Rising anticipation notes
+    const rising = ['G4', 'A4', 'B4', 'C5', 'D5', 'E5'];
+    rising.forEach((note, i) => {
+      this.sfxSynths.winChime.triggerAttackRelease(note, '16n', now + 3 + (i * 0.15), 0.4 + (i * 0.05));
+    });
+  }
+
+  /**
+   * Play Wild Wheel result sound - Celebration based on multiplier
+   */
+  playWheelResultSound(multiplier = 2) {
+    if (!this.isInitialized || !this.sfxEnabled) return;
+
+    const now = Tone.now();
+
+    if (multiplier >= 128) {
+      // LEGENDARY WIN - x128 or x256
+      // Epic explosion of sound
+      this.sfxSynths.megaWin.triggerAttackRelease(['C3', 'G3', 'C4', 'E4', 'G4', 'C5'], '1n', now, 0.7);
+
+      // Triumphant fanfare
+      const melody = ['C5', 'E5', 'G5', 'C6', 'G5', 'C6', 'E6', 'G6'];
+      melody.forEach((note, i) => {
+        this.sfxSynths.winChime.triggerAttackRelease(note, '8n', now + 0.1 + i * 0.1, 0.8);
+      });
+
+      // Victory chord progression
+      this.sfxSynths.bigWin.triggerAttackRelease(['C4', 'E4', 'G4'], '2n', now + 0.5, 0.5);
+      this.sfxSynths.bigWin.triggerAttackRelease(['F4', 'A4', 'C5'], '2n', now + 1, 0.55);
+      this.sfxSynths.megaWin.triggerAttackRelease(['G4', 'B4', 'D5', 'G5'], '1n', now + 1.5, 0.6);
+
+    } else if (multiplier >= 64) {
+      // EPIC WIN - x64
+      this.sfxSynths.megaWin.triggerAttackRelease(['C4', 'E4', 'G4', 'C5'], '1n', now, 0.6);
+      const melody = ['C5', 'E5', 'G5', 'C6', 'E6'];
+      melody.forEach((note, i) => {
+        this.sfxSynths.winChime.triggerAttackRelease(note, '8n', now + 0.15 + i * 0.12, 0.7);
+      });
+      this.sfxSynths.bigWin.triggerAttackRelease(['G3', 'C4', 'E4'], '2n', now + 0.8, 0.5);
+
+    } else if (multiplier >= 16) {
+      // BIG WIN - x16 or x32
+      this.sfxSynths.bigWin.triggerAttackRelease(['G3', 'B3', 'D4', 'G4'], '2n', now, 0.55);
+      this.sfxSynths.winChime.triggerAttackRelease('G5', '4n', now + 0.15, 0.6);
+      this.sfxSynths.winChime.triggerAttackRelease('B5', '4n', now + 0.3, 0.6);
+      this.sfxSynths.winChime.triggerAttackRelease('D6', '4n', now + 0.45, 0.55);
+
+    } else if (multiplier >= 8) {
+      // GOOD WIN - x8
+      this.sfxSynths.bigWin.triggerAttackRelease(['E3', 'G3', 'B3'], '4n', now, 0.45);
+      this.sfxSynths.winChime.triggerAttackRelease('E5', '8n', now + 0.1, 0.5);
+      this.sfxSynths.winChime.triggerAttackRelease('G5', '8n', now + 0.2, 0.55);
+
+    } else {
+      // SMALL WIN - x2 or x4
+      this.sfxSynths.winChime.triggerAttackRelease('C5', '8n', now, 0.5);
+      this.sfxSynths.winChime.triggerAttackRelease('E5', '8n', now + 0.1, 0.5);
+      this.sfxSynths.winChime.triggerAttackRelease('G5', '8n', now + 0.2, 0.45);
+    }
+  }
+
+  /**
    * Create musical sequences
    */
   _createSequences() {

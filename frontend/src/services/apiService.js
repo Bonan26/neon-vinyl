@@ -149,6 +149,25 @@ const apiService = {
   },
 
   /**
+   * Bonus trigger spin - spins the grid and lands on scatters
+   * @param {Object} params
+   * @param {string} params.sessionID - Session ID
+   * @param {string} params.bonusId - Bonus feature ID (free_spins_8 or free_spins_12)
+   * @param {string} params.clientSeed - Client seed for provably fair
+   * @param {number} params.betAmount - Bet amount for cost calculation
+   * @returns {Promise<BonusTriggerSpinResponse>}
+   */
+  async bonusTriggerSpin({ sessionID, bonusId, clientSeed, betAmount }) {
+    const response = await api.post('/bonus/trigger-spin', {
+      sessionID,
+      bonusId,
+      clientSeed,
+      betAmount,
+    });
+    return response.data;
+  },
+
+  /**
    * Get current jackpot information
    * @param {string} [sessionId] - Optional session ID
    * @returns {Promise<{jackpots: Object}>}

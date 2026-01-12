@@ -47,6 +47,9 @@ const ControlPanel = ({
   const [showAutoSpinMenu, setShowAutoSpinMenu] = useState(false);
   const [selectedSpeed, setSelectedSpeed] = useState(AutoSpinSpeed.NORMAL);
 
+  // Autospin pending state (ready but not started)
+  const [autoSpinPending, setAutoSpinPending] = useState(null); // { count, speed }
+
   // Button disabled if: explicitly disabled, spinning, animating, or insufficient balance
   const canSpin = !disabled && !isSpinning && !isAnimating && balance >= betAmount;
 
@@ -64,17 +67,43 @@ const ControlPanel = ({
   }, [betAmount, setBetAmount]);
 
   const handleAutoSpinSelect = useCallback((count) => {
-    startAutoSpin(count, selectedSpeed);
+    // Don't start immediately - set as pending
+    setAutoSpinPending({ count, speed: selectedSpeed });
     setShowAutoSpinMenu(false);
-  }, [startAutoSpin, selectedSpeed]);
+  }, [selectedSpeed]);
 
   const handleStopAutoSpin = useCallback(() => {
     stopAutoSpin();
+    setAutoSpinPending(null);
   }, [stopAutoSpin]);
+
+  const handleCancelPendingAutoSpin = useCallback(() => {
+    setAutoSpinPending(null);
+  }, []);
 
   const handleSpeedSelect = useCallback((speed) => {
     setSelectedSpeed(speed);
-  }, []);
+    // Update pending if exists
+    if (autoSpinPending) {
+      setAutoSpinPending({ ...autoSpinPending, speed });
+    }
+  }, [autoSpinPending]);
+
+  // Handle spin button click - starts autospin if pending
+  const handleSpinClick = useCallback(() => {
+    if (autoSpinPending) {
+      // Start autospin with pending settings
+      startAutoSpin(autoSpinPending.count, autoSpinPending.speed);
+      setAutoSpinPending(null);
+    }
+    // Always call onSpin to do the actual spin
+    onSpin();
+  }, [autoSpinPending, startAutoSpin, onSpin]);
+
+  // Get pending speed color for animation
+  const pendingSpeedColor = autoSpinPending
+    ? SPEED_OPTIONS.find(s => s.id === autoSpinPending.speed)?.color || '#ff00ff'
+    : null;
 
   const toggleMute = useCallback(() => {
     if (onMusicToggle) {
@@ -194,15 +223,28 @@ const ControlPanel = ({
           {/* Auto-Spin Button */}
           <div className="hud-btn-wrapper">
             <button
-              className={`hud-btn auto-spin-btn ${autoSpinActive ? 'active' : ''}`}
-              onClick={() => autoSpinActive ? handleStopAutoSpin() : setShowAutoSpinMenu(!showAutoSpinMenu)}
+              className={`hud-btn auto-spin-btn ${autoSpinActive ? 'active' : ''} ${autoSpinPending ? 'pending' : ''}`}
+              onClick={() => {
+                if (autoSpinActive) {
+                  handleStopAutoSpin();
+                } else if (autoSpinPending) {
+                  handleCancelPendingAutoSpin();
+                } else {
+                  setShowAutoSpinMenu(!showAutoSpinMenu);
+                }
+              }}
               disabled={isSpinning || freeSpinsRemaining > 0}
-              title="Auto Spin"
+              title={autoSpinPending ? "Cancel Auto Spin" : "Auto Spin"}
+              style={autoSpinPending ? { '--pending-color': pendingSpeedColor } : {}}
             >
               {autoSpinActive ? (
                 <span className="auto-count" style={{ color: SPEED_OPTIONS.find(s => s.id === autoSpinSpeed)?.color }}>
                   {autoSpinRemaining === Infinity ? '∞' : autoSpinRemaining}
                 </span>
+              ) : autoSpinPending ? (
+                <svg viewBox="0 0 24 24" fill="currentColor" style={{ color: pendingSpeedColor }}>
+                  <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+                </svg>
               ) : (
                 <svg viewBox="0 0 24 24" fill="currentColor">
                   <path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z" />
@@ -244,23 +286,39 @@ const ControlPanel = ({
           </div>
 
           {/* Spin Button */}
-          <button
-            className={`spin-button ${isSpinning ? 'spinning' : ''} ${!canSpin ? 'disabled' : ''}`}
-            onClick={onSpin}
-            disabled={!canSpin}
-          >
-            <span className="spin-inner">
-              {isSpinning ? (
-                <svg className="spin-icon rotating" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z" />
-                </svg>
-              ) : (
-                <svg className="spin-icon" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M8 5v14l11-7z" />
-                </svg>
-              )}
-            </span>
-          </button>
+          <div className="spin-button-wrapper">
+            {/* Pending autospin animation ring */}
+            {autoSpinPending && (
+              <div
+                className="spin-pending-ring"
+                style={{ '--pending-color': pendingSpeedColor }}
+              >
+                <div className="pending-ring-inner" />
+                <div className="pending-ring-outer" />
+                <span className="pending-count">
+                  {autoSpinPending.count === Infinity ? '∞' : autoSpinPending.count}
+                </span>
+              </div>
+            )}
+            <button
+              className={`spin-button ${isSpinning ? 'spinning' : ''} ${!canSpin ? 'disabled' : ''} ${autoSpinPending ? 'has-pending' : ''}`}
+              onClick={handleSpinClick}
+              disabled={!canSpin}
+              style={autoSpinPending ? { '--pending-color': pendingSpeedColor } : {}}
+            >
+              <span className="spin-inner">
+                {isSpinning ? (
+                  <svg className="spin-icon rotating" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z" />
+                  </svg>
+                ) : (
+                  <svg className="spin-icon" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
+                )}
+              </span>
+            </button>
+          </div>
         </div>
       </div>
 

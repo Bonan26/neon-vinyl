@@ -13,7 +13,7 @@ import BonusBuyIntro from './components/ui/BonusBuyIntro';
 import FreeSpinsCounter from './components/ui/FreeSpinsCounter';
 import BonusOverlay from './components/ui/BonusOverlay';
 import IntroScreen from './components/ui/IntroScreen';
-import WildExplosionPopup from './components/ui/WildExplosionPopup';
+import WildWheelPopup from './components/ui/WildWheelPopup';
 import WinCelebration from './components/ui/WinCelebration';
 import useGameController from './hooks/useGameController';
 import useEventRunner from './hooks/useEventRunner';
@@ -23,7 +23,7 @@ import './App.css';
 
 function App() {
   // Game controller for API calls
-  const { spin, rotateSeed, buyBonus } = useGameController();
+  const { spin, rotateSeed, buyBonus, bonusTriggerSpin } = useGameController();
 
   // Event runner for animations
   const eventRunner = useEventRunner();
@@ -79,11 +79,10 @@ function App() {
     betAmount: 1,
   });
 
-  // Wild explosion popup state
-  const [wildExplosion, setWildExplosion] = useState({
+  // Wild wheel popup state (spinning wheel to determine multiplier)
+  const [wildWheel, setWildWheel] = useState({
     show: false,
-    position: null,
-    multiplier: 64,
+    targetMultiplier: 64,
   });
 
   // Bonus buy intro state
@@ -91,15 +90,15 @@ function App() {
     show: false,
     bonusType: 'standard',
     scatterCount: 3,
-    onComplete: null,
+    freeSpinsToActivate: 0,
   });
 
   // Track if we were in free spins (to detect when they end)
   const wasInFreeSpinsRef = useRef(false);
   const bonusTotalWinRef = useRef(0);
 
-  // Wild explosion popup resolve ref
-  const wildExplosionResolveRef = useRef(null);
+  // Wild wheel popup resolve ref
+  const wildWheelResolveRef = useRef(null);
 
   // Bonus overlay resolve ref (for summary popup)
   const bonusOverlayResolveRef = useRef(null);
@@ -150,17 +149,16 @@ function App() {
       setTimeout(() => setWinPopup(null), 1500);
     });
 
-    // Callback for wild explosion popup
-    setOnWildExplosion(async ({ wildPosition, affectedCells, newMultiplier }) => {
+    // Callback for wild wheel popup (spinning wheel to determine multiplier)
+    setOnWildExplosion(async ({ wildPosition, affectedCells, wheelMultiplier }) => {
       return new Promise((resolve) => {
-        setWildExplosion({
+        setWildWheel({
           show: true,
-          position: wildPosition,
-          multiplier: newMultiplier,
+          targetMultiplier: wheelMultiplier,
         });
-        // The popup component will call onComplete which resolves
+        // The wheel component will call onComplete which resolves
         // Store the resolve function so onComplete can call it
-        wildExplosionResolveRef.current = resolve;
+        wildWheelResolveRef.current = resolve;
       });
     });
 
@@ -194,14 +192,19 @@ function App() {
     }
   }, []);
 
-  // Handle wild explosion popup complete
-  const handleWildExplosionComplete = useCallback(() => {
-    setWildExplosion({ show: false, position: null, multiplier: 64 });
+  // Handle wild wheel popup complete
+  const handleWildWheelComplete = useCallback((multiplier) => {
+    setWildWheel({ show: false, targetMultiplier: 64 });
     // Resolve the promise to continue event processing
-    if (wildExplosionResolveRef.current) {
-      wildExplosionResolveRef.current();
-      wildExplosionResolveRef.current = null;
+    if (wildWheelResolveRef.current) {
+      wildWheelResolveRef.current();
+      wildWheelResolveRef.current = null;
     }
+  }, []);
+
+  // Handle wheel spin start - play wheel sound
+  const handleWheelSpinStart = useCallback(() => {
+    audioService.playWheelSpinSound?.();
   }, []);
 
   // Handle win celebration popup complete
@@ -431,34 +434,75 @@ function App() {
   }, [buyBonus]);
 
   /**
-   * Handle Start Bonus Intro Animation
+   * Handle Bonus Trigger Spin - spins the real grid then shows popup
    */
-  const handleStartBonusIntro = useCallback(({ bonusType, scatterCount, onComplete }) => {
+  const handleBonusTriggerSpin = useCallback(async ({ bonusId, bonusType, scatterCount }) => {
     // Reset bonus tracking for new bonus
     bonusTotalWinRef.current = 0;
 
-    setBonusIntro({
-      show: true,
-      bonusType,
-      scatterCount,
-      onComplete,
-    });
-  }, []);
+    try {
+      setIsAnimating(true);
+
+      // 1. Call the bonus trigger spin API (charges cost + forces scatters)
+      const result = await bonusTriggerSpin(bonusId);
+
+      if (!result) {
+        console.error('App: Bonus trigger spin failed');
+        setIsAnimating(false);
+        return;
+      }
+
+      // 2. Animate the grid with the result (shows scatters landing)
+      await playAllEvents(result, {
+        isBonusBuy: true,  // Flag to skip normal bonus trigger handling
+      });
+
+      // 3. After animation, show the popup (store info for when player clicks COMMENCER)
+      setBonusIntro({
+        show: true,
+        bonusType,
+        scatterCount,
+        freeSpinsToActivate: result.freeSpinsTriggered,  // Store for later activation
+      });
+
+    } catch (error) {
+      console.error('App: Bonus trigger spin error', error);
+      alert('Échec de l\'achat: ' + error.message);
+    } finally {
+      setIsAnimating(false);
+    }
+  }, [bonusTriggerSpin, playAllEvents, setIsAnimating]);
+
+  // Store actions for free spins
+  const setFreeSpins = useGameStore((state) => state.setFreeSpins);
+  const setMultiplierGrid = useGameStore((state) => state.setMultiplierGrid);
 
   /**
-   * Handle Bonus Intro Complete
+   * Handle Bonus Intro Complete - activate free spins when player clicks COMMENCER
    */
   const handleBonusIntroComplete = useCallback(() => {
-    const { onComplete } = bonusIntro;
+    const { freeSpinsToActivate, scatterCount } = bonusIntro;
+
+    // NOW activate the free spins (only when player clicks COMMENCER)
+    if (freeSpinsToActivate > 0) {
+      setFreeSpins(freeSpinsToActivate, 0);
+
+      // For 4 scatters (super bonus), set x2 multipliers
+      if (scatterCount === 4) {
+        const x2Grid = Array(7).fill(null).map(() => Array(7).fill(2));
+        setMultiplierGrid(x2Grid);
+      }
+    }
+
+    // Close the popup
     setBonusIntro({
       show: false,
       bonusType: 'standard',
       scatterCount: 3,
-      onComplete: null,
+      freeSpinsToActivate: 0,
     });
-    // Execute the onComplete callback (which calls buyBonus)
-    onComplete?.();
-  }, [bonusIntro]);
+    // Free spins will auto-start via the useEffect
+  }, [bonusIntro, setFreeSpins, setMultiplierGrid]);
 
   // Spin button should be disabled during spin or animation
   const canSpin = !isSpinning && !isAnimating && !isRunning;
@@ -475,6 +519,7 @@ function App() {
         <div className="glow glow-1" />
         <div className="glow glow-2" />
         <div className="glow glow-3" />
+        <div className="glow glow-4" />
       </div>
 
       {/* Bonus Active Indicator (shows during free spins) */}
@@ -519,7 +564,7 @@ function App() {
       {/* Bonus Buy Menu Modal */}
       <BonusBuyMenu
         onBuyBonus={handleBuyBonus}
-        onStartBonusIntro={handleStartBonusIntro}
+        onBonusTriggerSpin={handleBonusTriggerSpin}
         disabled={isSpinning || isAnimating}
       />
 
@@ -540,12 +585,12 @@ function App() {
         onComplete={handleBonusOverlayComplete}
       />
 
-      {/* Wild Explosion Popup */}
-      <WildExplosionPopup
-        show={wildExplosion.show}
-        position={wildExplosion.position}
-        multiplier={wildExplosion.multiplier}
-        onComplete={handleWildExplosionComplete}
+      {/* Wild Wheel Popup (spinning wheel for multiplier) */}
+      <WildWheelPopup
+        show={wildWheel.show}
+        targetMultiplier={wildWheel.targetMultiplier}
+        onComplete={handleWildWheelComplete}
+        onSpinStart={handleWheelSpinStart}
       />
 
       {/* Win Celebration (Big Win Tier Popup) */}
