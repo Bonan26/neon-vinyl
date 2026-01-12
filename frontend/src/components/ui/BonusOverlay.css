@@ -362,84 +362,46 @@
 }
 
 /* ========================================= */
-/* RETRIGGER STYLES */
+/* RETRIGGER STYLES - Simple and Clean */
 /* ========================================= */
 
 .retrigger-container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 10px;
-  padding: 40px 60px;
-  background: radial-gradient(ellipse at center, rgba(0, 50, 0, 0.9) 0%, rgba(0, 20, 0, 0.95) 100%);
-  border: 3px solid #00ff00;
-  border-radius: 20px;
+  gap: 8px;
+  padding: 30px 50px;
+  background: linear-gradient(180deg, rgba(0, 200, 100, 0.95) 0%, rgba(0, 120, 60, 0.98) 100%);
+  border: 3px solid #00ff88;
+  border-radius: 16px;
   box-shadow:
-    0 0 40px rgba(0, 255, 0, 0.6),
-    0 0 80px rgba(0, 255, 0, 0.3),
-    inset 0 0 40px rgba(0, 255, 0, 0.1);
+    0 0 50px rgba(0, 255, 136, 0.7),
+    0 8px 32px rgba(0, 0, 0, 0.5);
 }
 
 .retrigger-title {
   font-family: 'Orbitron', 'Arial Black', sans-serif;
-  font-size: 48px;
-  font-weight: 900;
-  color: #00ff00;
-  text-shadow:
-    0 0 20px #00ff00,
-    0 0 40px #00ff00,
-    0 0 60px #00ff00;
-  letter-spacing: 8px;
-  animation: retriggerTitlePulse 0.3s ease-in-out infinite alternate;
-}
-
-@keyframes retriggerTitlePulse {
-  0% { transform: scale(1); text-shadow: 0 0 20px #00ff00, 0 0 40px #00ff00; }
-  100% { transform: scale(1.08); text-shadow: 0 0 30px #00ff00, 0 0 60px #00ff00, 0 0 80px #00ff00; }
-}
-
-.retrigger-spins {
-  font-family: 'Orbitron', monospace;
-  font-size: 80px;
+  font-size: 72px;
   font-weight: 900;
   color: #ffffff;
   text-shadow:
-    0 0 20px #00ff00,
-    0 0 40px #00ff00,
-    4px 4px 0 rgba(0, 0, 0, 0.5);
-  animation: retriggerSpinsBounce 0.5s ease-in-out infinite alternate;
+    0 0 20px rgba(255, 255, 255, 0.8),
+    0 4px 0 rgba(0, 80, 40, 0.8);
+  animation: retriggerPop 0.4s ease-out;
 }
 
-@keyframes retriggerSpinsBounce {
-  0% { transform: scale(1) translateY(0); }
-  100% { transform: scale(1.1) translateY(-5px); }
+@keyframes retriggerPop {
+  0% { transform: scale(0.5); opacity: 0; }
+  60% { transform: scale(1.1); }
+  100% { transform: scale(1); opacity: 1; }
 }
 
 .retrigger-subtitle {
   font-family: 'Rajdhani', sans-serif;
-  font-size: 24px;
+  font-size: 20px;
   font-weight: 700;
-  color: #88ff88;
-  letter-spacing: 6px;
+  color: #ffffff;
+  letter-spacing: 4px;
   text-transform: uppercase;
-  text-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
-}
-
-/* Retrigger scatter icons - smaller and more compact */
-.scatter-icons.retrigger {
-  gap: 15px;
-  margin-top: 15px;
-}
-
-.scatter-icons.retrigger .scatter-icon-wrapper {
-  width: 50px;
-  height: 50px;
-}
-
-.scatter-icons.retrigger .scatter-text {
-  font-size: 18px;
-}
-
-.scatter-icons.retrigger .scatter-icon-wrapper:nth-child(4) {
-  animation: scatterBounce 0.6s ease-out 0.4s both;
+  opacity: 0.9;
 }

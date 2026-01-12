@@ -7,6 +7,7 @@
 import { useCallback, useState, useRef } from 'react';
 import useGameStore, { SPEED_MULTIPLIERS } from '../stores/gameStore';
 import { GRID_ROWS, GRID_COLS } from '../config/gameConfig';
+import audioService from '../services/audioService';
 
 // Base animation timings (in milliseconds)
 const BASE_TIMING = {
@@ -159,6 +160,11 @@ const useEventRunner = () => {
     console.log('EventRunner: Processing win', event.amount, 'shouldRemove:', shouldRemove);
     const { positions, amount, symbol, size } = event;
 
+    // Play win sound
+    if (amount > 0) {
+      audioService.playWinSound();
+    }
+
     // Mark cells as winning
     for (const [row, col] of positions) {
       updateCell(row, col, { isWinning: true });
@@ -239,6 +245,13 @@ const useEventRunner = () => {
   const processFreeSpinsTrigger = useCallback(async (event) => {
     console.log('EventRunner: FREE SPINS TRIGGERED!', event);
     const { freeSpinsAwarded, positions, scatterCount, isRetrigger = false } = event;
+
+    // Play appropriate sound
+    if (isRetrigger) {
+      audioService.playRetriggerSound();
+    } else {
+      audioService.playScatterTriggerSound();
+    }
 
     // Highlight scatter positions
     for (const [row, col] of positions) {
@@ -350,6 +363,9 @@ const useEventRunner = () => {
     const { movements } = event;
 
     if (!movements || movements.length === 0) return;
+
+    // Play tumble sound
+    audioService.playTumbleSound();
 
     // Sort by column, then by destination row (process bottom-most first)
     const sortedMovements = [...movements].sort((a, b) => {
@@ -501,6 +517,14 @@ const useEventRunner = () => {
         freeSpinTotalWin = 0,
       } = response;
 
+      console.log('EventRunner: Response parsed', {
+        freeSpinTotalWin,
+        freeSpinsRemaining: newFreeSpinsRemaining,
+        isFreeSpin,
+        freeSpinsTriggered,
+        rawResponseFreeSpinTotalWin: response.freeSpinTotalWin
+      });
+
       // Group events into phases
       // A phase contains: multiplier_upgrades + wins, ending at tumble/fill/reveal
       // Order within phase: 1) ALL multipliers, 2) ALL wins (no removal), 3) remove all winning cells
@@ -592,14 +616,6 @@ const useEventRunner = () => {
         freeSpinTotalWin
       });
 
-      // Update free spins state AFTER animations
-      if (freeSpinsTriggered > 0 || isFreeSpin) {
-        setFreeSpins(newFreeSpinsRemaining, freeSpinTotalWin);
-      } else if (newFreeSpinsRemaining <= 0 && freeSpinsRemaining > 0) {
-        // Free spins just ended
-        setFreeSpins(0, 0);
-      }
-
       // Set final win using betAmount from store
       const totalWin = payoutMultiplier * betAmount;
       setLastWin(totalWin);
@@ -610,12 +626,17 @@ const useEventRunner = () => {
       }
 
       // Use either the detected bonus end OR the flag from App.jsx
-      // Use freeSpinTotalWin from response directly (most reliable)
       const shouldShowBonusSummary = bonusEnded || isBonusEnd;
-      // Use explicit number check - freeSpinTotalWin can be 0 which is falsy
-      const actualBonusTotalWin = typeof freeSpinTotalWin === 'number' && freeSpinTotalWin > 0
-        ? freeSpinTotalWin
-        : (typeof bonusTotalWin === 'number' && bonusTotalWin > 0 ? bonusTotalWin : 0);
+
+      // Capture the bonus total win BEFORE updating state
+      // Priority: response value > passed value > 0
+      // Use >= 0 check since 0 is a valid (though rare) total
+      let actualBonusTotalWin = 0;
+      if (typeof freeSpinTotalWin === 'number' && freeSpinTotalWin > 0) {
+        actualBonusTotalWin = freeSpinTotalWin;
+      } else if (typeof bonusTotalWin === 'number' && bonusTotalWin > 0) {
+        actualBonusTotalWin = bonusTotalWin;
+      }
 
       console.log('EventRunner: Complete', {
         totalWin,
@@ -623,14 +644,26 @@ const useEventRunner = () => {
         betAmount,
         shouldShowBonusSummary,
         actualBonusTotalWin,
-        freeSpinTotalWin,
-        bonusTotalWin
+        'response.freeSpinTotalWin': freeSpinTotalWin,
+        'options.bonusTotalWin': bonusTotalWin,
+        bonusEnded,
+        isBonusEnd
       });
 
-      // If bonus just ended, show summary
+      // If bonus just ended, show summary FIRST, then reset state
       if (shouldShowBonusSummary && onBonusEndRef.current) {
         console.log('EventRunner: Showing bonus end summary with total:', actualBonusTotalWin);
         await onBonusEndRef.current({ totalWin: actualBonusTotalWin });
+        // Reset free spins state AFTER summary is dismissed
+        setFreeSpins(0, 0);
+      } else {
+        // Update free spins state normally (during bonus or when triggered)
+        if (freeSpinsTriggered > 0 || isFreeSpin) {
+          setFreeSpins(newFreeSpinsRemaining, freeSpinTotalWin);
+        } else if (newFreeSpinsRemaining <= 0 && freeSpinsRemaining > 0) {
+          // Free spins just ended but no summary to show
+          setFreeSpins(0, 0);
+        }
       }
 
     } catch (error) {

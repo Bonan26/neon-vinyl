@@ -75,6 +75,7 @@
 
 /* Game Container */
 .game-container {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -87,6 +88,7 @@
     0 0 80px rgba(0, 255, 255, 0.1),
     inset 0 0 60px rgba(0, 0, 0, 0.3);
   border: 1px solid #333355;
+  margin-top: 60px; /* Space for free spins counter */
 }
 
 /* Stage Wrapper */

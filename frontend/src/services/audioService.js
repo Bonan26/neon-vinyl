@@ -12,6 +12,8 @@ class AudioService {
     this.synths = {};
     this.sequences = {};
     this.effects = {};
+    this.sfxSynths = {}; // Separate synths for sound effects
+    this.sfxEnabled = true;
   }
 
   /**
@@ -52,6 +54,9 @@ class AudioService {
 
     // Create synths
     this._createSynths();
+
+    // Create SFX synths
+    this._createSFXSynths();
 
     // Create sequences
     this._createSequences();
@@ -239,6 +244,307 @@ class AudioService {
       },
       volume: -14,
     }).connect(this.masterVolume);
+  }
+
+  /**
+   * Create SFX synthesizers for win sounds
+   * Designed for pleasant, classic slot machine sounds
+   */
+  _createSFXSynths() {
+    // SFX volume (connects directly to destination, not music effects)
+    this.sfxVolume = new Tone.Volume(-6).toDestination();
+
+    // SFX reverb - warm and spacious
+    this.sfxReverb = new Tone.Reverb({
+      decay: 2,
+      wet: 0.3,
+    }).connect(this.sfxVolume);
+
+    // Win chime synth - warm bell-like tones (vibraphone-ish)
+    this.sfxSynths.winChime = new Tone.PolySynth(Tone.Synth, {
+      oscillator: { type: 'sine' },
+      envelope: {
+        attack: 0.005,
+        decay: 0.5,
+        sustain: 0.1,
+        release: 0.8,
+      },
+      volume: -10,
+    }).connect(this.sfxReverb);
+
+    // Coin sound - softer, more pleasant bell
+    this.sfxSynths.coin = new Tone.PolySynth(Tone.Synth, {
+      oscillator: { type: 'sine' },
+      envelope: {
+        attack: 0.001,
+        decay: 0.15,
+        sustain: 0,
+        release: 0.3,
+      },
+      volume: -14,
+    }).connect(this.sfxReverb);
+
+    // Big win synth - warm pad with gentle attack
+    this.sfxSynths.bigWin = new Tone.PolySynth(Tone.Synth, {
+      oscillator: { type: 'triangle' },
+      envelope: {
+        attack: 0.1,
+        decay: 0.5,
+        sustain: 0.4,
+        release: 1.5,
+      },
+      volume: -10,
+    }).connect(this.sfxReverb);
+
+    // Mega win - rich layered sound (sine + triangle for warmth)
+    this.sfxSynths.megaWin = new Tone.PolySynth(Tone.Synth, {
+      oscillator: { type: 'sine' },
+      envelope: {
+        attack: 0.08,
+        decay: 0.6,
+        sustain: 0.5,
+        release: 2,
+      },
+      volume: -8,
+    }).connect(this.sfxReverb);
+
+    // Scatter/bonus trigger - magical sparkle (higher, lighter)
+    this.sfxSynths.scatter = new Tone.PolySynth(Tone.Synth, {
+      oscillator: { type: 'sine' },
+      envelope: {
+        attack: 0.02,
+        decay: 0.4,
+        sustain: 0.2,
+        release: 1,
+      },
+      volume: -8,
+    }).connect(this.sfxReverb);
+
+    // Whoosh sound for tumbles - softer
+    this.sfxSynths.whoosh = new Tone.NoiseSynth({
+      noise: { type: 'pink' },
+      envelope: {
+        attack: 0.03,
+        decay: 0.12,
+        sustain: 0,
+        release: 0.1,
+      },
+      volume: -24,
+    }).connect(this.sfxVolume);
+
+    // Retrigger synth - bright and exciting
+    this.sfxSynths.retrigger = new Tone.PolySynth(Tone.Synth, {
+      oscillator: { type: 'sine' },
+      envelope: {
+        attack: 0.01,
+        decay: 0.2,
+        sustain: 0.15,
+        release: 0.5,
+      },
+      volume: -8,
+    }).connect(this.sfxReverb);
+  }
+
+  // =====================
+  // SOUND EFFECTS METHODS
+  // =====================
+
+  /**
+   * Enable/disable sound effects
+   */
+  setSFXEnabled(enabled) {
+    this.sfxEnabled = enabled;
+  }
+
+  /**
+   * Play small win sound (cluster win)
+   */
+  playWinSound() {
+    if (!this.isInitialized || !this.sfxEnabled) return;
+
+    const now = Tone.now();
+    // Simple pleasant ascending chime
+    this.sfxSynths.winChime.triggerAttackRelease('E5', '8n', now, 0.6);
+    this.sfxSynths.winChime.triggerAttackRelease('G5', '8n', now + 0.08, 0.7);
+    this.sfxSynths.winChime.triggerAttackRelease('C6', '8n', now + 0.16, 0.8);
+    // Soft coin ding
+    this.sfxSynths.coin.triggerAttackRelease('G6', '16n', now + 0.12, 0.5);
+  }
+
+  /**
+   * Play big win sound (2x-5x bet)
+   */
+  playBigWinSound() {
+    if (!this.isInitialized || !this.sfxEnabled) return;
+
+    const now = Tone.now();
+    // Warm pad foundation
+    this.sfxSynths.bigWin.triggerAttackRelease(['C4', 'E4', 'G4'], '2n', now, 0.6);
+
+    // Pleasant ascending arpeggio
+    const arp = ['C5', 'E5', 'G5', 'C6'];
+    arp.forEach((note, i) => {
+      this.sfxSynths.winChime.triggerAttackRelease(note, '8n', now + 0.15 + (i * 0.12), 0.7);
+    });
+
+    // Soft coin sounds
+    this.sfxSynths.coin.triggerAttackRelease('A6', '16n', now + 0.2, 0.4);
+    this.sfxSynths.coin.triggerAttackRelease('E6', '16n', now + 0.4, 0.5);
+  }
+
+  /**
+   * Play mega win sound (5x+ bet) - warm, satisfying jackpot sound
+   */
+  playMegaWinSound() {
+    if (!this.isInitialized || !this.sfxEnabled) return;
+
+    const now = Tone.now();
+
+    // Rich pad foundation
+    this.sfxSynths.megaWin.triggerAttackRelease(['C3', 'G3', 'C4'], '1n', now, 0.5);
+
+    // First ascending phrase (C major)
+    const melody1 = ['C5', 'E5', 'G5', 'C6'];
+    melody1.forEach((note, i) => {
+      this.sfxSynths.winChime.triggerAttackRelease(note, '8n', now + (i * 0.18), 0.8);
+    });
+
+    // Second phrase (moving up to G)
+    const melody2 = ['D5', 'G5', 'B5', 'D6'];
+    melody2.forEach((note, i) => {
+      this.sfxSynths.winChime.triggerAttackRelease(note, '8n', now + 0.8 + (i * 0.18), 0.85);
+    });
+
+    // Final resolution chord
+    this.sfxSynths.winChime.triggerAttackRelease(['C5', 'E5', 'G5', 'C6'], '2n', now + 1.6, 0.9);
+
+    // Gentle coin cascade
+    const coinNotes = ['G6', 'E6', 'C6', 'G5'];
+    coinNotes.forEach((note, i) => {
+      this.sfxSynths.coin.triggerAttackRelease(note, '16n', now + 0.5 + (i * 0.3), 0.4);
+    });
+  }
+
+  /**
+   * Play super mega win sound (15x+ bet) - epic celebration
+   */
+  playSuperMegaWinSound() {
+    if (!this.isInitialized || !this.sfxEnabled) return;
+
+    const now = Tone.now();
+
+    // Deep pad foundation building
+    this.sfxSynths.megaWin.triggerAttackRelease(['G2', 'D3', 'G3'], '1n', now, 0.4);
+    this.sfxSynths.megaWin.triggerAttackRelease(['C3', 'G3', 'C4'], '1n', now + 1, 0.5);
+
+    // First ascending phrase
+    const melody1 = ['G4', 'B4', 'D5', 'G5'];
+    melody1.forEach((note, i) => {
+      this.sfxSynths.winChime.triggerAttackRelease(note, '8n', now + (i * 0.15), 0.7);
+    });
+
+    // Second phrase higher
+    const melody2 = ['A4', 'C5', 'E5', 'A5'];
+    melody2.forEach((note, i) => {
+      this.sfxSynths.winChime.triggerAttackRelease(note, '8n', now + 0.7 + (i * 0.15), 0.75);
+    });
+
+    // Third phrase climax
+    const melody3 = ['B4', 'D5', 'G5', 'B5'];
+    melody3.forEach((note, i) => {
+      this.sfxSynths.winChime.triggerAttackRelease(note, '8n', now + 1.4 + (i * 0.15), 0.8);
+    });
+
+    // Epic final resolution
+    this.sfxSynths.winChime.triggerAttackRelease(['C5', 'E5', 'G5', 'C6'], '2n', now + 2.1, 0.9);
+
+    // Sparkle cascade at the end
+    const sparkle = ['G5', 'C6', 'E6', 'G6'];
+    sparkle.forEach((note, i) => {
+      this.sfxSynths.winChime.triggerAttackRelease(note, '16n', now + 2.6 + (i * 0.12), 0.6);
+    });
+
+    // Coin cascade
+    const coinNotes = ['G6', 'C6', 'E6', 'G6', 'C7'];
+    coinNotes.forEach((note, i) => {
+      this.sfxSynths.coin.triggerAttackRelease(note, '16n', now + 0.8 + (i * 0.25), 0.35);
+    });
+  }
+
+  /**
+   * Play scatter/free spins trigger sound
+   */
+  playScatterTriggerSound() {
+    if (!this.isInitialized || !this.sfxEnabled) return;
+
+    const now = Tone.now();
+    // Magical rising arpeggio
+    const rising = ['C4', 'E4', 'G4', 'C5', 'E5'];
+    rising.forEach((note, i) => {
+      this.sfxSynths.scatter.triggerAttackRelease(note, '8n', now + (i * 0.15), 0.7 + (i * 0.05));
+    });
+
+    // High sparkle flourish
+    const sparkle = ['G5', 'C6', 'E6'];
+    sparkle.forEach((note, i) => {
+      this.sfxSynths.winChime.triggerAttackRelease(note, '8n', now + 0.8 + (i * 0.1), 0.8);
+    });
+  }
+
+  /**
+   * Play retrigger sound (during free spins)
+   */
+  playRetriggerSound() {
+    if (!this.isInitialized || !this.sfxEnabled) return;
+
+    const now = Tone.now();
+    // Bright exciting burst
+    this.sfxSynths.retrigger.triggerAttackRelease(['G4', 'B4', 'D5'], '8n', now, 0.7);
+    this.sfxSynths.retrigger.triggerAttackRelease(['C5', 'E5', 'G5'], '4n', now + 0.15, 0.8);
+
+    // Quick sparkle
+    this.sfxSynths.winChime.triggerAttackRelease('G5', '16n', now + 0.25, 0.7);
+    this.sfxSynths.winChime.triggerAttackRelease('C6', '16n', now + 0.35, 0.8);
+    this.sfxSynths.winChime.triggerAttackRelease('E6', '8n', now + 0.45, 0.9);
+  }
+
+  /**
+   * Play bonus complete/summary sound
+   */
+  playBonusCompleteSound() {
+    if (!this.isInitialized || !this.sfxEnabled) return;
+
+    const now = Tone.now();
+    // Triumphant warm pad
+    this.sfxSynths.megaWin.triggerAttackRelease(['C3', 'G3', 'C4'], '2n', now, 0.5);
+    this.sfxSynths.megaWin.triggerAttackRelease(['C4', 'E4', 'G4', 'C5'], '1n', now + 0.3, 0.6);
+
+    // Celebration sparkle cascade
+    const sparkle = ['C5', 'E5', 'G5', 'C6', 'E6'];
+    sparkle.forEach((note, i) => {
+      this.sfxSynths.winChime.triggerAttackRelease(note, '8n', now + 0.6 + (i * 0.12), 0.75);
+    });
+
+    // Final high note
+    this.sfxSynths.winChime.triggerAttackRelease('G6', '4n', now + 1.3, 0.8);
+  }
+
+  /**
+   * Play tumble/cascade sound
+   */
+  playTumbleSound() {
+    if (!this.isInitialized || !this.sfxEnabled) return;
+
+    this.sfxSynths.whoosh.triggerAttackRelease('8n');
+  }
+
+  /**
+   * Play coin counter tick sound (for win counter animation)
+   */
+  playCoinTick() {
+    if (!this.isInitialized || !this.sfxEnabled) return;
+
+    this.sfxSynths.coin.triggerAttackRelease('32n', Tone.now(), 0.3);
   }
 
   /**
@@ -497,6 +803,15 @@ class AudioService {
     Object.values(this.synths).forEach(synth => synth.dispose());
     Object.values(this.sequences).forEach(seq => seq.dispose());
     Object.values(this.effects).forEach(effect => effect.dispose());
+
+    // Clean up SFX synths
+    Object.values(this.sfxSynths).forEach(synth => synth.dispose());
+    if (this.sfxReverb) {
+      this.sfxReverb.dispose();
+    }
+    if (this.sfxVolume) {
+      this.sfxVolume.dispose();
+    }
 
     if (this.masterVolume) {
       this.masterVolume.dispose();

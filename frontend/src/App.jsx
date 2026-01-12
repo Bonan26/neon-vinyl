@@ -487,11 +487,10 @@ function App() {
         </div>
       )}
 
-      {/* Free Spins Counter (shows when active) */}
-      <FreeSpinsCounter />
-
       {/* Main Game Container */}
       <div className="game-container">
+        {/* Free Spins Counter (shows when active) - positioned above game */}
+        <FreeSpinsCounter />
         {/* Game Stage (PixiJS + GSAP) */}
         <div className="stage-wrapper">
           <GameStage onSpriteReady={handleSpriteReady} />

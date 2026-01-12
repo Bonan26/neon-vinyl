@@ -4,6 +4,7 @@
  */
 import React, { useEffect, useState, useRef } from 'react';
 import './WinCelebration.css';
+import audioService from '../../services/audioService';
 
 // Win tiers based on multiplier (win / bet)
 const WIN_TIERS = [
@@ -59,6 +60,19 @@ const WinCelebration = ({ show, amount, betAmount, onComplete }) => {
       // Reset skip flag for new animation
       isSkippingRef.current = false;
 
+      // Play appropriate sound based on tier
+      if (winMultiplier >= 25) {
+        // Super Mega, Insane, Legendary
+        audioService.playSuperMegaWinSound();
+      } else if (winMultiplier >= 10) {
+        // Mega, Super
+        audioService.playMegaWinSound();
+      } else if (winMultiplier >= 5) {
+        // Big
+        audioService.playBigWinSound();
+      }
+      // Nice tier (2x-5x) doesn't need extra fanfare, just the regular win sound
+
       // Generate particles
       const newParticles = Array.from({ length: 40 }, (_, i) => ({
         id: i,
@@ -76,46 +90,67 @@ const WinCelebration = ({ show, amount, betAmount, onComplete }) => {
       // Start animation
       setPhase('enter');
 
-      // Count up animation with tier progression
+      // SLOW tier progression - each tier gets significant screen time
       const tierIndex = WIN_TIERS.findIndex(t => t.name === tier.name);
-      const tiersToShow = WIN_TIERS.slice(tierIndex).reverse();
+      const tiersToShow = WIN_TIERS.slice(tierIndex).reverse(); // From lowest to highest
+      const numTiersToShow = tiersToShow.length;
 
-      let currentAmount = 0;
-      const countDuration = 2000; // 2 seconds to count up
-      const steps = 60;
-      const increment = amount / steps;
-      const stepTime = countDuration / steps;
+      console.log('WinCelebration: Starting with', numTiersToShow, 'tiers to show, final tier:', tier.name);
 
-      let step = 0;
+      // Each tier gets 1.5 seconds of display time minimum
+      const timePerTier = 1500;
+      const countDuration = numTiersToShow * timePerTier;
+
+      // Amount thresholds for each tier
+      const tierThresholds = tiersToShow.map(t => t.minMult * betAmount);
+
+      let currentTierShowIndex = 0;
+      let tierStartTime = Date.now();
+
+      // Start with first tier
+      setCurrentTierIndex(WIN_TIERS.findIndex(t => t.name === tiersToShow[0].name));
+      setDisplayedAmount(tierThresholds[0] || 0);
+
       countIntervalRef.current = setInterval(() => {
-        step++;
-        currentAmount = Math.min(amount, increment * step);
-        setDisplayedAmount(currentAmount);
+        const elapsed = Date.now() - tierStartTime;
+        const currentTierTime = elapsed % timePerTier;
+        const tiersSoFar = Math.floor(elapsed / timePerTier);
 
-        // Update tier as we count up
-        const currentMult = betAmount > 0 ? currentAmount / betAmount : 0;
-        const showTierIndex = tiersToShow.findIndex(t => currentMult >= t.minMult);
-        if (showTierIndex !== -1) {
-          setCurrentTierIndex(WIN_TIERS.length - 1 - showTierIndex);
+        // Move to next tier if enough time passed
+        if (tiersSoFar > currentTierShowIndex && tiersSoFar < numTiersToShow) {
+          currentTierShowIndex = tiersSoFar;
+          const newTier = tiersToShow[currentTierShowIndex];
+          setCurrentTierIndex(WIN_TIERS.findIndex(t => t.name === newTier.name));
+          console.log('WinCelebration: Moving to tier', newTier.name);
         }
 
-        if (step >= steps) {
+        // Animate amount within current tier
+        const currentThreshold = tierThresholds[currentTierShowIndex] || 0;
+        const nextThreshold = tierThresholds[currentTierShowIndex + 1] || amount;
+        const tierProgress = currentTierTime / timePerTier;
+
+        // Smoothly interpolate between thresholds
+        const displayAmount = currentThreshold + (nextThreshold - currentThreshold) * Math.min(tierProgress, 1);
+        setDisplayedAmount(Math.min(displayAmount, amount));
+
+        // Check if we're done
+        if (tiersSoFar >= numTiersToShow) {
           clearInterval(countIntervalRef.current);
           setDisplayedAmount(amount);
           setCurrentTierIndex(tierIndex);
         }
-      }, stepTime);
+      }, 50); // Update frequently for smooth animation
 
-      // Auto-dismiss after counting + display time
-      const displayTime = Math.min(3000 + winMultiplier * 50, 6000);
+      // Auto-dismiss after all tiers shown + extra display time
+      const totalTime = countDuration + 2000; // 2 extra seconds to admire final tier
       exitTimeoutRef.current = setTimeout(() => {
         setPhase('exit');
-      }, countDuration + displayTime);
+      }, totalTime);
 
       completeTimeoutRef.current = setTimeout(() => {
         setPhase('hidden');
         onComplete?.();
-      }, countDuration + displayTime + 500);
+      }, totalTime + 500);
     }
 
     return () => {

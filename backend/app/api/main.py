@@ -406,12 +406,15 @@ async def play(request: PlayRequest):
         # Update free spins state
         session["free_spins_remaining"] = result.free_spins_remaining
         session["free_spin_multipliers"] = result.final_multipliers
-        session["free_spin_total_win"] += payout_amount
+        session["free_spin_total_win"] = session.get("free_spin_total_win", 0.0) + payout_amount
 
-        # If free spins ended, reset
+        print(f"[FREE SPIN] Payout: {payout_amount}, Total: {session['free_spin_total_win']}, Remaining: {result.free_spins_remaining}")
+
+        # If free spins ended, keep total for response but reset other state
         if result.free_spins_remaining <= 0:
             session["free_spin_multipliers"] = None
             session["free_spin_bet_amount"] = 0.0
+            print(f"[FREE SPIN END] Final total win: {session['free_spin_total_win']}")
     elif result.free_spins_triggered > 0:
         # Triggered during free spins (retrigger)
         session["free_spins_remaining"] = result.free_spins_remaining
