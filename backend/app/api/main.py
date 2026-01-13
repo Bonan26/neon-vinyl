@@ -67,6 +67,9 @@ def get_or_create_session(session_id: str) -> Dict[str, Any]:
             "free_spin_multipliers": None,  # Carried multiplier grid
             "free_spin_bet_amount": 0.0,  # Bet amount locked during free spins
             "free_spin_total_win": 0.0,  # Accumulated win during free spins
+            # Boost state (Scatter Hunt / Wild Boost)
+            "scatter_boost_spins": 0,  # Remaining spins with 3x scatter chance
+            "wild_boost_spins": 0,     # Remaining spins with 5x wild chance
             # Jackpot tracking (simplified - in production use Redis)
             "jackpot_contributions": {tier: JACKPOT_TIERS[tier].seed_amount for tier in JACKPOT_TIERS}
         }
@@ -122,6 +125,9 @@ class PlayResponse(BaseModel):
     freeSpinsRemaining: int = 0
     isFreeSpin: bool = False
     freeSpinTotalWin: float = 0.0
+    # Boost info
+    scatterBoostSpins: int = 0
+    wildBoostSpins: int = 0
     # Jackpot info
     jackpotWon: Optional[str] = None
     jackpotAmount: float = 0.0
@@ -375,6 +381,10 @@ async def play(request: PlayRequest):
     # Use provided nonce or auto-increment
     nonce = request.nonce if request.nonce is not None else session["nonce"]
 
+    # Get boost state
+    scatter_boost = session.get("scatter_boost_spins", 0) > 0
+    wild_boost = session.get("wild_boost_spins", 0) > 0
+
     # Execute spin (deterministic Math SDK)
     result: SpinResult = run_spin(
         server_seed=session["server_seed"],
@@ -383,8 +393,17 @@ async def play(request: PlayRequest):
         bet_amount=bet_amount,
         free_spin_mode=free_spin_mode,
         free_spins_remaining=free_spins_remaining,
-        existing_multipliers=existing_multipliers
+        existing_multipliers=existing_multipliers,
+        scatter_boost=scatter_boost,
+        wild_boost=wild_boost
     )
+
+    # Decrement boost counters (only on base game, not free spins)
+    if not is_free_spin:
+        if session.get("scatter_boost_spins", 0) > 0:
+            session["scatter_boost_spins"] -= 1
+        if session.get("wild_boost_spins", 0) > 0:
+            session["wild_boost_spins"] -= 1
 
     # Calculate payout
     payout_amount = result.payout_multiplier * bet_amount
@@ -449,6 +468,8 @@ async def play(request: PlayRequest):
         freeSpinsRemaining=result.free_spins_remaining,
         isFreeSpin=is_free_spin,
         freeSpinTotalWin=session.get("free_spin_total_win", 0.0),
+        scatterBoostSpins=session.get("scatter_boost_spins", 0),
+        wildBoostSpins=session.get("wild_boost_spins", 0),
         jackpotWon=result.jackpot_won,
         jackpotAmount=result.jackpot_amount
     )
@@ -729,6 +750,75 @@ async def bonus_trigger_spin(request: BonusTriggerSpinRequest):
         freeSpinsTriggered=result.free_spins_triggered,
         freeSpinsRemaining=result.free_spins_remaining,
         scatterCount=scatter_count
+    )
+
+
+class BoostActivateRequest(BaseModel):
+    """Request to activate a boost feature."""
+    sessionID: str
+    boostType: str  # "scatter_boost" or "wild_boost"
+    betAmount: float = Field(DEFAULT_BET)
+
+
+class BoostActivateResponse(BaseModel):
+    """Response for boost activation."""
+    success: bool
+    cost: float
+    balance: float
+    boostType: str
+    boostSpinsRemaining: int
+
+
+@app.post("/bonus/activate-boost", response_model=BoostActivateResponse, tags=["Bonus"])
+async def activate_boost(request: BoostActivateRequest):
+    """
+    Activate a boost feature (Scatter Hunt or Wild Boost).
+
+    - scatter_boost: 3x scatter chance for 10 spins (2x bet cost)
+    - wild_boost: 5x wild chance for 5 spins (5x bet cost)
+    """
+    session = get_or_create_session(request.sessionID)
+
+    # Check if already in free spins
+    if session["free_spins_remaining"] > 0:
+        raise StakeError(StakeErrorCode.ERR_VAL, "Cannot activate boost during free spins")
+
+    bet_amount = request.betAmount
+    print(f"[BOOST] Activating {request.boostType}, betAmount={bet_amount}")
+
+    if request.boostType == "scatter_boost":
+        cost_multiplier = 2.0
+        boost_spins = 10
+        session_key = "scatter_boost_spins"
+    elif request.boostType == "wild_boost":
+        cost_multiplier = 5.0
+        boost_spins = 5
+        session_key = "wild_boost_spins"
+    else:
+        raise StakeError(StakeErrorCode.ERR_VAL, f"Invalid boost type: {request.boostType}")
+
+    cost = cost_multiplier * bet_amount
+
+    # Check balance
+    if session["balance"] < cost:
+        raise StakeError(
+            StakeErrorCode.ERR_IPB,
+            f"Insufficient balance. Required: {cost}, Available: {session['balance']}"
+        )
+
+    # Deduct cost
+    session["balance"] -= cost
+    print(f"[BOOST] Cost={cost}, New balance={session['balance']}")
+
+    # Activate boost (add to existing if any)
+    session[session_key] = session.get(session_key, 0) + boost_spins
+
+    return BoostActivateResponse(
+        success=True,
+        cost=cost,
+        balance=session["balance"],
+        boostType=request.boostType,
+        boostSpinsRemaining=session[session_key]
     )
 
 

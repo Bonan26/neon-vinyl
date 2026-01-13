@@ -177,21 +177,23 @@
 
 /* Bonus Options Grid */
 .bonus-options {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  padding: 24px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+  padding: 20px;
 }
 
-/* Bonus Card */
+/* Bonus Card - Compact vertical layout for grid */
 .bonus-card {
   display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 16px;
-  padding: 20px;
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.02) 100%);
-  border: 1px solid var(--accent-color);
-  border-radius: 12px;
+  text-align: center;
+  gap: 10px;
+  padding: 16px 12px;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.08) 0%, rgba(0, 0, 0, 0.3) 100%);
+  border: 2px solid var(--accent-color);
+  border-radius: 16px;
   position: relative;
   overflow: hidden;
   transition: all 0.3s;
@@ -214,15 +216,25 @@
 }
 
 .bonus-card.clickable:hover {
-  transform: translateY(-4px) scale(1.02);
+  transform: translateY(-6px) scale(1.03);
   box-shadow:
-    0 12px 40px rgba(0, 0, 0, 0.4),
-    0 0 40px color-mix(in srgb, var(--accent-color) 40%, transparent);
+    0 15px 50px rgba(0, 0, 0, 0.5),
+    0 0 50px color-mix(in srgb, var(--accent-color) 50%, transparent),
+    inset 0 0 30px color-mix(in srgb, var(--accent-color) 20%, transparent);
   border-color: var(--accent-color);
+  border-width: 3px;
 }
 
 .bonus-card.clickable:hover::before {
-  opacity: 0.25;
+  opacity: 0.35;
+}
+
+.bonus-card.clickable:hover .bonus-info h3 {
+  text-shadow: 0 0 20px var(--accent-color);
+}
+
+.bonus-card.clickable:hover .bonus-multiplier {
+  transform: scale(1.1);
 }
 
 .bonus-card.clickable:active {
@@ -271,30 +283,31 @@
 
 /* Bonus Info */
 .bonus-info {
-  flex: 1;
-  min-width: 0;
+  width: 100%;
 }
 
 .bonus-info h3 {
-  margin: 0 0 4px 0;
-  font-size: 16px;
+  margin: 0 0 2px 0;
+  font-size: 14px;
   color: var(--accent-color);
-  font-weight: 700;
+  font-weight: 800;
+  text-shadow: 0 0 10px var(--accent-color);
+  letter-spacing: 1px;
 }
 
 .bonus-info p {
-  margin: 0 0 8px 0;
-  font-size: 12px;
-  color: #aaa;
-  line-height: 1.4;
+  display: none; /* Hide description in compact view */
 }
 
 .bonus-multiplier {
-  font-size: 11px;
-  color: #666;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 1px;
+  font-size: 20px;
+  color: #ffffff;
+  font-weight: 900;
+  background: linear-gradient(180deg, var(--accent-color) 0%, color-mix(in srgb, var(--accent-color) 60%, black) 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  transition: transform 0.2s ease;
 }
 
 /* Price Display */
@@ -303,26 +316,26 @@
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 12px 16px;
-  background: rgba(0, 0, 0, 0.4);
-  border-radius: 10px;
-  border: 1px solid var(--accent-color);
-  min-width: 100px;
+  padding: 8px 16px;
+  background: rgba(0, 0, 0, 0.5);
+  border-radius: 8px;
+  border: 1px solid color-mix(in srgb, var(--accent-color) 50%, transparent);
+  width: 100%;
 }
 
 .bonus-price-display .price-label {
-  font-size: 10px;
+  font-size: 9px;
   font-weight: 600;
   color: #888;
   letter-spacing: 2px;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
 }
 
 .bonus-price-display .price-value {
-  font-size: 22px;
+  font-size: 18px;
   font-weight: 900;
   color: var(--accent-color);
-  text-shadow: 0 0 15px var(--accent-color);
+  text-shadow: 0 0 12px var(--accent-color);
   line-height: 1;
 }
 
@@ -426,6 +439,9 @@
   background: rgba(255, 0, 0, 0.2);
   color: #ff6666;
   border: 1px solid rgba(255, 0, 0, 0.3);
+  width: 100%;
+  font-size: 9px;
+  padding: 6px 10px;
 }
 
 /* Confirmation Popup */
@@ -527,31 +543,39 @@
     margin: 10px;
   }
 
+  .bonus-options {
+    grid-template-columns: 1fr;
+    gap: 10px;
+    padding: 16px;
+  }
+
   .bonus-card {
-    flex-wrap: wrap;
-    justify-content: center;
-    text-align: center;
-    gap: 12px;
+    flex-direction: row;
+    text-align: left;
+    padding: 14px;
+    gap: 14px;
   }
 
   .bonus-info {
-    width: 100%;
-    order: 2;
+    flex: 1;
+    width: auto;
   }
 
-  .bonus-icon {
-    order: 1;
+  .bonus-info h3 {
+    font-size: 13px;
+  }
+
+  .bonus-multiplier {
+    font-size: 16px;
   }
 
   .bonus-price-display {
-    order: 3;
-    flex: 1;
+    width: auto;
     min-width: 80px;
   }
 
-  .bonus-status {
-    order: 4;
-    width: 100%;
+  .bonus-price-display .price-value {
+    font-size: 16px;
   }
 
   .confirm-popup {

@@ -25,7 +25,7 @@ export default function WildWheelPopup({ show, targetMultiplier = 64, onComplete
   const [showResult, setShowResult] = useState(false);
   const [wonSegment, setWonSegment] = useState(null);
 
-  // Reset on show
+  // Reset on show and auto-spin
   useEffect(() => {
     if (show) {
       setVisible(true);
@@ -33,16 +33,20 @@ export default function WildWheelPopup({ show, targetMultiplier = 64, onComplete
       setShowResult(false);
       setWonSegment(null);
       setSpinning(false);
-      setTimeout(() => setCanSpin(true), 400);
+      setCanSpin(true);
+      // Auto-spin after brief appearance
+      const autoSpinTimer = setTimeout(() => {
+        handleSpinAuto();
+      }, 600);
+      return () => clearTimeout(autoSpinTimer);
     } else {
       setVisible(false);
       setCanSpin(false);
     }
   }, [show]);
 
-  const handleSpin = useCallback(() => {
-    if (spinning || !canSpin) return;
-
+  // Auto-spin function (called from useEffect)
+  const handleSpinAuto = () => {
     setSpinning(true);
     setCanSpin(false);
     onSpinStart?.();
@@ -52,32 +56,34 @@ export default function WildWheelPopup({ show, targetMultiplier = 64, onComplete
     const targetIdx = SEGMENTS.findIndex(s => s.value === targetMultiplier);
     const idx = targetIdx >= 0 ? targetIdx : 0;
 
-    // Calculate final angle
-    // Each segment = 45deg (360/8)
-    // Pointer at top = 0deg
-    // Segment 0 center is at 22.5deg from top
+    // Calculate final angle - faster spin (3 rotations instead of 5-7)
     const segmentSize = 360 / 8;
     const segmentCenter = idx * segmentSize + segmentSize / 2;
-    const spins = 5 + Math.floor(Math.random() * 3);
+    const spins = 3 + Math.floor(Math.random() * 2);
     const finalAngle = spins * 360 + (360 - segmentCenter);
 
     setAngle(finalAngle);
 
-    // After spin ends
+    // After spin ends (1.8s instead of 4s)
     setTimeout(() => {
       setSpinning(false);
       setWonSegment(SEGMENTS[idx]);
       setShowResult(true);
       audioService.playWheelResultSound?.(targetMultiplier);
 
-      // Close popup
+      // Close popup faster (1s instead of 2s)
       setTimeout(() => {
         setVisible(false);
         setTimeout(() => {
           onComplete?.(targetMultiplier);
-        }, 300);
-      }, 2000);
-    }, 4000);
+        }, 200);
+      }, 1000);
+    }, 1800);
+  };
+
+  const handleSpin = useCallback(() => {
+    if (spinning || !canSpin) return;
+    handleSpinAuto();
   }, [spinning, canSpin, targetMultiplier, onComplete, onSpinStart]);
 
   if (!visible && !show) return null;
@@ -97,7 +103,7 @@ export default function WildWheelPopup({ show, targetMultiplier = 64, onComplete
             className="ww-wheel"
             style={{
               transform: `rotate(${angle}deg)`,
-              transition: spinning ? 'transform 4s cubic-bezier(0.2, 0.7, 0.3, 1)' : 'none'
+              transition: spinning ? 'transform 1.8s cubic-bezier(0.2, 0.8, 0.3, 1)' : 'none'
             }}
           >
             {/* Segment labels */}

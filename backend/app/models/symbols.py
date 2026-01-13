@@ -70,7 +70,7 @@ WILD_SYMBOL = Symbol.WILD
 
 
 # Paytable: cluster_size -> payout multiplier (for 1 unit bet)
-# BALANCED FOR ~95% RTP with tumble and multiplier mechanics
+# BALANCED FOR ~96% RTP with tumble and multiplier mechanics
 PAYTABLE: Dict[Symbol, Dict[int, float]] = {
     # Wild symbol (premium payouts when clustering)
     Symbol.WILD: {

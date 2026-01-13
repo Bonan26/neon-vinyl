@@ -10,22 +10,44 @@ import './BonusBuyMenu.css';
 // Bonus multipliers (cost = bet * multiplier)
 const BONUS_OPTIONS = [
   {
+    id: 'scatter_hunt',
+    name: 'Scatter Hunt',
+    scatters: 0,
+    multiplier: 2,
+    description: 'Chance x3 de scatter pendant 10 spins',
+    color: '#00ff88',
+    icon: 'SC',
+    feature: 'scatter_boost',
+  },
+  {
     id: 'standard',
-    name: 'Spins Gratuits',
+    name: 'Free Spins',
     scatters: 3,
     multiplier: 100,
-    description: 'Garantit 3 Scatters au prochain spin',
+    description: '8 tours gratuits garantis',
     color: '#ff00ff',
     icon: '3x',
+    feature: 'free_spins',
   },
   {
     id: 'super',
-    name: 'Super Spins Gratuits',
+    name: 'Super Spins',
     scatters: 4,
     multiplier: 200,
-    description: 'Garantit 4 Scatters + Multiplicateurs boostés',
+    description: '12 tours + multiplicateur x2',
     color: '#ffd700',
     icon: '4x',
+    feature: 'super_free_spins',
+  },
+  {
+    id: 'wild_boost',
+    name: 'Wild Boost',
+    scatters: 0,
+    multiplier: 5,
+    description: 'Chance x5 de wild pendant 5 spins',
+    color: '#ff6600',
+    icon: 'WD',
+    feature: 'wild_boost',
   },
 ];
 
@@ -61,21 +83,48 @@ const BonusBuyMenu = ({ onBuyBonus, onBonusTriggerSpin, disabled }) => {
     if (!selectedBonus) return;
 
     const bonusType = selectedBonus.id;
-    const scatterCount = selectedBonus.scatters;
-    const bonusId = scatterCount === 3 ? 'free_spins_8' : 'free_spins_12';
+    const feature = selectedBonus.feature;
+
+    console.log('[BonusBuyMenu] Confirming purchase:', { bonusType, feature, betAmount });
 
     setSelectedBonus(null);
     toggleBonusMenu();
 
-    // Call the trigger spin - this will:
-    // 1. Spin the real grid and land on scatters
-    // 2. Show the rules popup after animation
-    onBonusTriggerSpin?.({
-      bonusId,
-      bonusType,
-      scatterCount,
-    });
-  }, [selectedBonus, onBonusTriggerSpin, toggleBonusMenu]);
+    // Handle different bonus types
+    if (feature === 'free_spins') {
+      // Standard free spins - trigger with 3 scatters
+      console.log('[BonusBuyMenu] Triggering free spins');
+      onBonusTriggerSpin?.({
+        bonusId: 'free_spins_8',
+        bonusType,
+        scatterCount: 3,
+      });
+    } else if (feature === 'super_free_spins') {
+      // Super free spins - trigger with 4 scatters
+      console.log('[BonusBuyMenu] Triggering super free spins');
+      onBonusTriggerSpin?.({
+        bonusId: 'free_spins_12',
+        bonusType,
+        scatterCount: 4,
+      });
+    } else if (feature === 'scatter_boost' || feature === 'wild_boost') {
+      // Scatter Hunt or Wild Boost - activate boost mode
+      console.log('[BonusBuyMenu] Activating boost:', feature);
+      const boostData = {
+        bonusId: bonusType,
+        feature,
+        cost: betAmount * selectedBonus.multiplier,
+        boostType: feature,
+      };
+      console.log('[BonusBuyMenu] Calling onBuyBonus with:', boostData);
+      try {
+        const result = await onBuyBonus?.(boostData);
+        console.log('[BonusBuyMenu] onBuyBonus result:', result);
+      } catch (err) {
+        console.error('[BonusBuyMenu] onBuyBonus error:', err);
+      }
+    }
+  }, [selectedBonus, onBonusTriggerSpin, onBuyBonus, toggleBonusMenu, betAmount]);
 
   const handleCancelBuy = useCallback(() => {
     setSelectedBonus(null);

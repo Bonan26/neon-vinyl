@@ -220,7 +220,7 @@ const IntroScreen = ({ onStart }) => {
             </div>
             <div className="card-content">
               <span className="card-label">RTP</span>
-              <span className="card-value">96.5%</span>
+              <span className="card-value">96.0%</span>
             </div>
           </div>
         </div>

@@ -8,8 +8,8 @@ import { TextStyle, Texture } from 'pixi.js';
 import gsap from 'gsap';
 import { CELL_SIZE, SYMBOLS, MULTIPLIER_COLORS } from '../../config/gameConfig';
 
-// Symbols that have actual image files
-const SYMBOLS_WITH_IMAGES = ['DJ', 'GV', 'HP', 'CS', 'NP', 'NB', 'NU', 'WD', 'SC'];
+// Symbols that have actual image files (excluding WD and SC which are custom drawn)
+const SYMBOLS_WITH_IMAGES = ['DJ', 'GV', 'HP', 'CS', 'NP', 'NB', 'NU'];
 
 // Preload symbol textures only for existing images
 const symbolTextures = {};
@@ -20,6 +20,9 @@ SYMBOLS_WITH_IMAGES.forEach(id => {
     console.warn(`Failed to load texture for ${id}`);
   }
 });
+
+// Custom drawn symbols (Wild and Scatter)
+const CUSTOM_DRAWN_SYMBOLS = ['WD', 'SC'];
 
 const Cell = ({
   row,
@@ -40,6 +43,10 @@ const Cell = ({
   // Scatter animation state
   const [scatterAnim, setScatterAnim] = useState({ scale: 1, glow: 0, rotation: 0 });
   const scatterAnimRef = useRef(null);
+
+  // Wild animation state
+  const [wildAnim, setWildAnim] = useState({ scale: 1, glow: 0, rotation: 0, hue: 0 });
+  const wildAnimRef = useRef(null);
 
   // Calculate position
   const x = col * (CELL_SIZE + 4);
@@ -86,6 +93,65 @@ const Cell = ({
       if (scatterAnimRef.current) {
         scatterAnimRef.current.kill();
         scatterAnimRef.current = null;
+      }
+    };
+  }, [symbol]);
+
+  // Wild continuous animation - rainbow pulsing glow
+  useEffect(() => {
+    if (symbol === 'WD') {
+      // Create continuous rainbow animation for wild
+      const anim = { scale: 1, glow: 0.5, rotation: 0, hue: 0 };
+      wildAnimRef.current = gsap.timeline({ repeat: -1 })
+        // Pulse up with rainbow shift
+        .to(anim, {
+          scale: 1.12,
+          glow: 1,
+          rotation: 0.03,
+          hue: 120,
+          duration: 0.6,
+          ease: 'sine.inOut',
+          onUpdate: () => {
+            setWildAnim({ scale: anim.scale, glow: anim.glow, rotation: anim.rotation, hue: anim.hue });
+          },
+        })
+        // Continue color shift
+        .to(anim, {
+          scale: 1.08,
+          glow: 0.7,
+          rotation: -0.02,
+          hue: 240,
+          duration: 0.6,
+          ease: 'sine.inOut',
+          onUpdate: () => {
+            setWildAnim({ scale: anim.scale, glow: anim.glow, rotation: anim.rotation, hue: anim.hue });
+          },
+        })
+        // Pulse down
+        .to(anim, {
+          scale: 1,
+          glow: 0.5,
+          rotation: 0,
+          hue: 360,
+          duration: 0.6,
+          ease: 'sine.inOut',
+          onUpdate: () => {
+            setWildAnim({ scale: anim.scale, glow: anim.glow, rotation: anim.rotation, hue: anim.hue % 360 });
+          },
+        });
+    } else {
+      // Kill animation if symbol changes
+      if (wildAnimRef.current) {
+        wildAnimRef.current.kill();
+        wildAnimRef.current = null;
+        setWildAnim({ scale: 1, glow: 0, rotation: 0, hue: 0 });
+      }
+    }
+
+    return () => {
+      if (wildAnimRef.current) {
+        wildAnimRef.current.kill();
+        wildAnimRef.current = null;
       }
     };
   }, [symbol]);
@@ -381,9 +447,40 @@ const Cell = ({
           x={CELL_SIZE / 2}
           y={CELL_SIZE / 2 + offsetY}
           alpha={animatedAlpha}
-          scale={animatedScale * winExplosion.scale * (symbol === 'SC' ? scatterAnim.scale : 1)}
-          rotation={winExplosion.rotation + (symbol === 'SC' ? scatterAnim.rotation : 0)}
+          scale={animatedScale * winExplosion.scale * (symbol === 'SC' ? scatterAnim.scale : symbol === 'WD' ? wildAnim.scale : 1)}
+          rotation={winExplosion.rotation + (symbol === 'SC' ? scatterAnim.rotation : symbol === 'WD' ? wildAnim.rotation : 0)}
         >
+          {/* Wild glow effect - rainbow pulsing */}
+          {symbol === 'WD' && wildAnim.glow > 0 && (
+            <Graphics
+              draw={(g) => {
+                g.clear();
+                // Convert hue to RGB for rainbow effect
+                const hue = wildAnim.hue;
+                const h = hue / 60;
+                const c = 1;
+                const x = c * (1 - Math.abs(h % 2 - 1));
+                let r, gb, b;
+                if (h < 1) { r = c; gb = x; b = 0; }
+                else if (h < 2) { r = x; gb = c; b = 0; }
+                else if (h < 3) { r = 0; gb = c; b = x; }
+                else if (h < 4) { r = 0; gb = x; b = c; }
+                else if (h < 5) { r = x; gb = 0; b = c; }
+                else { r = c; gb = 0; b = x; }
+                const color = (Math.floor(r * 255) << 16) | (Math.floor(gb * 255) << 8) | Math.floor(b * 255);
+
+                // Outer rainbow glow
+                g.beginFill(color, wildAnim.glow * 0.35);
+                g.drawCircle(0, 0, spriteSize * 0.8);
+                g.endFill();
+                // Inner bright glow
+                g.beginFill(0xffffff, wildAnim.glow * 0.2);
+                g.drawCircle(0, 0, spriteSize * 0.5);
+                g.endFill();
+              }}
+            />
+          )}
+
           {/* Scatter glow effect */}
           {symbol === 'SC' && scatterAnim.glow > 0 && (
             <Graphics
@@ -397,8 +494,178 @@ const Cell = ({
             />
           )}
 
-          {/* Symbol image or placeholder - offset to center around pivot */}
-          {symbolTexture ? (
+          {/* Symbol image or custom drawn - offset to center around pivot */}
+          {symbol === 'WD' ? (
+            /* Custom Wild Symbol - Neon Vinyl Disc */
+            <>
+              <Graphics
+                draw={(g) => {
+                  g.clear();
+                  const size = spriteSize * 0.42;
+                  // Outer neon glow
+                  g.beginFill(0xff00ff, 0.2);
+                  g.drawCircle(0, 0, size * 1.4);
+                  g.endFill();
+                  g.beginFill(0xff44ff, 0.15);
+                  g.drawCircle(0, 0, size * 1.25);
+                  g.endFill();
+                  // Vinyl disc base - dark with purple tint
+                  g.beginFill(0x1a0030);
+                  g.drawCircle(0, 0, size);
+                  g.endFill();
+                  // Vinyl grooves (rings)
+                  for (let i = 3; i <= 9; i++) {
+                    const ringSize = size * (i / 10);
+                    g.lineStyle(1, 0x3d1a5c, 0.6);
+                    g.drawCircle(0, 0, ringSize);
+                  }
+                  // Label center - gradient gold
+                  g.beginFill(0xffd700);
+                  g.drawCircle(0, 0, size * 0.35);
+                  g.endFill();
+                  g.beginFill(0xffee88);
+                  g.drawCircle(0, -size * 0.05, size * 0.28);
+                  g.endFill();
+                  // Center hole
+                  g.beginFill(0x0d0518);
+                  g.drawCircle(0, 0, size * 0.08);
+                  g.endFill();
+                  // Neon edge ring
+                  g.lineStyle(3, 0xff00ff, 0.9);
+                  g.drawCircle(0, 0, size);
+                  // Inner neon ring
+                  g.lineStyle(2, 0x00ffff, 0.7);
+                  g.drawCircle(0, 0, size * 0.7);
+                  // Highlight shine
+                  g.beginFill(0xffffff, 0.3);
+                  g.drawEllipse(-size * 0.3, -size * 0.35, size * 0.25, size * 0.12);
+                  g.endFill();
+                }}
+              />
+              <Text
+                text="WILD"
+                x={0}
+                y={0}
+                anchor={0.5}
+                style={new TextStyle({
+                  fontFamily: 'Arial Black, Arial, sans-serif',
+                  fontSize: 11,
+                  fontWeight: 'bold',
+                  fill: '#1a0030',
+                  stroke: '#ffd700',
+                  strokeThickness: 1,
+                })}
+              />
+            </>
+          ) : symbol === 'SC' ? (
+            /* Custom Scatter Symbol - Glowing Crystal/Gem */
+            <>
+              <Graphics
+                draw={(g) => {
+                  g.clear();
+                  const size = spriteSize * 0.38;
+                  // Outer glow rings - mystical purple/cyan
+                  g.beginFill(0x00ffff, 0.12);
+                  g.drawCircle(0, 0, size * 1.6);
+                  g.endFill();
+                  g.beginFill(0xff00ff, 0.1);
+                  g.drawCircle(0, 0, size * 1.4);
+                  g.endFill();
+                  g.beginFill(0x00ddff, 0.2);
+                  g.drawCircle(0, 0, size * 1.2);
+                  g.endFill();
+                  // Diamond/gem shape
+                  const pts = [
+                    { x: 0, y: -size }, // top
+                    { x: size * 0.7, y: -size * 0.2 }, // top-right
+                    { x: size * 0.5, y: size * 0.8 }, // bottom-right
+                    { x: -size * 0.5, y: size * 0.8 }, // bottom-left
+                    { x: -size * 0.7, y: -size * 0.2 }, // top-left
+                  ];
+                  // Main gem body - cyan gradient
+                  g.beginFill(0x0088cc);
+                  g.moveTo(pts[0].x, pts[0].y);
+                  pts.forEach(p => g.lineTo(p.x, p.y));
+                  g.closePath();
+                  g.endFill();
+                  // Top facet - lighter
+                  g.beginFill(0x00ccff, 0.8);
+                  g.moveTo(pts[0].x, pts[0].y);
+                  g.lineTo(pts[1].x, pts[1].y);
+                  g.lineTo(0, 0);
+                  g.lineTo(pts[4].x, pts[4].y);
+                  g.closePath();
+                  g.endFill();
+                  // Left facet highlight
+                  g.beginFill(0x00eeff, 0.6);
+                  g.moveTo(pts[0].x, pts[0].y);
+                  g.lineTo(pts[4].x, pts[4].y);
+                  g.lineTo(0, 0);
+                  g.closePath();
+                  g.endFill();
+                  // Bottom facets - darker
+                  g.beginFill(0x005588, 0.9);
+                  g.moveTo(0, 0);
+                  g.lineTo(pts[1].x, pts[1].y);
+                  g.lineTo(pts[2].x, pts[2].y);
+                  g.closePath();
+                  g.endFill();
+                  g.beginFill(0x004466, 0.9);
+                  g.moveTo(0, 0);
+                  g.lineTo(pts[3].x, pts[3].y);
+                  g.lineTo(pts[4].x, pts[4].y);
+                  g.closePath();
+                  g.endFill();
+                  // Center facet
+                  g.beginFill(0x006699);
+                  g.moveTo(0, 0);
+                  g.lineTo(pts[2].x, pts[2].y);
+                  g.lineTo(pts[3].x, pts[3].y);
+                  g.closePath();
+                  g.endFill();
+                  // Shine highlight
+                  g.beginFill(0xffffff, 0.7);
+                  g.moveTo(-size * 0.15, -size * 0.6);
+                  g.lineTo(size * 0.05, -size * 0.4);
+                  g.lineTo(-size * 0.1, -size * 0.3);
+                  g.lineTo(-size * 0.3, -size * 0.45);
+                  g.closePath();
+                  g.endFill();
+                  // Border glow
+                  g.lineStyle(2, 0x00ffff, 0.9);
+                  g.moveTo(pts[0].x, pts[0].y);
+                  pts.forEach(p => g.lineTo(p.x, p.y));
+                  g.closePath();
+                  // Inner sparkle lines
+                  g.lineStyle(1, 0xffffff, 0.4);
+                  g.moveTo(0, -size);
+                  g.lineTo(0, 0);
+                  g.moveTo(pts[1].x, pts[1].y);
+                  g.lineTo(0, 0);
+                  g.moveTo(pts[4].x, pts[4].y);
+                  g.lineTo(0, 0);
+                }}
+              />
+              <Text
+                text="FREE"
+                x={0}
+                y={spriteSize * 0.06}
+                anchor={0.5}
+                style={new TextStyle({
+                  fontFamily: 'Arial Black, Arial, sans-serif',
+                  fontSize: 9,
+                  fontWeight: 'bold',
+                  fill: '#ffffff',
+                  stroke: '#004466',
+                  strokeThickness: 2,
+                  dropShadow: true,
+                  dropShadowColor: '#00ffff',
+                  dropShadowBlur: 3,
+                  dropShadowDistance: 0,
+                })}
+              />
+            </>
+          ) : symbolTexture ? (
             <Sprite
               texture={symbolTexture}
               x={-spriteSize / 2}

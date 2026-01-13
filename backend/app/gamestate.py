@@ -609,7 +609,9 @@ def run_spin(
     bet_amount: float = 1.0,
     free_spin_mode: bool = False,
     free_spins_remaining: int = 0,
-    existing_multipliers: Optional[List[List[int]]] = None
+    existing_multipliers: Optional[List[List[int]]] = None,
+    scatter_boost: bool = False,
+    wild_boost: bool = False
 ) -> SpinResult:
     """
     Execute a complete spin with the Stake Engine.
@@ -627,6 +629,8 @@ def run_spin(
         free_spin_mode: Whether this is a free spin (different weights)
         free_spins_remaining: Remaining free spins before this spin
         existing_multipliers: Carry over multipliers from previous free spins
+        scatter_boost: If True, 3x scatter probability
+        wild_boost: If True, 5x wild probability
 
     Returns:
         SpinResult with all game data and events
@@ -634,8 +638,8 @@ def run_spin(
     # Initialize RNG
     rng = create_rng(server_seed, client_seed, nonce)
 
-    # Generate initial grid (different weights for free spins)
-    initial_symbols = rng.generate_grid(free_spin_mode)
+    # Generate initial grid (different weights for free spins and boosts)
+    initial_symbols = rng.generate_grid(free_spin_mode, scatter_boost, wild_boost)
     grid_state = GridState(initial_symbols)
 
     # Restore multipliers during free spins

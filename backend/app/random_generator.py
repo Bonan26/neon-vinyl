@@ -185,36 +185,84 @@ class ProvablyFairRNG:
 
         return len(cumulative_weights) - 1
 
-    def get_symbol(self, free_spin_mode: bool = False) -> Symbol:
+    def get_symbol(
+        self,
+        free_spin_mode: bool = False,
+        scatter_boost: bool = False,
+        wild_boost: bool = False
+    ) -> Symbol:
         """
         Get a weighted random symbol.
 
         Args:
             free_spin_mode: If True, uses free spin weights (no scatter, more wilds)
+            scatter_boost: If True, 3x scatter probability
+            wild_boost: If True, 5x wild probability
 
         Returns:
             Randomly selected Symbol
         """
         if free_spin_mode:
+            # Free spin mode - use standard free spin weights
             index = self.weighted_choice(FREE_SPIN_CUMULATIVE, FREE_SPIN_TOTAL_WEIGHT)
             return FREE_SPIN_SYMBOLS_LIST[index]
+
+        # Apply boosts to base weights
+        if scatter_boost or wild_boost:
+            # Build boosted weights dynamically
+            from app.game_config import SYMBOL_WEIGHTS
+            boosted_weights = []
+            boosted_symbols = []
+
+            for symbol in SYMBOLS_LIST:
+                weight = SYMBOL_WEIGHTS[symbol].weight
+
+                # Apply scatter boost (3x scatter chance)
+                if scatter_boost and symbol == Symbol.SCATTER:
+                    weight *= 3
+
+                # Apply wild boost (5x wild chance)
+                if wild_boost and symbol == Symbol.WILD:
+                    weight *= 5
+
+                boosted_weights.append(weight)
+                boosted_symbols.append(symbol)
+
+            # Build cumulative weights
+            total = sum(boosted_weights)
+            cumulative = []
+            cumsum = 0
+            for w in boosted_weights:
+                cumsum += w
+                cumulative.append(cumsum)
+
+            index = self.weighted_choice(cumulative, total)
+            return boosted_symbols[index]
         else:
+            # No boost - use standard weights
             index = self.weighted_choice(CUMULATIVE_WEIGHTS, TOTAL_WEIGHT)
             return SYMBOLS_LIST[index]
 
-    def generate_grid(self, free_spin_mode: bool = False) -> List[List[Symbol]]:
+    def generate_grid(
+        self,
+        free_spin_mode: bool = False,
+        scatter_boost: bool = False,
+        wild_boost: bool = False
+    ) -> List[List[Symbol]]:
         """
         Generate a complete 7x7 grid of symbols.
 
         Args:
             free_spin_mode: If True, uses free spin weights (no scatter, more wilds)
+            scatter_boost: If True, 3x scatter probability
+            wild_boost: If True, 5x wild probability
 
         Returns:
             2D list of Symbols (row-major order)
         """
         grid = []
         for _ in range(GRID_ROWS):
-            row = [self.get_symbol(free_spin_mode) for _ in range(GRID_COLS)]
+            row = [self.get_symbol(free_spin_mode, scatter_boost, wild_boost) for _ in range(GRID_COLS)]
             grid.append(row)
         return grid
 

@@ -19,6 +19,8 @@ const useGameController = () => {
   const setTumbleCount = useGameStore((state) => state.setTumbleCount);
   const setMaxMultiplier = useGameStore((state) => state.setMaxMultiplier);
   const setFreeSpins = useGameStore((state) => state.setFreeSpins);
+  const setScatterBoostSpins = useGameStore((state) => state.setScatterBoostSpins);
+  const setWildBoostSpins = useGameStore((state) => state.setWildBoostSpins);
   const setBonusBuyOptions = useGameStore((state) => state.setBonusBuyOptions);
   const setJackpotTiers = useGameStore((state) => state.setJackpotTiers);
   const setLastJackpotWon = useGameStore((state) => state.setLastJackpotWon);
@@ -108,6 +110,8 @@ const useGameController = () => {
         events: result.events.length,
         freeSpins: result.freeSpinsRemaining,
         isFreeSpin: result.isFreeSpin,
+        scatterBoost: result.scatterBoostSpins,
+        wildBoost: result.wildBoostSpins,
       });
 
       // NOTE: Don't update win-related state here!
@@ -117,6 +121,10 @@ const useGameController = () => {
       // Only update non-visual tracking stats
       setTumbleCount(result.tumbleCount);
       setMaxMultiplier(result.maxMultiplier);
+
+      // Update boost spins remaining
+      setScatterBoostSpins(result.scatterBoostSpins || 0);
+      setWildBoostSpins(result.wildBoostSpins || 0);
 
       // Stop spinning indicator
       setIsSpinning(false);
@@ -140,6 +148,8 @@ const useGameController = () => {
     setMultiplierGrid,
     setFreeSpins,
     setLastJackpotWon,
+    setScatterBoostSpins,
+    setWildBoostSpins,
   ]);
 
   /**
@@ -244,12 +254,70 @@ const useGameController = () => {
     }
   }, [sessionId, clientSeed, betAmount, setIsSpinning, setBalance]);
 
+  /**
+   * Activate a boost feature (Scatter Hunt or Wild Boost)
+   * These increase scatter/wild probability for a number of spins
+   */
+  const activateBoost = useCallback(async (boostType) => {
+    if (!sessionId) {
+      console.error('GameController: No session');
+      return null;
+    }
+
+    // Get current balance BEFORE API call
+    const balanceBefore = useGameStore.getState().balance;
+    console.log('[GameController] Balance BEFORE boost:', balanceBefore);
+
+    try {
+      console.log('GameController: Activating boost', boostType, 'at bet', betAmount);
+      const result = await apiService.activateBoost({
+        sessionID: sessionId,
+        boostType,
+        betAmount,
+      });
+
+      console.log('[GameController] Boost API response:', JSON.stringify(result));
+
+      // Verify balance is a valid number
+      if (typeof result.balance !== 'number' || isNaN(result.balance)) {
+        console.error('[GameController] Invalid balance in response:', result.balance);
+        return result;
+      }
+
+      // Update balance
+      console.log('[GameController] Setting balance from', balanceBefore, 'to', result.balance);
+      setBalance(result.balance);
+
+      // Verify balance was updated
+      setTimeout(() => {
+        const balanceAfter = useGameStore.getState().balance;
+        console.log('[GameController] Balance AFTER setBalance:', balanceAfter);
+      }, 100);
+
+      // Update boost spins in store
+      console.log('[GameController] boostType:', result.boostType, 'spinsRemaining:', result.boostSpinsRemaining);
+      if (result.boostType === 'scatter_boost') {
+        console.log('[GameController] Setting scatterBoostSpins to:', result.boostSpinsRemaining);
+        setScatterBoostSpins(result.boostSpinsRemaining);
+      } else if (result.boostType === 'wild_boost') {
+        console.log('[GameController] Setting wildBoostSpins to:', result.boostSpinsRemaining);
+        setWildBoostSpins(result.boostSpinsRemaining);
+      }
+
+      return result;
+    } catch (error) {
+      console.error('GameController: Boost activation error', error);
+      throw error;
+    }
+  }, [sessionId, betAmount, setBalance, setScatterBoostSpins, setWildBoostSpins]);
+
   return {
     spin,
     rotateSeed,
     initSession,
     buyBonus,
     bonusTriggerSpin,
+    activateBoost,
   };
 };
 

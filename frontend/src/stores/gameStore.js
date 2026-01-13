@@ -90,6 +90,10 @@ const useGameStore = create((set, get) => ({
   freeSpinTotalWin: 0,
   isFreeSpin: false,
 
+  // Boost state (Scatter Hunt / Wild Boost)
+  scatterBoostSpins: 0,
+  wildBoostSpins: 0,
+
   // Bonus state
   bonusBuyOptions: [],
   showBonusMenu: false,
@@ -244,6 +248,14 @@ const useGameStore = create((set, get) => ({
     freeSpinsRemaining: 0,
     freeSpinTotalWin: 0,
     isFreeSpin: false,
+  }),
+
+  // Boost actions (Scatter Hunt / Wild Boost)
+  setScatterBoostSpins: (spins) => set({ scatterBoostSpins: spins }),
+  setWildBoostSpins: (spins) => set({ wildBoostSpins: spins }),
+  updateBoostSpins: (scatterSpins, wildSpins) => set({
+    scatterBoostSpins: scatterSpins,
+    wildBoostSpins: wildSpins,
   }),
 
   // Bonus options

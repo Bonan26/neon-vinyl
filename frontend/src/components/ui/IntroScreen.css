@@ -14,6 +14,33 @@
   overflow: hidden;
 }
 
+/* Premium scanline effect */
+.intro-screen::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(0, 0, 0, 0.1) 2px,
+    rgba(0, 0, 0, 0.1) 4px
+  );
+  pointer-events: none;
+  z-index: 10;
+  opacity: 0.3;
+}
+
+/* Vignette effect */
+.intro-screen::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse at center, transparent 40%, rgba(0, 0, 0, 0.6) 100%);
+  pointer-events: none;
+  z-index: 9;
+}
+
 /* ========================================
    BACKGROUND EFFECTS
    ======================================== */
@@ -186,31 +213,69 @@
 .intro-logo-section {
   text-align: center;
   margin-bottom: 10px;
+  position: relative;
+}
+
+/* Logo glow backdrop */
+.intro-logo-section::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 120%;
+  height: 200%;
+  background: radial-gradient(ellipse at center, rgba(255, 0, 255, 0.3) 0%, transparent 60%);
+  filter: blur(30px);
+  animation: logoGlow 3s ease-in-out infinite;
+}
+
+@keyframes logoGlow {
+  0%, 100% { opacity: 0.6; transform: translate(-50%, -50%) scale(1); }
+  50% { opacity: 1; transform: translate(-50%, -50%) scale(1.1); }
 }
 
 .intro-title {
   margin: 0;
   font-family: 'Orbitron', sans-serif;
-  font-size: clamp(3rem, 10vw, 5rem);
+  font-size: clamp(3.5rem, 12vw, 6rem);
   font-weight: 900;
   color: #fff;
   text-shadow:
+    0 0 10px #fff,
     0 0 30px #ff00ff,
     0 0 60px #ff00ff,
     0 0 100px #ff00ff,
+    0 0 150px #ff00ff,
     0 5px 0 #990066;
-  letter-spacing: 8px;
+  letter-spacing: 12px;
+  position: relative;
+  animation: titlePulse 2s ease-in-out infinite;
+}
+
+@keyframes titlePulse {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.2); }
 }
 
 .intro-subtitle {
   margin: 0;
   font-family: 'Orbitron', sans-serif;
-  font-size: clamp(1.2rem, 4vw, 1.8rem);
+  font-size: clamp(1.4rem, 5vw, 2.2rem);
   font-weight: 600;
   color: #00ffff;
-  text-shadow: 0 0 30px #00ffff;
-  letter-spacing: 16px;
-  margin-top: 5px;
+  text-shadow:
+    0 0 10px #00ffff,
+    0 0 30px #00ffff,
+    0 0 60px #00ffff;
+  letter-spacing: 20px;
+  margin-top: 8px;
+  animation: subtitleGlow 2s ease-in-out infinite 0.5s;
+}
+
+@keyframes subtitleGlow {
+  0%, 100% { opacity: 0.9; }
+  50% { opacity: 1; text-shadow: 0 0 15px #00ffff, 0 0 40px #00ffff, 0 0 80px #00ffff; }
 }
 
 /* Max Win Badge */
@@ -219,33 +284,72 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 20px 50px;
-  background: linear-gradient(180deg, #ffd700 0%, #ff9500 50%, #ff6600 100%);
-  border-radius: 20px;
+  padding: 25px 60px;
+  background: linear-gradient(180deg, #ffd700 0%, #ffb800 30%, #ff9500 70%, #ff6600 100%);
+  border-radius: 25px;
   box-shadow:
-    0 0 50px rgba(255, 215, 0, 0.5),
-    0 0 100px rgba(255, 215, 0, 0.25),
-    0 8px 0 #b36b00,
-    inset 0 2px 0 rgba(255, 255, 255, 0.3);
-  overflow: hidden;
+    0 0 60px rgba(255, 215, 0, 0.6),
+    0 0 120px rgba(255, 215, 0, 0.3),
+    0 10px 0 #b36b00,
+    inset 0 3px 0 rgba(255, 255, 255, 0.4);
+  overflow: visible;
+  animation: badgePulse 2s ease-in-out infinite;
+}
+
+@keyframes badgePulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+}
+
+/* Pulsing ring effect around badge */
+.intro-max-badge::before {
+  content: '';
+  position: absolute;
+  inset: -15px;
+  border: 3px solid rgba(255, 215, 0, 0.6);
+  border-radius: 35px;
+  animation: badgeRing 2s ease-out infinite;
+}
+
+.intro-max-badge::after {
+  content: '';
+  position: absolute;
+  inset: -25px;
+  border: 2px solid rgba(255, 215, 0, 0.3);
+  border-radius: 40px;
+  animation: badgeRing 2s ease-out infinite 0.5s;
+}
+
+@keyframes badgeRing {
+  0% { transform: scale(0.95); opacity: 1; }
+  100% { transform: scale(1.15); opacity: 0; }
 }
 
 .badge-label {
   font-family: 'Orbitron', sans-serif;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   color: #000;
-  letter-spacing: 3px;
-  opacity: 0.7;
+  letter-spacing: 4px;
+  opacity: 0.8;
+  text-transform: uppercase;
 }
 
 .badge-value {
   font-family: 'Orbitron', sans-serif;
-  font-size: clamp(2.5rem, 8vw, 3.5rem);
+  font-size: clamp(3rem, 10vw, 4.5rem);
   font-weight: 900;
   color: #000;
-  text-shadow: 0 2px 4px rgba(255, 255, 255, 0.4);
+  text-shadow:
+    0 2px 4px rgba(255, 255, 255, 0.5),
+    0 -1px 0 rgba(0, 0, 0, 0.2);
   line-height: 1;
+  animation: valueShimmer 3s ease-in-out infinite;
+}
+
+@keyframes valueShimmer {
+  0%, 100% { filter: brightness(1); }
+  50% { filter: brightness(1.15); }
 }
 
 .badge-shine {
@@ -254,8 +358,8 @@
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
-  animation: badgeShine 3s ease-in-out infinite;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
+  animation: badgeShine 2.5s ease-in-out infinite;
 }
 
 @keyframes badgeShine {
@@ -274,171 +378,271 @@
 .intro-card {
   display: flex;
   align-items: center;
-  gap: 15px;
-  padding: 15px 25px;
-  background: linear-gradient(135deg, rgba(255, 0, 255, 0.1) 0%, rgba(0, 255, 255, 0.05) 100%);
-  border: 1px solid rgba(255, 0, 255, 0.3);
-  border-radius: 16px;
-  backdrop-filter: blur(10px);
+  gap: 18px;
+  padding: 18px 28px;
+  background: linear-gradient(135deg, rgba(255, 0, 255, 0.15) 0%, rgba(0, 255, 255, 0.08) 100%);
+  border: 2px solid rgba(255, 0, 255, 0.4);
+  border-radius: 18px;
+  backdrop-filter: blur(15px);
   transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Card shine effect */
+.intro-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.5s ease;
+}
+
+.intro-card:hover::before {
+  left: 100%;
 }
 
 .intro-card:hover {
-  border-color: rgba(255, 0, 255, 0.6);
-  transform: translateY(-3px);
-  box-shadow: 0 10px 30px rgba(255, 0, 255, 0.2);
+  border-color: rgba(255, 0, 255, 0.8);
+  transform: translateY(-5px) scale(1.02);
+  box-shadow:
+    0 15px 40px rgba(255, 0, 255, 0.25),
+    0 0 30px rgba(255, 0, 255, 0.15);
 }
 
 .card-icon {
-  width: 45px;
-  height: 45px;
+  width: 52px;
+  height: 52px;
   display: flex;
   align-items: center;
   justify-content: center;
   background: linear-gradient(135deg, #ff00ff, #8800ff);
-  border-radius: 12px;
-  box-shadow: 0 0 20px rgba(255, 0, 255, 0.4);
+  border-radius: 14px;
+  box-shadow:
+    0 0 25px rgba(255, 0, 255, 0.5),
+    inset 0 2px 0 rgba(255, 255, 255, 0.2);
+  transition: all 0.3s ease;
+}
+
+.intro-card:hover .card-icon {
+  transform: scale(1.1) rotate(-5deg);
 }
 
 .card-icon svg {
-  width: 24px;
-  height: 24px;
+  width: 26px;
+  height: 26px;
   fill: #fff;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.3));
 }
 
 .volatility-icon {
-  background: linear-gradient(135deg, #ff4444, #ff0000);
-  box-shadow: 0 0 20px rgba(255, 68, 68, 0.5);
+  background: linear-gradient(135deg, #ff6666, #ff0000);
+  box-shadow:
+    0 0 25px rgba(255, 68, 68, 0.6),
+    inset 0 2px 0 rgba(255, 255, 255, 0.2);
 }
 
 .rtp-icon {
-  background: linear-gradient(135deg, #00cc66, #00ff88);
-  box-shadow: 0 0 20px rgba(0, 255, 136, 0.4);
+  background: linear-gradient(135deg, #00dd77, #00ff88);
+  box-shadow:
+    0 0 25px rgba(0, 255, 136, 0.5),
+    inset 0 2px 0 rgba(255, 255, 255, 0.2);
 }
 
 .card-content {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
 }
 
 .card-label {
   font-family: 'Rajdhani', sans-serif;
-  font-size: 11px;
-  color: #888;
+  font-size: 12px;
+  color: #999;
   letter-spacing: 2px;
   text-transform: uppercase;
+  font-weight: 600;
 }
 
 .card-value {
   font-family: 'Orbitron', sans-serif;
-  font-size: 20px;
+  font-size: 22px;
   font-weight: 700;
   color: #fff;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
 }
 
 .card-value.high {
-  color: #ff4444;
-  text-shadow: 0 0 10px rgba(255, 68, 68, 0.5);
+  color: #ff5555;
+  text-shadow:
+    0 0 15px rgba(255, 68, 68, 0.7),
+    0 0 30px rgba(255, 68, 68, 0.3);
+  animation: highPulse 1.5s ease-in-out infinite;
+}
+
+@keyframes highPulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.8; }
 }
 
 /* Features */
 .intro-features {
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
   width: 100%;
-  max-width: 450px;
+  max-width: 500px;
 }
 
 .intro-feature {
   display: flex;
   align-items: center;
-  gap: 15px;
-  padding: 12px 20px;
-  background: rgba(0, 0, 0, 0.3);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 12px;
+  gap: 18px;
+  padding: 16px 24px;
+  background: linear-gradient(135deg, rgba(0, 0, 0, 0.4) 0%, rgba(20, 0, 40, 0.4) 100%);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  border-radius: 16px;
   transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Feature hover glow */
+.intro-feature::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, transparent, rgba(255, 0, 255, 0.1));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.intro-feature:hover::before {
+  opacity: 1;
 }
 
 .intro-feature:hover {
-  background: rgba(255, 0, 255, 0.1);
-  border-color: rgba(255, 0, 255, 0.3);
+  background: linear-gradient(135deg, rgba(255, 0, 255, 0.15) 0%, rgba(20, 0, 40, 0.5) 100%);
+  border-color: rgba(255, 0, 255, 0.4);
+  transform: translateX(8px);
 }
 
 .feature-icon {
-  width: 50px;
-  height: 50px;
+  width: 56px;
+  height: 56px;
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 12px;
+  border-radius: 14px;
   font-family: 'Orbitron', sans-serif;
-  font-size: 14px;
+  font-size: 16px;
   font-weight: 900;
   color: #000;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+  transition: all 0.3s ease;
+}
+
+.intro-feature:hover .feature-icon {
+  transform: scale(1.1);
 }
 
 .wild-icon {
-  background: linear-gradient(135deg, #ffd700, #ff9500);
-  box-shadow: 0 0 15px rgba(255, 215, 0, 0.5);
-  font-size: 20px;
+  background: linear-gradient(135deg, #ffd700, #ffaa00, #ff8800);
+  box-shadow:
+    0 0 25px rgba(255, 215, 0, 0.6),
+    inset 0 2px 0 rgba(255, 255, 255, 0.3);
+  font-size: 22px;
+  animation: wildIconPulse 2s ease-in-out infinite;
+}
+
+@keyframes wildIconPulse {
+  0%, 100% { box-shadow: 0 0 25px rgba(255, 215, 0, 0.6), inset 0 2px 0 rgba(255, 255, 255, 0.3); }
+  50% { box-shadow: 0 0 40px rgba(255, 215, 0, 0.8), inset 0 2px 0 rgba(255, 255, 255, 0.3); }
 }
 
 .scatter-icon {
-  background: linear-gradient(135deg, #00ddff, #0088ff);
-  box-shadow: 0 0 15px rgba(0, 221, 255, 0.5);
+  background: linear-gradient(135deg, #00eeff, #00aaff, #0088ff);
+  box-shadow:
+    0 0 25px rgba(0, 221, 255, 0.6),
+    inset 0 2px 0 rgba(255, 255, 255, 0.3);
 }
 
 .mult-icon {
-  background: linear-gradient(135deg, #ff00ff, #8800ff);
-  box-shadow: 0 0 15px rgba(255, 0, 255, 0.5);
-  font-size: 11px;
+  background: linear-gradient(135deg, #ff00ff, #cc00ff, #8800ff);
+  box-shadow:
+    0 0 25px rgba(255, 0, 255, 0.6),
+    inset 0 2px 0 rgba(255, 255, 255, 0.3);
+  font-size: 13px;
 }
 
 .feature-text {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
+  position: relative;
+  z-index: 1;
 }
 
 .feature-name {
   font-family: 'Orbitron', sans-serif;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
   color: #fff;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.2);
 }
 
 .feature-desc {
   font-family: 'Rajdhani', sans-serif;
-  font-size: 13px;
-  color: #888;
+  font-size: 14px;
+  color: #aaa;
+  font-weight: 500;
 }
 
 /* Start Button */
 .intro-start-btn {
   position: relative;
-  padding: 22px 80px;
+  padding: 26px 100px;
   border: none;
-  border-radius: 50px;
+  border-radius: 60px;
   background: transparent;
   cursor: pointer;
-  overflow: hidden;
+  overflow: visible;
   transition: all 0.3s ease;
-  margin-top: 10px;
+  margin-top: 20px;
+}
+
+/* Button outer glow ring */
+.intro-start-btn::before {
+  content: '';
+  position: absolute;
+  inset: -8px;
+  border: 3px solid rgba(255, 0, 255, 0.5);
+  border-radius: 68px;
+  animation: btnRingPulse 2s ease-in-out infinite;
+}
+
+@keyframes btnRingPulse {
+  0%, 100% { transform: scale(1); opacity: 0.5; }
+  50% { transform: scale(1.05); opacity: 0.8; }
 }
 
 .btn-bg {
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, #ff00ff, #8800ff, #ff00ff);
-  background-size: 200% 200%;
-  animation: btnGradient 3s ease infinite;
-  border-radius: 50px;
+  background: linear-gradient(135deg, #ff00ff 0%, #cc00ff 25%, #8800ff 50%, #cc00ff 75%, #ff00ff 100%);
+  background-size: 300% 300%;
+  animation: btnGradient 4s ease infinite;
+  border-radius: 60px;
   box-shadow:
-    0 0 40px rgba(255, 0, 255, 0.5),
-    0 8px 0 #660066;
+    0 0 50px rgba(255, 0, 255, 0.6),
+    0 0 100px rgba(255, 0, 255, 0.3),
+    0 10px 0 #550055,
+    inset 0 3px 0 rgba(255, 255, 255, 0.2);
 }
 
 @keyframes btnGradient {
@@ -447,34 +651,50 @@
 }
 
 .intro-start-btn:hover {
-  transform: translateY(-4px);
+  transform: translateY(-6px) scale(1.02);
+}
+
+.intro-start-btn:hover::before {
+  border-color: rgba(255, 0, 255, 0.8);
+  animation: btnRingPulseHover 1s ease-in-out infinite;
+}
+
+@keyframes btnRingPulseHover {
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.08); opacity: 1; }
 }
 
 .intro-start-btn:hover .btn-bg {
   box-shadow:
-    0 0 60px rgba(255, 0, 255, 0.7),
-    0 12px 0 #660066;
+    0 0 80px rgba(255, 0, 255, 0.8),
+    0 0 150px rgba(255, 0, 255, 0.4),
+    0 14px 0 #550055,
+    inset 0 3px 0 rgba(255, 255, 255, 0.2);
 }
 
 .intro-start-btn:active {
-  transform: translateY(4px);
+  transform: translateY(4px) scale(0.98);
 }
 
 .intro-start-btn:active .btn-bg {
   box-shadow:
-    0 0 30px rgba(255, 0, 255, 0.5),
-    0 4px 0 #660066;
+    0 0 40px rgba(255, 0, 255, 0.5),
+    0 0 80px rgba(255, 0, 255, 0.25),
+    0 4px 0 #550055,
+    inset 0 3px 0 rgba(255, 255, 255, 0.2);
 }
 
 .btn-text {
   position: relative;
   z-index: 2;
   font-family: 'Orbitron', sans-serif;
-  font-size: 24px;
+  font-size: 28px;
   font-weight: 900;
   color: #fff;
-  letter-spacing: 8px;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  letter-spacing: 10px;
+  text-shadow:
+    0 0 20px rgba(255, 255, 255, 0.5),
+    0 3px 0 rgba(0, 0, 0, 0.3);
 }
 
 .btn-shine {
@@ -483,9 +703,10 @@
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
   animation: btnShine 2s ease-in-out infinite;
   z-index: 1;
+  border-radius: 60px;
 }
 
 @keyframes btnShine {

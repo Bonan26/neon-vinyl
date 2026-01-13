@@ -394,15 +394,22 @@ class Grid:
 
     def apply_wild_explosions(self, wild_positions: List[Tuple[int, int]]) -> List[WildExplosion]:
         """
-        Apply Wild explosion mechanic: when a Wild tumbles, all adjacent cells
+        Apply Wild explosion mechanic: when Wilds tumble, all adjacent cells
         get a multiplier determined by the Wild Wheel (random weighted selection).
 
+        IMPORTANT: All wilds in the same tumble share ONE wheel spin.
+        This means one wheel popup animation for all wilds combined.
+
         Uses 8-directional adjacency (including diagonals).
-        Returns list of WildExplosion objects for animation.
+        Returns a single WildExplosion object (or empty list) for animation.
         The wheel_multiplier is pre-determined here for provably fair gameplay,
         but the frontend will show a spinning wheel animation.
         """
-        explosions = []
+        if not wild_positions:
+            return []
+
+        # Roll the wheel ONCE for all wilds in this tumble
+        wheel_multiplier = get_wild_wheel_multiplier()
 
         # 8-directional: up, down, left, right, and 4 diagonals
         directions = [
@@ -410,12 +417,10 @@ class Grid:
             (-1, -1), (-1, 1), (1, -1), (1, 1)  # diagonals
         ]
 
+        # Collect all affected cells from all wilds (use set to avoid duplicates)
+        all_affected_cells = set()
+
         for wild_row, wild_col in wild_positions:
-            affected_cells = []
-
-            # Get the wheel multiplier for this Wild explosion
-            wheel_multiplier = get_wild_wheel_multiplier()
-
             for dr, dc in directions:
                 new_row, new_col = wild_row + dr, wild_col + dc
 
@@ -425,16 +430,17 @@ class Grid:
                     # Set to the wheel-determined multiplier
                     cell.multiplier = wheel_multiplier
                     cell.is_ghost_spot = True
-                    affected_cells.append((new_row, new_col))
+                    all_affected_cells.add((new_row, new_col))
 
-            if affected_cells:
-                explosions.append(WildExplosion(
-                    wild_position=(wild_row, wild_col),
-                    affected_cells=affected_cells,
-                    wheel_multiplier=wheel_multiplier
-                ))
+        if all_affected_cells:
+            # Return a SINGLE explosion event with all wild positions and all affected cells
+            return [WildExplosion(
+                wild_position=wild_positions[0],  # Use first wild as reference position
+                affected_cells=list(all_affected_cells),
+                wheel_multiplier=wheel_multiplier
+            )]
 
-        return explosions
+        return []
 
     def apply_gravity(self) -> List[Tuple[Tuple[int, int], Tuple[int, int]]]:
         """

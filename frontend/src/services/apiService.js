@@ -168,6 +168,23 @@ const apiService = {
   },
 
   /**
+   * Activate a boost feature (Scatter Hunt or Wild Boost)
+   * @param {Object} params
+   * @param {string} params.sessionID - Session ID
+   * @param {string} params.boostType - Boost type (scatter_boost or wild_boost)
+   * @param {number} params.betAmount - Bet amount for cost calculation
+   * @returns {Promise<{balance: number, boostType: string, spinsRemaining: number}>}
+   */
+  async activateBoost({ sessionID, boostType, betAmount }) {
+    const response = await api.post('/bonus/activate-boost', {
+      sessionID,
+      boostType,
+      betAmount,
+    });
+    return response.data;
+  },
+
+  /**
    * Get current jackpot information
    * @param {string} [sessionId] - Optional session ID
    * @returns {Promise<{jackpots: Object}>}

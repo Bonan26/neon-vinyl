@@ -142,11 +142,11 @@ for w in FREE_SPIN_WEIGHTS_LIST:
 
 # =============================================================================
 # PAYTABLE (Base Payouts per Cluster Size)
-# Balanced for ~95% RTP with tumble and multiplier mechanics
+# Balanced for ~96% RTP with tumble and multiplier mechanics
 # =============================================================================
 
 PAYTABLE: Dict[Symbol, Dict[int, float]] = {
-    # Wild pays same as DJ (best) - Calibrated for 95% RTP (+3% boost)
+    # Wild pays same as DJ (best) - Calibrated for 96% RTP
     Symbol.WILD: {
         5: 2.8, 6: 4.6, 7: 7.4, 8: 12.0, 9: 18.5,
         10: 27.8, 11: 46.4, 12: 74.2, 13: 111.2, 14: 185.4,
@@ -274,7 +274,7 @@ BONUS_BUY_OPTIONS: Dict[str, BonusBuyOption] = {
         id="free_spins_8",
         name="Buy Free Spins",
         description="Instantly trigger 8 Free Spins",
-        cost_multiplier=24.0,  # ~95% RTP based on 22.3x expected return
+        cost_multiplier=24.0,  # ~96% RTP based on expected return
         volatility="high",
         feature="free_spins",
     ),
@@ -397,5 +397,5 @@ MAX_BET: float = 100.0
 DEFAULT_BET: float = 1.0
 
 # RTP Configuration
-TARGET_RTP: float = 95.0  # Target RTP percentage
+TARGET_RTP: float = 96.0  # Target RTP percentage
 RTP_VARIANCE: float = 2.0  # Acceptable variance (+/- 2%)

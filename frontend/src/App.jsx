@@ -23,7 +23,7 @@ import './App.css';
 
 function App() {
   // Game controller for API calls
-  const { spin, rotateSeed, buyBonus, bonusTriggerSpin } = useGameController();
+  const { spin, rotateSeed, buyBonus, bonusTriggerSpin, activateBoost } = useGameController();
 
   // Event runner for animations
   const eventRunner = useEventRunner();
@@ -45,6 +45,9 @@ function App() {
   const setIsAnimating = useGameStore((state) => state.setIsAnimating);
   const freeSpinsRemaining = useGameStore((state) => state.freeSpinsRemaining);
   const freeSpinTotalWin = useGameStore((state) => state.freeSpinTotalWin);
+  const scatterBoostSpins = useGameStore((state) => state.scatterBoostSpins);
+  const wildBoostSpins = useGameStore((state) => state.wildBoostSpins);
+
   const musicEnabled = useGameStore((state) => state.musicEnabled);
   const setMusicEnabled = useGameStore((state) => state.setMusicEnabled);
   const soundEnabled = useGameStore((state) => state.soundEnabled);
@@ -424,14 +427,24 @@ function App() {
   /**
    * Handle Bonus Buy
    */
-  const handleBuyBonus = useCallback(async (bonusId) => {
+  const handleBuyBonus = useCallback(async (bonusData) => {
+    console.log('[App] handleBuyBonus called with:', bonusData);
     try {
-      return await buyBonus(bonusId);
+      // Check if this is a boost purchase (Scatter Hunt or Wild Boost)
+      if (bonusData.boostType) {
+        console.log('[App] Activating boost:', bonusData.boostType);
+        const result = await activateBoost(bonusData.boostType);
+        console.log('[App] activateBoost result:', result);
+        return result;
+      }
+      // Otherwise it's a regular bonus (free spins)
+      console.log('[App] Buying regular bonus');
+      return await buyBonus(bonusData);
     } catch (error) {
-      console.error('Bonus buy failed:', error);
+      console.error('[App] Bonus buy failed:', error);
       throw error;
     }
-  }, [buyBonus]);
+  }, [buyBonus, activateBoost]);
 
   /**
    * Handle Bonus Trigger Spin - spins the real grid then shows popup
@@ -532,10 +545,30 @@ function App() {
         </div>
       )}
 
+      {/* Boost Indicators */}
+      {(scatterBoostSpins > 0 || wildBoostSpins > 0) && (
+        <div className="boost-indicators">
+          {scatterBoostSpins > 0 && (
+            <div className="boost-indicator scatter-boost">
+              <span className="boost-icon">SC</span>
+              <span className="boost-text">Scatter Hunt</span>
+              <span className="boost-count">{scatterBoostSpins} spins</span>
+            </div>
+          )}
+          {wildBoostSpins > 0 && (
+            <div className="boost-indicator wild-boost">
+              <span className="boost-icon">WD</span>
+              <span className="boost-text">Wild Boost</span>
+              <span className="boost-count">{wildBoostSpins} spins</span>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Main Game Container */}
       <div className="game-container">
         {/* Free Spins Counter (shows when active) - positioned above game */}
-        <FreeSpinsCounter />
+        <FreeSpinsCounter hideDuringOverlay={bonusOverlay.type === 'summary'} />
         {/* Game Stage (PixiJS + GSAP) */}
         <div className="stage-wrapper">
           <GameStage onSpriteReady={handleSpriteReady} />
