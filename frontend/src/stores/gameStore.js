@@ -1,12 +1,13 @@
 /**
- * NEON VINYL: GHOST GROOVES - Game State Store
+ * LES WOLFS 86 - Game State Store
  * Zustand store for managing game state
  */
 import { create } from 'zustand';
 import { GRID_ROWS, GRID_COLS, DEFAULT_BET } from '../config/gameConfig';
 
 // Available symbols for random generation (excluding special symbols)
-const RANDOM_SYMBOLS = ['DJ', 'GV', 'HP', 'CS', 'NP', 'NB', 'NU'];
+// Wolves (high/mid) and Hats (low)
+const RANDOM_SYMBOLS = ['WR', 'WB', 'WP', 'WG', 'W6', 'WS', 'HC', 'HS', 'HW', 'HK'];
 
 // Initial empty grid
 const createEmptyGrid = () =>

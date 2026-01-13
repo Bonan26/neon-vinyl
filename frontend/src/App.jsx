@@ -1,5 +1,5 @@
 /**
- * NEON VINYL: GHOST GROOVES
+ * LES WOLFS 86
  * Main Application Component
  *
  * Integrates GSAP animations with the game flow.

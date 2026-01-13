@@ -1,5 +1,5 @@
 /**
- * WOLFIE GROOVE - Intro Screen
+ * LES WOLFS 86 - Intro Screen
  * Modern animated intro screen
  */
 import React, { useState, useEffect, useCallback, useRef } from 'react';
@@ -175,8 +175,8 @@ const IntroScreen = ({ onStart }) => {
       <div className="intro-content">
         {/* Logo Section */}
         <div className="intro-logo-section">
-          <h1 className="intro-title" ref={titleRef}>WOLFIE</h1>
-          <h2 className="intro-subtitle" ref={subtitleRef}>GROOVE</h2>
+          <h1 className="intro-title" ref={titleRef}>LES WOLFS</h1>
+          <h2 className="intro-subtitle" ref={subtitleRef}>86</h2>
         </div>
 
         {/* Max Win Badge */}

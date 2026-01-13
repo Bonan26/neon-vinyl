@@ -1,5 +1,5 @@
 """
-NEON VINYL: GHOST GROOVES - Game Configuration
+LES WOLFS 86 - Game Configuration
 Stake Engine (Carrot) Standard - Math SDK Configuration
 
 All game constants, symbol definitions, paytables, and multiplier settings.
@@ -47,23 +47,27 @@ class Symbol(Enum):
     """
     Game symbols with their identifiers.
     Values are used for serialization and API responses.
+    LES WOLFS 86 Theme
     """
     # Special Symbols
-    WILD = "WD"           # Wild - substitutes for any symbol
-    SCATTER = "SC"        # Scatter - triggers free spins
+    WILD = "WD"           # Wild - Matrix Crown
+    SCATTER = "SC"        # Scatter - Golden Wolf (triggers free spins)
 
-    # High Tier (Premium) - Rare
-    DJ_SPOOKY = "DJ"      # Ghostly DJ mascot
-    GOLD_VINYL = "GV"     # Golden vinyl record
+    # High Tier (Wolves) - Premium symbols
+    WOLF_RED = "WR"       # Red Wolf (screaming) - Best payout
+    WOLF_BLACK = "WB"     # Black Wolf
+    WOLF_PURPLE = "WP"    # Purple Gradient Wolf
 
-    # Mid Tier - Medium frequency
-    HEADPHONES = "HP"     # Neon headphones
-    CASSETTE = "CS"       # Retro cassette tape
+    # Mid Tier (Wolves) - Medium frequency
+    WOLF_GRAY = "WG"      # Gray Wolf
+    WOLF_GREEN = "W6"     # Green Snake Wolf
+    WOLF_SPIRIT = "WS"    # Spirit Wolf (dark blue)
 
-    # Low Tier - Common
-    MUSIC_NOTE_PINK = "NP"    # Pink music note
-    MUSIC_NOTE_BLUE = "NB"    # Blue music note
-    MUSIC_NOTE_PURPLE = "NU"  # Purple music note
+    # Low Tier (Hats) - Common
+    HAT_CAP = "HC"        # W86 Cap
+    HAT_STEAMPUNK = "HS"  # Steampunk Hat
+    HAT_STRAW = "HW"      # Straw Hat
+    HAT_PEACOCK = "HK"    # Peacock Feather Hat
 
 
 # Special symbol set for quick lookup
@@ -85,23 +89,24 @@ class SymbolConfig:
 
 SYMBOL_WEIGHTS: Dict[Symbol, SymbolConfig] = {
     # Special symbols - Tuned for excitement and RTP
-    # Free spins should be rare but rewarding when they hit!
-    Symbol.WILD: SymbolConfig(Symbol.WILD, SymbolTier.SPECIAL, 1),      # Rare but pays BIG
-    Symbol.SCATTER: SymbolConfig(Symbol.SCATTER, SymbolTier.SPECIAL, 1), # REDUCED - rarer free spins, better payouts
+    Symbol.WILD: SymbolConfig(Symbol.WILD, SymbolTier.SPECIAL, 1),      # Matrix Crown - Rare but pays BIG
+    Symbol.SCATTER: SymbolConfig(Symbol.SCATTER, SymbolTier.SPECIAL, 1), # Golden Wolf - triggers free spins
 
-    # High tier - rare (weight 8-12)
-    Symbol.DJ_SPOOKY: SymbolConfig(Symbol.DJ_SPOOKY, SymbolTier.HIGH, 8),
-    Symbol.GOLD_VINYL: SymbolConfig(Symbol.GOLD_VINYL, SymbolTier.HIGH, 12),
+    # High tier wolves - rare (weight 6-10)
+    Symbol.WOLF_RED: SymbolConfig(Symbol.WOLF_RED, SymbolTier.HIGH, 6),     # Red Wolf - best payout
+    Symbol.WOLF_BLACK: SymbolConfig(Symbol.WOLF_BLACK, SymbolTier.HIGH, 8),  # Black Wolf
+    Symbol.WOLF_PURPLE: SymbolConfig(Symbol.WOLF_PURPLE, SymbolTier.HIGH, 10), # Purple Wolf
 
-    # Mid tier - medium (weight 18-22)
-    Symbol.HEADPHONES: SymbolConfig(Symbol.HEADPHONES, SymbolTier.MID, 18),
-    Symbol.CASSETTE: SymbolConfig(Symbol.CASSETTE, SymbolTier.MID, 22),
+    # Mid tier wolves - medium (weight 14-20)
+    Symbol.WOLF_GRAY: SymbolConfig(Symbol.WOLF_GRAY, SymbolTier.MID, 14),
+    Symbol.WOLF_GREEN: SymbolConfig(Symbol.WOLF_GREEN, SymbolTier.MID, 17),
+    Symbol.WOLF_SPIRIT: SymbolConfig(Symbol.WOLF_SPIRIT, SymbolTier.MID, 20),
 
-    # Low tier - common but MORE SPREAD (weight 28-38)
-    # More variety = harder to cluster
-    Symbol.MUSIC_NOTE_PINK: SymbolConfig(Symbol.MUSIC_NOTE_PINK, SymbolTier.LOW, 28),
-    Symbol.MUSIC_NOTE_BLUE: SymbolConfig(Symbol.MUSIC_NOTE_BLUE, SymbolTier.LOW, 38),
-    Symbol.MUSIC_NOTE_PURPLE: SymbolConfig(Symbol.MUSIC_NOTE_PURPLE, SymbolTier.LOW, 32),
+    # Low tier hats - common (weight 25-35)
+    Symbol.HAT_CAP: SymbolConfig(Symbol.HAT_CAP, SymbolTier.LOW, 25),
+    Symbol.HAT_STEAMPUNK: SymbolConfig(Symbol.HAT_STEAMPUNK, SymbolTier.LOW, 28),
+    Symbol.HAT_STRAW: SymbolConfig(Symbol.HAT_STRAW, SymbolTier.LOW, 32),
+    Symbol.HAT_PEACOCK: SymbolConfig(Symbol.HAT_PEACOCK, SymbolTier.LOW, 35),
 }
 
 # Weights for regular spins (includes Wild and Scatter)
@@ -118,17 +123,19 @@ for w in WEIGHTS_LIST:
 
 # Weights for Free Spins (WITH Scatter for retriggers!)
 # IMPORTANT: Scatter can land during free spins for retrigger mechanic
-# Scatter weight reduced to make retriggres rarer but more rewarding
 FREE_SPIN_WEIGHTS: Dict[Symbol, int] = {
-    Symbol.WILD: 1,  # Same as base game - rare but powerful
-    Symbol.SCATTER: 1,  # REDUCED from 2 - retriggres should be rare but rewarding
-    Symbol.DJ_SPOOKY: 8,
-    Symbol.GOLD_VINYL: 12,
-    Symbol.HEADPHONES: 18,
-    Symbol.CASSETTE: 22,
-    Symbol.MUSIC_NOTE_PINK: 28,
-    Symbol.MUSIC_NOTE_BLUE: 38,
-    Symbol.MUSIC_NOTE_PURPLE: 32,
+    Symbol.WILD: 1,  # Matrix Crown - rare but powerful
+    Symbol.SCATTER: 1,  # Golden Wolf - rare retriggres
+    Symbol.WOLF_RED: 6,
+    Symbol.WOLF_BLACK: 8,
+    Symbol.WOLF_PURPLE: 10,
+    Symbol.WOLF_GRAY: 14,
+    Symbol.WOLF_GREEN: 17,
+    Symbol.WOLF_SPIRIT: 20,
+    Symbol.HAT_CAP: 25,
+    Symbol.HAT_STEAMPUNK: 28,
+    Symbol.HAT_STRAW: 32,
+    Symbol.HAT_PEACOCK: 35,
 }
 FREE_SPIN_SYMBOLS_LIST = list(FREE_SPIN_WEIGHTS.keys())
 FREE_SPIN_WEIGHTS_LIST = list(FREE_SPIN_WEIGHTS.values())
@@ -148,54 +155,71 @@ for w in FREE_SPIN_WEIGHTS_LIST:
 # =============================================================================
 
 PAYTABLE: Dict[Symbol, Dict[int, float]] = {
-    # Wild pays same as DJ (best) - Calibrated for 96% RTP (x1.025 boost)
+    # Wild (Matrix Crown) pays same as best wolf
     Symbol.WILD: {
         5: 0.65, 6: 1.07, 7: 1.72, 8: 2.89, 9: 4.32,
         10: 6.55, 11: 10.71, 12: 17.28, 13: 26.21, 14: 43.20,
         15: 65.53,
     },
-    # Scatter - no direct payout, triggers free spins
+    # Scatter (Golden Wolf) - no direct payout, triggers free spins
     Symbol.SCATTER: {
         3: 0.0, 4: 0.0, 5: 0.0, 6: 0.0, 7: 0.0,
         8: 0.0, 9: 0.0, 10: 0.0, 11: 0.0, 12: 0.0,
         15: 0.0,
     },
-    # High Tier: DJ Spooky (best payouts)
-    Symbol.DJ_SPOOKY: {
+    # High Tier: Red Wolf (best payouts)
+    Symbol.WOLF_RED: {
         5: 0.65, 6: 1.07, 7: 1.72, 8: 2.89, 9: 4.32,
         10: 6.55, 11: 10.71, 12: 17.28, 13: 26.21, 14: 43.20,
         15: 65.53,
     },
-    # High Tier: Gold Vinyl
-    Symbol.GOLD_VINYL: {
+    # High Tier: Black Wolf
+    Symbol.WOLF_BLACK: {
+        5: 0.50, 6: 0.85, 7: 1.50, 8: 2.50, 9: 3.80,
+        10: 5.80, 11: 9.50, 12: 15.00, 13: 23.00, 14: 38.00,
+        15: 58.00,
+    },
+    # High Tier: Purple Wolf
+    Symbol.WOLF_PURPLE: {
         5: 0.44, 6: 0.73, 7: 1.31, 8: 2.17, 9: 3.49,
         10: 5.23, 11: 8.64, 12: 13.77, 13: 21.64, 14: 34.76,
         15: 52.23,
     },
-    # Mid Tier: Headphones
-    Symbol.HEADPHONES: {
+    # Mid Tier: Gray Wolf
+    Symbol.WOLF_GRAY: {
+        5: 0.30, 6: 0.50, 7: 0.85, 8: 1.40, 9: 2.20,
+        10: 3.50, 11: 6.00, 12: 9.00, 13: 15.00, 14: 25.00,
+        15: 38.00,
+    },
+    # Mid Tier: Green Wolf
+    Symbol.WOLF_GREEN: {
         5: 0.27, 6: 0.44, 7: 0.73, 8: 1.24, 9: 1.96,
         10: 3.03, 11: 5.23, 12: 7.88, 13: 13.10, 14: 21.64,
         15: 32.75,
     },
-    # Mid Tier: Cassette
-    Symbol.CASSETTE: {
-        5: 0.18, 6: 0.30, 7: 0.51, 8: 0.86, 9: 1.38,
-        10: 2.17, 11: 3.66, 12: 6.08, 13: 9.50, 14: 15.11,
-        15: 23.55,
+    # Mid Tier: Spirit Wolf
+    Symbol.WOLF_SPIRIT: {
+        5: 0.22, 6: 0.38, 7: 0.62, 8: 1.05, 9: 1.68,
+        10: 2.60, 11: 4.40, 12: 7.00, 13: 11.20, 14: 18.00,
+        15: 28.00,
     },
-    # Low Tier: Music Notes - Low payouts (they win most often!)
-    Symbol.MUSIC_NOTE_PINK: {
+    # Low Tier: Hats - Lower payouts (they win most often!)
+    Symbol.HAT_CAP: {
+        5: 0.10, 6: 0.18, 7: 0.30, 8: 0.50, 9: 0.80,
+        10: 1.20, 11: 2.00, 12: 3.20, 13: 5.20, 14: 8.50,
+        15: 13.00,
+    },
+    Symbol.HAT_STEAMPUNK: {
+        5: 0.08, 6: 0.14, 7: 0.24, 8: 0.40, 9: 0.65,
+        10: 1.00, 11: 1.70, 12: 2.70, 13: 4.40, 14: 7.00,
+        15: 10.50,
+    },
+    Symbol.HAT_STRAW: {
         5: 0.062, 6: 0.105, 7: 0.162, 8: 0.295, 9: 0.476,
         10: 0.721, 11: 1.24, 12: 2.03, 13: 3.28, 14: 5.23,
         15: 7.88,
     },
-    Symbol.MUSIC_NOTE_BLUE: {
-        5: 0.062, 6: 0.105, 7: 0.162, 8: 0.295, 9: 0.476,
-        10: 0.721, 11: 1.24, 12: 2.03, 13: 3.28, 14: 5.23,
-        15: 7.88,
-    },
-    Symbol.MUSIC_NOTE_PURPLE: {
+    Symbol.HAT_PEACOCK: {
         5: 0.062, 6: 0.105, 7: 0.162, 8: 0.295, 9: 0.476,
         10: 0.721, 11: 1.24, 12: 2.03, 13: 3.28, 14: 5.23,
         15: 7.88,

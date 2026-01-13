@@ -1,40 +1,53 @@
-/* NEON VINYL: GHOST GROOVES - Global Styles */
+/* LES WOLFS 86 - Global Styles */
+/* Clean, muted design inspired by "Le Bandit" */
 
 :root {
-  /* Neon Colors - More vibrant */
-  --neon-pink: #ff00ff;
-  --neon-blue: #00ffff;
-  --neon-purple: #bf00ff;
-  --neon-green: #00ff88;
-  --neon-orange: #ff6b00;
-  --neon-yellow: #ffee00;
-  --neon-gold: #ffd700;
-  --neon-red: #ff3366;
+  /* Primary Colors - Warm browns and gold */
+  --gold: #f5d742;
+  --gold-dark: #c4a030;
+  --gold-light: #ffe066;
+  --brown-dark: #1a1510;
+  --brown-mid: #2a2520;
+  --brown-light: #3a3530;
+  --gray-dark: #3d3d3d;
+  --gray-mid: #4a4a4a;
+  --green-accent: #00cc00;
+  --red-accent: #cc3333;
 
-  /* Background Colors - Richer purples */
-  --bg-dark: #0d0518;
-  --bg-darker: #08020f;
-  --bg-card: #1a0a2e;
-  --bg-card-hover: #2d1050;
+  /* Legacy neon colors (for compatibility) */
+  --neon-pink: #f5d742;
+  --neon-blue: #f5d742;
+  --neon-purple: #8b7355;
+  --neon-green: #00cc00;
+  --neon-orange: #cc6633;
+  --neon-yellow: #f5d742;
+  --neon-gold: #f5d742;
+  --neon-red: #cc3333;
+
+  /* Background Colors */
+  --bg-dark: #1a1814;
+  --bg-darker: #0f0d0a;
+  --bg-card: #2a2520;
+  --bg-card-hover: #3a3530;
 
   /* Text Colors */
   --text-primary: #ffffff;
-  --text-secondary: #c0b0d0;
-  --text-muted: #8070a0;
+  --text-secondary: #c0b8a0;
+  --text-muted: #807060;
 
-  /* Multiplier Colors */
-  --mult-2x: #00ffff;
-  --mult-4x: #00ff66;
-  --mult-8x: #ffff00;
-  --mult-16x: #ff6600;
-  --mult-32x: #ff00ff;
-  --mult-64x: #ff0066;
-  --mult-128x: #ff0000;
+  /* Multiplier Colors - Golden spectrum */
+  --mult-2x: #66ccff;
+  --mult-4x: #66ff66;
+  --mult-8x: #f5d742;
+  --mult-16x: #ff9933;
+  --mult-32x: #ff6666;
+  --mult-64x: #ff66cc;
+  --mult-128x: #ff3333;
   --mult-256x: #ffffff;
 
   /* Fonts */
-  --font-display: 'Orbitron', monospace;
-  --font-body: 'Rajdhani', sans-serif;
+  --font-display: 'Arial Black', sans-serif;
+  --font-body: 'Arial', sans-serif;
 
   /* Sizes */
   --cell-size: 80px;
@@ -64,36 +77,25 @@ body {
   align-items: center;
 }
 
-/* Neon Glow Effects */
+/* Glow Effects - Subtle gold */
 .neon-glow {
   text-shadow:
-    0 0 5px currentColor,
-    0 0 10px currentColor,
-    0 0 20px currentColor,
-    0 0 40px currentColor;
+    0 0 5px var(--gold),
+    0 0 10px var(--gold),
+    0 0 20px var(--gold);
 }
 
 .neon-box-glow {
   box-shadow:
-    0 0 5px currentColor,
-    0 0 10px currentColor,
-    0 0 20px currentColor,
-    inset 0 0 10px rgba(255,255,255,0.1);
+    0 0 5px var(--gold),
+    0 0 10px var(--gold),
+    0 0 20px var(--gold);
 }
 
 /* Animations */
 @keyframes pulse-glow {
   0%, 100% { opacity: 1; }
   50% { opacity: 0.7; }
-}
-
-@keyframes neon-flicker {
-  0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
-    opacity: 1;
-  }
-  20%, 24%, 55% {
-    opacity: 0.4;
-  }
 }
 
 @keyframes spin-slow {
@@ -109,22 +111,18 @@ body {
 
 @keyframes win-flash {
   0%, 100% { filter: brightness(1); }
-  50% { filter: brightness(2) saturate(1.5); }
+  50% { filter: brightness(1.5) saturate(1.2); }
 }
 
 @keyframes multiplier-upgrade {
   0% { transform: scale(1); }
-  50% { transform: scale(1.3); filter: brightness(2); }
+  50% { transform: scale(1.3); filter: brightness(1.5); }
   100% { transform: scale(1); }
 }
 
 /* Utility Classes */
 .animate-pulse-glow {
   animation: pulse-glow 2s ease-in-out infinite;
-}
-
-.animate-neon-flicker {
-  animation: neon-flicker 3s infinite;
 }
 
 .animate-spin-slow {

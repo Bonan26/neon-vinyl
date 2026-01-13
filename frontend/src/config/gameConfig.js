@@ -1,5 +1,5 @@
 /**
- * NEON VINYL: GHOST GROOVES - Game Configuration
+ * LES WOLFS 86 - Game Configuration
  * Frontend configuration mirroring backend settings
  */
 
@@ -17,21 +17,24 @@ export const GRID_HEIGHT = GRID_ROWS * CELL_SIZE + (GRID_ROWS - 1) * CELL_GAP;
 export const STAGE_WIDTH = 900;
 export const STAGE_HEIGHT = 700;
 
-// Symbol mapping
+// Symbol mapping - Les Wolfs 86 Theme
 export const SYMBOLS = {
   // Special symbols
-  WD: { id: 'WD', name: 'Wild', tier: 'special', color: 0xffd700, isWild: true },
-  SC: { id: 'SC', name: 'Scatter', tier: 'special', color: 0x00ff88, isScatter: true },
-  // High tier
-  DJ: { id: 'DJ', name: 'DJ Spooky', tier: 'high', color: 0xff00ff },
-  GV: { id: 'GV', name: 'Gold Vinyl', tier: 'high', color: 0xffd700 },
-  // Mid tier
-  HP: { id: 'HP', name: 'Headphones', tier: 'mid', color: 0x00ffff },
-  CS: { id: 'CS', name: 'Cassette', tier: 'mid', color: 0xff6600 },
-  // Low tier
-  NP: { id: 'NP', name: 'Note Pink', tier: 'low', color: 0xff69b4 },
-  NB: { id: 'NB', name: 'Note Blue', tier: 'low', color: 0x00bfff },
-  NU: { id: 'NU', name: 'Note Purple', tier: 'low', color: 0xbf00ff },
+  WD: { id: 'WD', name: 'Wild', tier: 'special', color: 0x00ff00, isWild: true },  // Matrix Crown
+  SC: { id: 'SC', name: 'Scatter', tier: 'special', color: 0xf5d742, isScatter: true },  // Golden Wolf
+  // High tier - Wolves
+  WR: { id: 'WR', name: 'Red Wolf', tier: 'high', color: 0xcc3333 },
+  WB: { id: 'WB', name: 'Black Wolf', tier: 'high', color: 0x333333 },
+  WP: { id: 'WP', name: 'Purple Wolf', tier: 'high', color: 0x9966cc },
+  // Mid tier - Wolves
+  WG: { id: 'WG', name: 'Gray Wolf', tier: 'mid', color: 0x888888 },
+  W6: { id: 'W6', name: 'Green Wolf', tier: 'mid', color: 0x339933 },
+  WS: { id: 'WS', name: 'Spirit Wolf', tier: 'mid', color: 0x334466 },
+  // Low tier - Hats
+  HC: { id: 'HC', name: 'Cap W86', tier: 'low', color: 0x224422 },
+  HS: { id: 'HS', name: 'Steampunk Hat', tier: 'low', color: 0x996633 },
+  HW: { id: 'HW', name: 'Straw Hat', tier: 'low', color: 0xccaa33 },
+  HK: { id: 'HK', name: 'Peacock Hat', tier: 'low', color: 0x339999 },
 };
 
 // Free spins configuration
