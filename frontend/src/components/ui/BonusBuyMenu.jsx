@@ -1,40 +1,46 @@
 /**
  * NEON VINYL: GHOST GROOVES - Bonus Buy Menu
  * Dynamic bonus purchase popup with integrated bet selector
+ * Includes boost toggles (Scatter Hunt / Wild Boost) and free spins purchase
  */
 import React, { useCallback, useState } from 'react';
 import useGameStore from '../../stores/gameStore';
 import { BET_OPTIONS } from '../../config/gameConfig';
 import './BonusBuyMenu.css';
 
-// Bonus multipliers (cost = bet * multiplier)
-// Must match backend BONUS_BUY_OPTIONS in game_config.py
-const BONUS_OPTIONS = [
+// Boost toggles - these multiply cost per spin while active
+const BOOST_OPTIONS = [
   {
     id: 'scatter_hunt',
     name: 'Scatter Hunt',
-    scatters: 0,
     multiplier: 2,
-    description: '3x scatter chance for 10 spins',
+    description: '3x scatter chance',
+    costLabel: '2x bet/spin',
     color: '#00ff88',
     icon: 'SC',
-    feature: 'scatter_boost',
+    storeKey: 'scatterBoostActive',
+    toggleAction: 'toggleScatterBoost',
   },
   {
     id: 'wild_boost',
     name: 'Wild Boost',
-    scatters: 0,
     multiplier: 5,
-    description: '5x wild chance for 5 spins',
+    description: '5x wild chance',
+    costLabel: '5x bet/spin',
     color: '#ff6600',
     icon: 'WD',
-    feature: 'wild_boost',
+    storeKey: 'wildBoostActive',
+    toggleAction: 'toggleWildBoost',
   },
+];
+
+// Bonus buy options - one-time purchase for free spins
+const BONUS_OPTIONS = [
   {
     id: 'standard',
     name: 'Free Spins',
     scatters: 3,
-    multiplier: 24,
+    multiplier: 100,  // x100 bet cost
     description: '8 guaranteed free spins',
     color: '#ff00ff',
     icon: '3x',
@@ -44,7 +50,7 @@ const BONUS_OPTIONS = [
     id: 'super',
     name: 'Super Spins',
     scatters: 4,
-    multiplier: 36,
+    multiplier: 200,  // x200 bet cost
     description: '12 spins + x2 multiplier start',
     color: '#ffd700',
     icon: '4x',
@@ -60,7 +66,28 @@ const BonusBuyMenu = ({ onBuyBonus, onBonusTriggerSpin, disabled }) => {
   const setBetAmount = useGameStore((state) => state.setBetAmount);
   const freeSpinsRemaining = useGameStore((state) => state.freeSpinsRemaining);
 
+  // Boost toggle states
+  const scatterBoostActive = useGameStore((state) => state.scatterBoostActive);
+  const wildBoostActive = useGameStore((state) => state.wildBoostActive);
+  const toggleScatterBoost = useGameStore((state) => state.toggleScatterBoost);
+  const toggleWildBoost = useGameStore((state) => state.toggleWildBoost);
+  const getEffectiveBet = useGameStore((state) => state.getEffectiveBet);
+
   const [selectedBonus, setSelectedBonus] = useState(null);
+
+  // Get boost active state by ID
+  const isBoostActive = useCallback((boostId) => {
+    if (boostId === 'scatter_hunt') return scatterBoostActive;
+    if (boostId === 'wild_boost') return wildBoostActive;
+    return false;
+  }, [scatterBoostActive, wildBoostActive]);
+
+  // Handle boost toggle
+  const handleBoostToggle = useCallback((boostId) => {
+    if (disabled || freeSpinsRemaining > 0) return;
+    if (boostId === 'scatter_hunt') toggleScatterBoost();
+    if (boostId === 'wild_boost') toggleWildBoost();
+  }, [disabled, freeSpinsRemaining, toggleScatterBoost, toggleWildBoost]);
 
   const handleBetChange = useCallback((direction) => {
     const currentIndex = BET_OPTIONS.indexOf(betAmount);
@@ -91,7 +118,7 @@ const BonusBuyMenu = ({ onBuyBonus, onBonusTriggerSpin, disabled }) => {
     setSelectedBonus(null);
     toggleBonusMenu();
 
-    // Handle different bonus types
+    // Handle free spins purchase (boost toggles are handled separately)
     if (feature === 'free_spins') {
       // Standard free spins - trigger with 3 scatters
       console.log('[BonusBuyMenu] Triggering free spins');
@@ -108,24 +135,8 @@ const BonusBuyMenu = ({ onBuyBonus, onBonusTriggerSpin, disabled }) => {
         bonusType,
         scatterCount: 4,
       });
-    } else if (feature === 'scatter_boost' || feature === 'wild_boost') {
-      // Scatter Hunt or Wild Boost - activate boost mode
-      console.log('[BonusBuyMenu] Activating boost:', feature);
-      const boostData = {
-        bonusId: bonusType,
-        feature,
-        cost: betAmount * selectedBonus.multiplier,
-        boostType: feature,
-      };
-      console.log('[BonusBuyMenu] Calling onBuyBonus with:', boostData);
-      try {
-        const result = await onBuyBonus?.(boostData);
-        console.log('[BonusBuyMenu] onBuyBonus result:', result);
-      } catch (err) {
-        console.error('[BonusBuyMenu] onBuyBonus error:', err);
-      }
     }
-  }, [selectedBonus, onBonusTriggerSpin, onBuyBonus, toggleBonusMenu, betAmount]);
+  }, [selectedBonus, onBonusTriggerSpin, toggleBonusMenu, betAmount]);
 
   const handleCancelBuy = useCallback(() => {
     setSelectedBonus(null);
@@ -175,43 +186,88 @@ const BonusBuyMenu = ({ onBuyBonus, onBonusTriggerSpin, disabled }) => {
           </div>
         </div>
 
-        {/* Bonus Options */}
-        <div className="bonus-options">
-          {BONUS_OPTIONS.map((bonus) => {
-            const cost = betAmount * bonus.multiplier;
-            const canAfford = balance >= cost;
-            const isDisabled = disabled || !canAfford || freeSpinsRemaining > 0;
+        {/* Boost Toggles Section */}
+        <div className="boost-section">
+          <h3 className="section-title">BOOST MODE</h3>
+          <p className="section-subtitle">Toggle ON to boost your next spins (cost per spin)</p>
+          <div className="boost-toggles">
+            {BOOST_OPTIONS.map((boost) => {
+              const active = isBoostActive(boost.id);
+              const isDisabled = disabled || freeSpinsRemaining > 0;
+              const perSpinCost = betAmount * boost.multiplier;
 
-            return (
-              <div
-                key={bonus.id}
-                className={`bonus-card ${isDisabled ? 'disabled' : ''} ${!isDisabled && canAfford ? 'clickable' : ''}`}
-                style={{ '--accent-color': bonus.color }}
-                onClick={() => handleCardClick(bonus, canAfford, isDisabled)}
-              >
-                {/* Info */}
-                <div className="bonus-info">
-                  <h3>{bonus.name}</h3>
-                  <div className="bonus-multiplier">
-                    {bonus.multiplier}x bet
+              return (
+                <div
+                  key={boost.id}
+                  className={`boost-toggle-card ${active ? 'active' : ''} ${isDisabled ? 'disabled' : ''}`}
+                  style={{ '--accent-color': boost.color }}
+                  onClick={() => handleBoostToggle(boost.id)}
+                >
+                  <div className="boost-toggle-info">
+                    <span className="boost-name">{boost.name}</span>
+                    <span className="boost-desc">{boost.description}</span>
+                  </div>
+                  <div className="boost-toggle-cost">
+                    <span className="cost-label">{boost.costLabel}</span>
+                    <span className="cost-value">${perSpinCost.toFixed(2)}/spin</span>
+                  </div>
+                  <div className={`boost-switch ${active ? 'on' : 'off'}`}>
+                    <span className="switch-label">{active ? 'ON' : 'OFF'}</span>
                   </div>
                 </div>
+              );
+            })}
+          </div>
+          {/* Show effective spin cost when boosts are active */}
+          {(scatterBoostActive || wildBoostActive) && (
+            <div className="effective-cost-display">
+              <span className="effective-label">Effective spin cost:</span>
+              <span className="effective-value">${getEffectiveBet().toFixed(2)}</span>
+            </div>
+          )}
+        </div>
 
-                {/* Price Display */}
-                <div className="bonus-price-display">
-                  <span className="price-label">PRICE</span>
-                  <span className="price-value">${cost.toFixed(2)}</span>
-                </div>
+        {/* Divider */}
+        <div className="section-divider" />
 
-                {/* Status indicator */}
-                {!canAfford && (
-                  <div className="bonus-status insufficient">
-                    Insufficient balance
+        {/* Free Spins Purchase Section */}
+        <div className="freespins-section">
+          <h3 className="section-title">BUY FREE SPINS</h3>
+          <div className="bonus-options">
+            {BONUS_OPTIONS.map((bonus) => {
+              const cost = betAmount * bonus.multiplier;
+              const canAfford = balance >= cost;
+              const isDisabled = disabled || !canAfford || freeSpinsRemaining > 0;
+
+              return (
+                <div
+                  key={bonus.id}
+                  className={`bonus-card ${isDisabled ? 'disabled' : ''} ${!isDisabled && canAfford ? 'clickable' : ''}`}
+                  style={{ '--accent-color': bonus.color }}
+                  onClick={() => handleCardClick(bonus, canAfford, isDisabled)}
+                >
+                  {/* Info */}
+                  <div className="bonus-info">
+                    <h3>{bonus.name}</h3>
+                    <div className="bonus-description">{bonus.description}</div>
                   </div>
-                )}
-              </div>
-            );
-          })}
+
+                  {/* Price Display */}
+                  <div className="bonus-price-display">
+                    <span className="price-label">{bonus.multiplier}x bet</span>
+                    <span className="price-value">${cost.toFixed(2)}</span>
+                  </div>
+
+                  {/* Status indicator */}
+                  {!canAfford && (
+                    <div className="bonus-status insufficient">
+                      Insufficient balance
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
         </div>
 
         {/* Balance Footer */}

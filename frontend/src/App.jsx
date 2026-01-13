@@ -13,7 +13,6 @@ import BonusBuyIntro from './components/ui/BonusBuyIntro';
 import FreeSpinsCounter from './components/ui/FreeSpinsCounter';
 import BonusOverlay from './components/ui/BonusOverlay';
 import IntroScreen from './components/ui/IntroScreen';
-import WildWheelPopup from './components/ui/WildWheelPopup';
 import WinCelebration from './components/ui/WinCelebration';
 import useGameController from './hooks/useGameController';
 import useEventRunner from './hooks/useEventRunner';
@@ -34,7 +33,6 @@ function App() {
     setOnBonusTrigger,
     setOnBonusEnd,
     setOnWinPopup,
-    setOnWildExplosion,
     setOnSpinWin,
   } = eventRunner;
 
@@ -82,11 +80,6 @@ function App() {
     betAmount: 1,
   });
 
-  // Wild wheel popup state (spinning wheel to determine multiplier)
-  const [wildWheel, setWildWheel] = useState({
-    show: false,
-    targetMultiplier: 64,
-  });
 
   // Bonus buy intro state
   const [bonusIntro, setBonusIntro] = useState({
@@ -100,8 +93,6 @@ function App() {
   const wasInFreeSpinsRef = useRef(false);
   const bonusTotalWinRef = useRef(0);
 
-  // Wild wheel popup resolve ref
-  const wildWheelResolveRef = useRef(null);
 
   // Bonus overlay resolve ref (for summary popup)
   const bonusOverlayResolveRef = useRef(null);
@@ -152,19 +143,6 @@ function App() {
       setTimeout(() => setWinPopup(null), 1500);
     });
 
-    // Callback for wild wheel popup (spinning wheel to determine multiplier)
-    setOnWildExplosion(async ({ wildPosition, affectedCells, wheelMultiplier }) => {
-      return new Promise((resolve) => {
-        setWildWheel({
-          show: true,
-          targetMultiplier: wheelMultiplier,
-        });
-        // The wheel component will call onComplete which resolves
-        // Store the resolve function so onComplete can call it
-        wildWheelResolveRef.current = resolve;
-      });
-    });
-
     // Callback for big win celebration (tiered popup)
     setOnSpinWin(async ({ amount, betAmount }) => {
       // Only show celebration for wins that qualify (>= 2x bet)
@@ -183,7 +161,7 @@ function App() {
         winCelebrationResolveRef.current = resolve;
       });
     });
-  }, [setOnBonusTrigger, setOnBonusEnd, setOnWinPopup, setOnWildExplosion, setOnSpinWin]);
+  }, [setOnBonusTrigger, setOnBonusEnd, setOnWinPopup, setOnSpinWin]);
 
   // Handle bonus overlay complete
   const handleBonusOverlayComplete = useCallback(() => {
@@ -195,20 +173,6 @@ function App() {
     }
   }, []);
 
-  // Handle wild wheel popup complete
-  const handleWildWheelComplete = useCallback((multiplier) => {
-    setWildWheel({ show: false, targetMultiplier: 64 });
-    // Resolve the promise to continue event processing
-    if (wildWheelResolveRef.current) {
-      wildWheelResolveRef.current();
-      wildWheelResolveRef.current = null;
-    }
-  }, []);
-
-  // Handle wheel spin start - play wheel sound
-  const handleWheelSpinStart = useCallback(() => {
-    audioService.playWheelSpinSound?.();
-  }, []);
 
   // Handle win celebration popup complete
   const handleWinCelebrationComplete = useCallback(() => {
@@ -277,6 +241,33 @@ function App() {
 
   // Sprite refs storage
   const spriteRefs = useRef(new Map());
+
+  // Keyboard controls: spacebar to spin, spam to skip
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      // Spacebar to spin or skip animations
+      if (e.code === 'Space') {
+        e.preventDefault();
+
+        // If animating, trigger turbo mode to speed up
+        if (isAnimating || isRunning) {
+          // Signal to speed up - we'll use a store action
+          useGameStore.getState().triggerTurbo?.();
+          return;
+        }
+
+        // If can spin, trigger spin
+        if (!isSpinning && !isAnimating && !isRunning && gameState === GameState.BASE_GAME) {
+          if (handleSpinRef.current) {
+            handleSpinRef.current();
+          }
+        }
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [isSpinning, isAnimating, isRunning, gameState]);
 
   /**
    * Handle sprite registration from Grid/Cell components
@@ -622,13 +613,6 @@ function App() {
         onComplete={handleBonusOverlayComplete}
       />
 
-      {/* Wild Wheel Popup (spinning wheel for multiplier) */}
-      <WildWheelPopup
-        show={wildWheel.show}
-        targetMultiplier={wildWheel.targetMultiplier}
-        onComplete={handleWildWheelComplete}
-        onSpinStart={handleWheelSpinStart}
-      />
 
       {/* Win Celebration (Big Win Tier Popup) */}
       <WinCelebration

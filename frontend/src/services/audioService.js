@@ -24,8 +24,8 @@ class AudioService {
 
     await Tone.start();
 
-    // Master volume control
-    this.masterVolume = new Tone.Volume(-6).toDestination();
+    // Master volume control - lowered for better balance
+    this.masterVolume = new Tone.Volume(-15).toDestination();
 
     // Create effects chain
     this.effects.reverb = new Tone.Reverb({

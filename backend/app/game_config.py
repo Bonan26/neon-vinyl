@@ -84,9 +84,10 @@ class SymbolConfig:
 # =============================================================================
 
 SYMBOL_WEIGHTS: Dict[Symbol, SymbolConfig] = {
-    # Special symbols - EXTREMELY rare to control RTP
-    Symbol.WILD: SymbolConfig(Symbol.WILD, SymbolTier.SPECIAL, 1),      # Reduced from 3
-    Symbol.SCATTER: SymbolConfig(Symbol.SCATTER, SymbolTier.SPECIAL, 1), # Reduced from 2
+    # Special symbols - Tuned for excitement and RTP
+    # Free spins should be rare but rewarding when they hit!
+    Symbol.WILD: SymbolConfig(Symbol.WILD, SymbolTier.SPECIAL, 1),      # Rare but pays BIG
+    Symbol.SCATTER: SymbolConfig(Symbol.SCATTER, SymbolTier.SPECIAL, 1), # REDUCED - rarer free spins, better payouts
 
     # High tier - rare (weight 8-12)
     Symbol.DJ_SPOOKY: SymbolConfig(Symbol.DJ_SPOOKY, SymbolTier.HIGH, 8),
@@ -117,9 +118,10 @@ for w in WEIGHTS_LIST:
 
 # Weights for Free Spins (WITH Scatter for retriggers!)
 # IMPORTANT: Scatter can land during free spins for retrigger mechanic
+# Scatter weight reduced to make retriggres rarer but more rewarding
 FREE_SPIN_WEIGHTS: Dict[Symbol, int] = {
-    Symbol.WILD: 1,  # Same as base game
-    Symbol.SCATTER: 1,  # Can land during free spins for retrigger!
+    Symbol.WILD: 1,  # Same as base game - rare but powerful
+    Symbol.SCATTER: 1,  # REDUCED from 2 - retriggres should be rare but rewarding
     Symbol.DJ_SPOOKY: 8,
     Symbol.GOLD_VINYL: 12,
     Symbol.HEADPHONES: 18,
@@ -146,11 +148,11 @@ for w in FREE_SPIN_WEIGHTS_LIST:
 # =============================================================================
 
 PAYTABLE: Dict[Symbol, Dict[int, float]] = {
-    # Wild pays same as DJ (best) - Calibrated for 96% RTP with Wild explosion on current round
+    # Wild pays same as DJ (best) - Calibrated for 96% RTP (x1.025 boost)
     Symbol.WILD: {
-        5: 0.69, 6: 1.13, 7: 1.82, 8: 3.03, 9: 4.55,
-        10: 6.9, 11: 11.3, 12: 18.2, 13: 27.6, 14: 45.5,
-        15: 69.0,
+        5: 0.65, 6: 1.07, 7: 1.72, 8: 2.89, 9: 4.32,
+        10: 6.55, 11: 10.71, 12: 17.28, 13: 26.21, 14: 43.20,
+        15: 65.53,
     },
     # Scatter - no direct payout, triggers free spins
     Symbol.SCATTER: {
@@ -160,43 +162,43 @@ PAYTABLE: Dict[Symbol, Dict[int, float]] = {
     },
     # High Tier: DJ Spooky (best payouts)
     Symbol.DJ_SPOOKY: {
-        5: 0.69, 6: 1.13, 7: 1.82, 8: 3.03, 9: 4.55,
-        10: 6.9, 11: 11.3, 12: 18.2, 13: 27.6, 14: 45.5,
-        15: 69.0,
+        5: 0.65, 6: 1.07, 7: 1.72, 8: 2.89, 9: 4.32,
+        10: 6.55, 11: 10.71, 12: 17.28, 13: 26.21, 14: 43.20,
+        15: 65.53,
     },
     # High Tier: Gold Vinyl
     Symbol.GOLD_VINYL: {
-        5: 0.46, 6: 0.76, 7: 1.38, 8: 2.28, 9: 3.66,
-        10: 5.5, 11: 9.1, 12: 14.5, 13: 22.8, 14: 36.6,
-        15: 55.0,
+        5: 0.44, 6: 0.73, 7: 1.31, 8: 2.17, 9: 3.49,
+        10: 5.23, 11: 8.64, 12: 13.77, 13: 21.64, 14: 34.76,
+        15: 52.23,
     },
     # Mid Tier: Headphones
     Symbol.HEADPHONES: {
-        5: 0.28, 6: 0.46, 7: 0.76, 8: 1.31, 9: 2.07,
-        10: 3.2, 11: 5.5, 12: 8.3, 13: 13.8, 14: 22.8,
-        15: 34.5,
+        5: 0.27, 6: 0.44, 7: 0.73, 8: 1.24, 9: 1.96,
+        10: 3.03, 11: 5.23, 12: 7.88, 13: 13.10, 14: 21.64,
+        15: 32.75,
     },
     # Mid Tier: Cassette
     Symbol.CASSETTE: {
-        5: 0.19, 6: 0.32, 7: 0.55, 8: 0.91, 9: 1.45,
-        10: 2.28, 11: 3.86, 12: 6.4, 13: 10.0, 14: 15.9,
-        15: 24.8,
+        5: 0.18, 6: 0.30, 7: 0.51, 8: 0.86, 9: 1.38,
+        10: 2.17, 11: 3.66, 12: 6.08, 13: 9.50, 14: 15.11,
+        15: 23.55,
     },
     # Low Tier: Music Notes - Low payouts (they win most often!)
     Symbol.MUSIC_NOTE_PINK: {
-        5: 0.064, 6: 0.11, 7: 0.17, 8: 0.31, 9: 0.5,
-        10: 0.76, 11: 1.31, 12: 2.12, 13: 3.45, 14: 5.5,
-        15: 8.3,
+        5: 0.062, 6: 0.105, 7: 0.162, 8: 0.295, 9: 0.476,
+        10: 0.721, 11: 1.24, 12: 2.03, 13: 3.28, 14: 5.23,
+        15: 7.88,
     },
     Symbol.MUSIC_NOTE_BLUE: {
-        5: 0.064, 6: 0.11, 7: 0.17, 8: 0.31, 9: 0.5,
-        10: 0.76, 11: 1.31, 12: 2.12, 13: 3.45, 14: 5.5,
-        15: 8.3,
+        5: 0.062, 6: 0.105, 7: 0.162, 8: 0.295, 9: 0.476,
+        10: 0.721, 11: 1.24, 12: 2.03, 13: 3.28, 14: 5.23,
+        15: 7.88,
     },
     Symbol.MUSIC_NOTE_PURPLE: {
-        5: 0.064, 6: 0.11, 7: 0.17, 8: 0.31, 9: 0.5,
-        10: 0.76, 11: 1.31, 12: 2.12, 13: 3.45, 14: 5.5,
-        15: 8.3,
+        5: 0.062, 6: 0.105, 7: 0.162, 8: 0.295, 9: 0.476,
+        10: 0.721, 11: 1.24, 12: 2.03, 13: 3.28, 14: 5.23,
+        15: 7.88,
     },
 }
 
@@ -226,25 +228,26 @@ def get_payout(symbol: Symbol, cluster_size: int) -> float:
 # =============================================================================
 
 # Scatter requirements for free spins (BASE GAME)
-# 3 scatters = standard bonus (8 free spins, equivalent to x100 bet value)
-# 4+ scatters = super bonus (12 free spins, equivalent to x200 bet value)
+# Free spins are rarer but more rewarding!
+# 3 scatters = 10 free spins (increased from 8)
+# 4+ scatters = 15 free spins (increased from 12)
 SCATTER_FREE_SPINS: Dict[int, int] = {
-    3: 8,   # 3 scatters = 8 free spins (standard bonus)
-    4: 12,  # 4+ scatters = 12 free spins (super bonus)
-    5: 12,  # Cap at 12 for super bonus
-    6: 12,
+    3: 10,  # 3 scatters = 10 free spins (standard bonus)
+    4: 15,  # 4+ scatters = 15 free spins (super bonus)
+    5: 15,  # Cap at 15 for super bonus
+    6: 15,
 }
 
 # Scatter retrigger during FREE SPINS (different rules)
-# 2 scatters = +3 spins
-# 3 scatters = +5 spins
-# 4+ scatters = +10 spins
+# Retriggres are rarer but more rewarding
+# 3 scatters = +8 spins (was +5)
+# 4+ scatters = +12 spins (was +10)
+# NOTE: 2 scatters NO LONGER retrigger (too common, frustrating for user)
 SCATTER_RETRIGGER: Dict[int, int] = {
-    2: 3,   # 2 scatters = +3 spins
-    3: 5,   # 3 scatters = +5 spins
-    4: 10,  # 4+ scatters = +10 spins
-    5: 10,
-    6: 10,
+    3: 8,   # 3 scatters = +8 spins (big reward for hitting 3!)
+    4: 12,  # 4+ scatters = +12 spins (massive reward!)
+    5: 12,
+    6: 12,
 }
 
 # Can retrigger free spins during free spins
@@ -274,7 +277,7 @@ BONUS_BUY_OPTIONS: Dict[str, BonusBuyOption] = {
         id="free_spins_8",
         name="Buy Free Spins",
         description="Instantly trigger 8 Free Spins",
-        cost_multiplier=24.0,  # ~96% RTP based on expected return
+        cost_multiplier=100.0,  # x100 bet cost
         volatility="high",
         feature="free_spins",
     ),
@@ -282,7 +285,7 @@ BONUS_BUY_OPTIONS: Dict[str, BonusBuyOption] = {
         id="free_spins_12",
         name="Buy Super Free Spins",
         description="Instantly trigger 12 Free Spins with x2 starting multiplier",
-        cost_multiplier=36.0,  # Scaled from 8 spins
+        cost_multiplier=200.0,  # x200 bet cost
         volatility="extreme",
         feature="free_spins_enhanced",
     ),

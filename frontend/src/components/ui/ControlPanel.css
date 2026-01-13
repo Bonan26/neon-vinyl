@@ -6,13 +6,10 @@
   justify-content: space-between;
   gap: 20px;
   padding: 15px 25px;
-  background: linear-gradient(180deg, rgba(26, 10, 46, 0.95) 0%, rgba(13, 5, 24, 0.98) 100%);
-  border-top: 3px solid rgba(255, 0, 255, 0.5);
+  background: linear-gradient(180deg, rgba(20, 15, 35, 0.95) 0%, rgba(10, 8, 18, 0.98) 100%);
+  border-top: 2px solid rgba(150, 100, 180, 0.4);
   border-radius: 0 0 20px 20px;
-  box-shadow:
-    0 4px 40px rgba(255, 0, 255, 0.25),
-    0 0 60px rgba(0, 255, 255, 0.1),
-    inset 0 -1px 0 rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
   backdrop-filter: blur(10px);
 }
 
@@ -380,41 +377,35 @@
   text-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
 }
 
-/* Balance Display */
+/* Balance Display - Clean and readable */
 .balance-display {
-  border-color: rgba(0, 255, 255, 0.5);
-  box-shadow: 0 0 25px rgba(0, 255, 255, 0.2);
+  border-color: rgba(150, 180, 200, 0.4);
+  box-shadow: none;
 }
 
 .balance-display .display-value {
   font-size: 24px;
-  color: #00ffff;
-  text-shadow:
-    0 0 10px #fff,
-    0 0 20px rgba(0, 255, 255, 0.9),
-    0 0 40px rgba(0, 255, 255, 0.5);
+  color: #e8f0f8;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
 }
 
-/* Win Display */
+/* Win Display - Softer gold */
 .win-display.has-win {
-  border-color: rgba(255, 215, 0, 0.7);
-  background: linear-gradient(180deg, rgba(255, 215, 0, 0.2) 0%, rgba(255, 100, 0, 0.15) 100%);
-  box-shadow: 0 0 35px rgba(255, 215, 0, 0.4);
+  border-color: rgba(200, 170, 80, 0.6);
+  background: linear-gradient(180deg, rgba(200, 170, 80, 0.15) 0%, rgba(180, 130, 60, 0.1) 100%);
+  box-shadow: 0 0 15px rgba(200, 170, 80, 0.2);
 }
 
 .win-display.has-win .display-value {
   font-size: 26px;
-  color: #ffd700;
-  text-shadow:
-    0 0 10px #fff,
-    0 0 25px rgba(255, 215, 0, 1),
-    0 0 50px rgba(255, 215, 0, 0.7);
-  animation: winPulse 0.6s ease-in-out infinite;
+  color: #e8d080;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+  animation: winPulse 0.8s ease-in-out infinite;
 }
 
 @keyframes winPulse {
   0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.08); }
+  50% { transform: scale(1.03); }
 }
 
 /* Bet Selector Inline */
@@ -445,6 +436,49 @@
   background: #ff00ff;
   color: #000;
   box-shadow: 0 0 10px rgba(255, 0, 255, 0.5);
+}
+
+/* Boosted Bet Display */
+.hud-display.boosted {
+  border-color: rgba(255, 165, 0, 0.7);
+  background: linear-gradient(180deg, rgba(255, 100, 0, 0.2) 0%, rgba(26, 10, 46, 0.9) 100%);
+  box-shadow: 0 0 25px rgba(255, 100, 0, 0.3);
+  position: relative;
+}
+
+.hud-display.boosted .display-label {
+  color: #ff6600;
+}
+
+.hud-display.boosted .display-value {
+  color: #ff6600;
+  text-shadow: 0 0 15px rgba(255, 100, 0, 0.7);
+}
+
+.boost-indicator {
+  display: flex;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.boost-tag {
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.boost-tag.scatter {
+  background: rgba(0, 255, 136, 0.2);
+  border: 1px solid rgba(0, 255, 136, 0.5);
+  color: #00ff88;
+}
+
+.boost-tag.wild {
+  background: rgba(255, 102, 0, 0.2);
+  border: 1px solid rgba(255, 102, 0, 0.5);
+  color: #ff6600;
 }
 
 .bet-btn-sm:disabled {

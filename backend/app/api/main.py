@@ -86,16 +86,21 @@ def get_or_create_session(session_id: str) -> Dict[str, Any]:
 class PlayRequest(BaseModel):
     """Stake RGS play request format."""
     sessionID: str = Field(..., description="Player session ID")
-    betAmount: float = Field(DEFAULT_BET, description="Bet amount in credits")
+    betAmount: float = Field(DEFAULT_BET, description="Bet amount in credits (includes boost multipliers)")
     clientSeed: str = Field(..., description="Client-provided seed for provably fair")
     nonce: Optional[int] = Field(None, description="Optional nonce override")
+    # Boost toggles - these affect probability, cost is already included in betAmount
+    scatterBoostActive: bool = Field(False, description="Scatter Hunt boost active (3x scatter chance)")
+    wildBoostActive: bool = Field(False, description="Wild Boost active (5x wild chance)")
 
     @validator('betAmount')
     def validate_bet(cls, v):
+        # Allow higher bets when boosts are active (up to 10x MAX_BET for stacked boosts)
+        max_with_boosts = MAX_BET * 10
         if v < MIN_BET:
             raise ValueError(f"Minimum bet is {MIN_BET}")
-        if v > MAX_BET:
-            raise ValueError(f"Maximum bet is {MAX_BET}")
+        if v > max_with_boosts:
+            raise ValueError(f"Maximum bet is {max_with_boosts}")
         return v
 
     @validator('clientSeed')
@@ -125,9 +130,6 @@ class PlayResponse(BaseModel):
     freeSpinsRemaining: int = 0
     isFreeSpin: bool = False
     freeSpinTotalWin: float = 0.0
-    # Boost info
-    scatterBoostSpins: int = 0
-    wildBoostSpins: int = 0
     # Jackpot info
     jackpotWon: Optional[str] = None
     jackpotAmount: float = 0.0
@@ -381,9 +383,11 @@ async def play(request: PlayRequest):
     # Use provided nonce or auto-increment
     nonce = request.nonce if request.nonce is not None else session["nonce"]
 
-    # Get boost state
-    scatter_boost = session.get("scatter_boost_spins", 0) > 0
-    wild_boost = session.get("wild_boost_spins", 0) > 0
+    # Get boost state directly from request (toggle model - cost included in betAmount)
+    scatter_boost = request.scatterBoostActive
+    wild_boost = request.wildBoostActive
+
+    print(f"[PLAY] betAmount={bet_amount}, scatterBoost={scatter_boost}, wildBoost={wild_boost}")
 
     # Execute spin (deterministic Math SDK)
     result: SpinResult = run_spin(
@@ -398,12 +402,7 @@ async def play(request: PlayRequest):
         wild_boost=wild_boost
     )
 
-    # Decrement boost counters (only on base game, not free spins)
-    if not is_free_spin:
-        if session.get("scatter_boost_spins", 0) > 0:
-            session["scatter_boost_spins"] -= 1
-        if session.get("wild_boost_spins", 0) > 0:
-            session["wild_boost_spins"] -= 1
+    # NOTE: Boost is a toggle now, no session counter to decrement
 
     # Calculate payout
     payout_amount = result.payout_multiplier * bet_amount
@@ -468,8 +467,6 @@ async def play(request: PlayRequest):
         freeSpinsRemaining=result.free_spins_remaining,
         isFreeSpin=is_free_spin,
         freeSpinTotalWin=session.get("free_spin_total_win", 0.0),
-        scatterBoostSpins=session.get("scatter_boost_spins", 0),
-        wildBoostSpins=session.get("wild_boost_spins", 0),
         jackpotWon=result.jackpot_won,
         jackpotAmount=result.jackpot_amount
     )

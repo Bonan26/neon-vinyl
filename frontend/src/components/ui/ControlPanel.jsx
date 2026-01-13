@@ -32,12 +32,17 @@ const ControlPanel = ({
   const isAnimating = useGameStore((state) => state.isAnimating);
   const lastWin = useGameStore((state) => state.lastWin);
   const freeSpinsRemaining = useGameStore((state) => state.freeSpinsRemaining);
-  const scatterBoostSpins = useGameStore((state) => state.scatterBoostSpins);
-  const wildBoostSpins = useGameStore((state) => state.wildBoostSpins);
+  const scatterBoostActive = useGameStore((state) => state.scatterBoostActive);
+  const wildBoostActive = useGameStore((state) => state.wildBoostActive);
+  const getEffectiveBet = useGameStore((state) => state.getEffectiveBet);
   const toggleBonusMenu = useGameStore((state) => state.toggleBonusMenu);
 
-  // Check if any bonus is active (only 1 bonus at a time!)
-  const isBonusActive = freeSpinsRemaining > 0 || scatterBoostSpins > 0 || wildBoostSpins > 0;
+  // Calculate effective bet (includes boost multipliers)
+  const effectiveBet = getEffectiveBet();
+  const hasActiveBoost = scatterBoostActive || wildBoostActive;
+
+  // Check if any bonus is active (free spins - boosts are toggles not bonuses)
+  const isBonusActive = freeSpinsRemaining > 0;
 
   // Autospin state from store
   const autoSpinActive = useGameStore((state) => state.autoSpinActive);
@@ -56,7 +61,8 @@ const ControlPanel = ({
   const [autoSpinPending, setAutoSpinPending] = useState(null); // { count, speed }
 
   // Button disabled if: explicitly disabled, spinning, animating, or insufficient balance
-  const canSpin = !disabled && !isSpinning && !isAnimating && balance >= betAmount;
+  // Use effective bet (which includes boost multipliers) for balance check
+  const canSpin = !disabled && !isSpinning && !isAnimating && balance >= effectiveBet;
 
   const handleBetChange = useCallback((direction) => {
     const currentIndex = BET_OPTIONS.indexOf(betAmount);
@@ -201,8 +207,10 @@ const ControlPanel = ({
           </div>
 
           {/* Bet Selector */}
-          <div className="hud-display bet-display">
-            <span className="display-label">BET</span>
+          <div className={`hud-display bet-display ${hasActiveBoost ? 'boosted' : ''}`}>
+            <span className="display-label">
+              {hasActiveBoost ? 'SPIN COST' : 'BET'}
+            </span>
             <div className="bet-selector-inline">
               <button
                 className="bet-btn-sm"
@@ -211,7 +219,9 @@ const ControlPanel = ({
               >
                 −
               </button>
-              <span className="display-value">${betAmount.toFixed(2)}</span>
+              <span className="display-value">
+                ${hasActiveBoost ? effectiveBet.toFixed(2) : betAmount.toFixed(2)}
+              </span>
               <button
                 className="bet-btn-sm"
                 onClick={() => handleBetChange('up')}
@@ -220,6 +230,13 @@ const ControlPanel = ({
                 +
               </button>
             </div>
+            {/* Show boost indicator */}
+            {hasActiveBoost && (
+              <div className="boost-indicator">
+                {scatterBoostActive && <span className="boost-tag scatter">SC</span>}
+                {wildBoostActive && <span className="boost-tag wild">WD</span>}
+              </div>
+            )}
           </div>
         </div>
 

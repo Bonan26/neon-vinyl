@@ -539,7 +539,9 @@ class GridState:
         self,
         rng: ProvablyFairRNG,
         positions: List[Tuple[int, int]],
-        free_spin_mode: bool = False
+        free_spin_mode: bool = False,
+        scatter_boost: bool = False,
+        wild_boost: bool = False
     ) -> List[Dict[str, Any]]:
         """
         Fill empty positions with new symbols.
@@ -548,6 +550,8 @@ class GridState:
             rng: Provably Fair RNG for new symbols
             positions: Positions to fill
             free_spin_mode: If True, uses free spin weights (more wilds, no scatter)
+            scatter_boost: If True, 3x scatter probability
+            wild_boost: If True, 5x wild probability
 
         Returns:
             List of fill data for animation
@@ -555,7 +559,7 @@ class GridState:
         fills = []
 
         for row, col in positions:
-            new_symbol = rng.get_symbol(free_spin_mode)
+            new_symbol = rng.get_symbol(free_spin_mode, scatter_boost, wild_boost)
             self.symbols[row][col] = new_symbol
             fills.append({
                 "position": [row, col],
@@ -802,17 +806,55 @@ def run_spin(
                 }
             ))
 
-        # Fill empty positions
+        # Fill empty positions (with boost if active)
         empty_positions = grid_state.get_empty_positions()
 
         if empty_positions:
-            fills = grid_state.fill_symbols(rng, empty_positions, free_spin_mode)
+            fills = grid_state.fill_symbols(rng, empty_positions, free_spin_mode, scatter_boost, wild_boost)
             events.append(GameEvent(
                 type=EventType.FILL.value,
                 data={
                     "fills": fills
                 }
             ))
+
+            # Check for NEW scatters after fill (accumulate across tumbles)
+            new_scatter_count, new_scatter_positions = grid_state.count_scatters()
+
+            # Only check if we haven't already triggered free spins this spin
+            if free_spins_triggered == 0:
+                if free_spin_mode:
+                    # DURING FREE SPINS: 2+ scatters = retrigger
+                    if new_scatter_count >= 2:
+                        free_spins_triggered = SCATTER_RETRIGGER.get(
+                            min(new_scatter_count, 6),
+                            SCATTER_RETRIGGER[6]
+                        )
+                        events.append(GameEvent(
+                            type=EventType.FREE_SPINS_TRIGGER.value,
+                            data={
+                                "scatterCount": new_scatter_count,
+                                "positions": [[r, c] for r, c in new_scatter_positions],
+                                "freeSpinsAwarded": free_spins_triggered,
+                                "isRetrigger": True
+                            }
+                        ))
+                else:
+                    # BASE GAME: 3+ scatters = trigger bonus
+                    if new_scatter_count >= 3:
+                        free_spins_triggered = SCATTER_FREE_SPINS.get(
+                            min(new_scatter_count, 6),
+                            SCATTER_FREE_SPINS[6]
+                        )
+                        events.append(GameEvent(
+                            type=EventType.FREE_SPINS_TRIGGER.value,
+                            data={
+                                "scatterCount": new_scatter_count,
+                                "positions": [[r, c] for r, c in new_scatter_positions],
+                                "freeSpinsAwarded": free_spins_triggered,
+                                "isRetrigger": False
+                            }
+                        ))
 
     # Check for jackpot (only on base game, not free spins)
     jackpot_won = None

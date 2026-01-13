@@ -18,6 +18,9 @@ const createEmptyGrid = () =>
       isRemoving: false,
       isNew: false,
       isExploding: false,
+      isSpinning: false,
+      isPendingReveal: false,
+      wildMultiplierTarget: null, // For wild multiplier spinning animation
     }))
   );
 
@@ -31,6 +34,9 @@ const createFilledGrid = () =>
       isRemoving: false,
       isNew: false,
       isExploding: false,
+      isSpinning: false,
+      isPendingReveal: false,
+      wildMultiplierTarget: null, // For wild multiplier spinning animation
     }))
   );
 
@@ -91,8 +97,9 @@ const useGameStore = create((set, get) => ({
   isFreeSpin: false,
 
   // Boost state (Scatter Hunt / Wild Boost)
-  scatterBoostSpins: 0,
-  wildBoostSpins: 0,
+  // These are toggles - when active, each spin costs more (multiplier applied per spin)
+  scatterBoostActive: false,  // 2x cost per spin when active
+  wildBoostActive: false,     // 5x cost per spin when active
 
   // Bonus state
   bonusBuyOptions: [],
@@ -122,6 +129,10 @@ const useGameStore = create((set, get) => ({
 
   // Suspense mode for scatter reveal animation
   suspenseMode: false,
+
+  // Turbo mode - skip animations when user spams space/click
+  turboMode: false,
+  turboCounter: 0,  // Counts rapid inputs to trigger turbo
 
   // Actions
   setSession: (sessionData) => set({
@@ -237,6 +248,18 @@ const useGameStore = create((set, get) => ({
 
   setSuspenseMode: (mode) => set({ suspenseMode: mode }),
 
+  // Turbo mode actions - triggered by rapid space/click inputs
+  triggerTurbo: () => set((state) => {
+    // Increment counter and enable turbo after 2 rapid inputs
+    const newCounter = state.turboCounter + 1;
+    return {
+      turboCounter: newCounter,
+      turboMode: newCounter >= 2,  // Enable after 2 rapid taps
+    };
+  }),
+
+  resetTurbo: () => set({ turboMode: false, turboCounter: 0 }),
+
   toggleBonusMenu: () => set((state) => ({
     showBonusMenu: !state.showBonusMenu,
   })),
@@ -258,13 +281,19 @@ const useGameStore = create((set, get) => ({
     isFreeSpin: false,
   }),
 
-  // Boost actions (Scatter Hunt / Wild Boost)
-  setScatterBoostSpins: (spins) => set({ scatterBoostSpins: spins }),
-  setWildBoostSpins: (spins) => set({ wildBoostSpins: spins }),
-  updateBoostSpins: (scatterSpins, wildSpins) => set({
-    scatterBoostSpins: scatterSpins,
-    wildBoostSpins: wildSpins,
-  }),
+  // Boost actions (Scatter Hunt / Wild Boost) - toggles that affect spin cost
+  setScatterBoostActive: (active) => set({ scatterBoostActive: active }),
+  setWildBoostActive: (active) => set({ wildBoostActive: active }),
+  toggleScatterBoost: () => set((state) => ({ scatterBoostActive: !state.scatterBoostActive })),
+  toggleWildBoost: () => set((state) => ({ wildBoostActive: !state.wildBoostActive })),
+  // Calculate effective bet amount (with boost multipliers)
+  getEffectiveBet: () => {
+    const state = get();
+    let multiplier = 1;
+    if (state.scatterBoostActive) multiplier *= 2;  // Scatter Hunt: 2x
+    if (state.wildBoostActive) multiplier *= 5;    // Wild Boost: 5x
+    return state.betAmount * multiplier;
+  },
 
   // Bonus options
   setBonusBuyOptions: (options) => set({ bonusBuyOptions: options }),
@@ -352,6 +381,9 @@ const useGameStore = create((set, get) => ({
           isRemoving: false,
           isNew: false,
           isExploding: false,
+          isSpinning: false,
+          isPendingReveal: false,
+          wildMultiplierTarget: null,
         }))
       ),
     });

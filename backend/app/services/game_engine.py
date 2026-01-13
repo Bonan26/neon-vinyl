@@ -18,18 +18,22 @@ MAX_MULTIPLIER = 1024
 
 # Wild Wheel multiplier weights (lower weight = rarer)
 # This determines what multiplier the wheel can land on
+# Tuned for ~96% RTP target
 WILD_WHEEL_MULTIPLIERS = [
-    (2, 30),      # x2 - most common (30%)
-    (4, 25),      # x4 - common (25%)
-    (8, 18),      # x8 - uncommon (18%)
-    (16, 12),     # x16 - rare (12%)
-    (32, 8),      # x32 - very rare (8%)
-    (64, 4),      # x64 - epic (4%)
-    (128, 2),     # x128 - legendary (2%)
-    (256, 0.8),   # x256 - mythic (0.8%)
-    (512, 0.15),  # x512 - ultra rare (0.15%)
-    (1024, 0.05), # x1024 - jackpot (0.05%)
+    (2, 40),      # x2 - most common (40%)
+    (4, 28),      # x4 - common (28%)
+    (8, 16),      # x8 - uncommon (16%)
+    (16, 8),      # x16 - rare (8%)
+    (32, 4),      # x32 - very rare (4%)
+    (64, 2),      # x64 - epic (2%)
+    (128, 1.2),   # x128 - legendary (1.2%)
+    (256, 0.5),   # x256 - mythic (0.5%)
+    (512, 0.2),   # x512 - ultra rare (0.2%)
+    (1024, 0.1),  # x1024 - jackpot (0.1%)
 ]
+
+# Wild explosion range (1 = 8 adjacent cells, 2 = 24 cells)
+WILD_EXPLOSION_RANGE = 1
 
 def get_wild_wheel_multiplier() -> int:
     """
@@ -394,13 +398,13 @@ class Grid:
 
     def apply_wild_explosions(self, wild_positions: List[Tuple[int, int]]) -> List[WildExplosion]:
         """
-        Apply Wild explosion mechanic: when Wilds tumble, all adjacent cells
-        get a multiplier determined by the Wild Wheel (random weighted selection).
+        Apply Wild explosion mechanic: when Wilds tumble, all cells within
+        WILD_EXPLOSION_RANGE get a multiplier determined by the Wild Wheel.
 
         IMPORTANT: All wilds in the same tumble share ONE wheel spin.
         This means one wheel popup animation for all wilds combined.
 
-        Uses 8-directional adjacency (including diagonals).
+        Extended range: affects cells up to 2 positions away (5x5 area per wild).
         Returns a single WildExplosion object (or empty list) for animation.
         The wheel_multiplier is pre-determined here for provably fair gameplay,
         but the frontend will show a spinning wheel animation.
@@ -411,26 +415,26 @@ class Grid:
         # Roll the wheel ONCE for all wilds in this tumble
         wheel_multiplier = get_wild_wheel_multiplier()
 
-        # 8-directional: up, down, left, right, and 4 diagonals
-        directions = [
-            (-1, 0), (1, 0), (0, -1), (0, 1),  # cardinal
-            (-1, -1), (-1, 1), (1, -1), (1, 1)  # diagonals
-        ]
-
         # Collect all affected cells from all wilds (use set to avoid duplicates)
         all_affected_cells = set()
 
         for wild_row, wild_col in wild_positions:
-            for dr, dc in directions:
-                new_row, new_col = wild_row + dr, wild_col + dc
+            # Extended range: all cells within WILD_EXPLOSION_RANGE distance
+            for dr in range(-WILD_EXPLOSION_RANGE, WILD_EXPLOSION_RANGE + 1):
+                for dc in range(-WILD_EXPLOSION_RANGE, WILD_EXPLOSION_RANGE + 1):
+                    # Skip the wild cell itself
+                    if dr == 0 and dc == 0:
+                        continue
 
-                # Check bounds
-                if 0 <= new_row < GRID_SIZE and 0 <= new_col < GRID_SIZE:
-                    cell = self.cells[new_row][new_col]
-                    # Set to the wheel-determined multiplier
-                    cell.multiplier = wheel_multiplier
-                    cell.is_ghost_spot = True
-                    all_affected_cells.add((new_row, new_col))
+                    new_row, new_col = wild_row + dr, wild_col + dc
+
+                    # Check bounds
+                    if 0 <= new_row < GRID_SIZE and 0 <= new_col < GRID_SIZE:
+                        cell = self.cells[new_row][new_col]
+                        # Set to the wheel-determined multiplier
+                        cell.multiplier = wheel_multiplier
+                        cell.is_ghost_spot = True
+                        all_affected_cells.add((new_row, new_col))
 
         if all_affected_cells:
             # Return a SINGLE explosion event with all wild positions and all affected cells

@@ -75,6 +75,9 @@ const Grid = ({ x = 0, y = 0 }) => {
             isRemoving={cellData.isRemoving || false}
             isNew={cellData.isNew || false}
             isExploding={cellData.isExploding || false}
+            isPendingReveal={cellData.isPendingReveal || false}
+            isSpinning={cellData.isSpinning || false}
+            wildMultiplierTarget={cellData.wildMultiplierTarget || null}
           />
         );
       }

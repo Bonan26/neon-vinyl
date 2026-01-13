@@ -19,8 +19,6 @@ const useGameController = () => {
   const setTumbleCount = useGameStore((state) => state.setTumbleCount);
   const setMaxMultiplier = useGameStore((state) => state.setMaxMultiplier);
   const setFreeSpins = useGameStore((state) => state.setFreeSpins);
-  const setScatterBoostSpins = useGameStore((state) => state.setScatterBoostSpins);
-  const setWildBoostSpins = useGameStore((state) => state.setWildBoostSpins);
   const setBonusBuyOptions = useGameStore((state) => state.setBonusBuyOptions);
   const setJackpotTiers = useGameStore((state) => state.setJackpotTiers);
   const setLastJackpotWon = useGameStore((state) => state.setLastJackpotWon);
@@ -30,6 +28,9 @@ const useGameController = () => {
   const betAmount = useGameStore((state) => state.betAmount);
   const clientSeed = useGameStore((state) => state.clientSeed);
   const freeSpinsRemaining = useGameStore((state) => state.freeSpinsRemaining);
+  const scatterBoostActive = useGameStore((state) => state.scatterBoostActive);
+  const wildBoostActive = useGameStore((state) => state.wildBoostActive);
+  const getEffectiveBet = useGameStore((state) => state.getEffectiveBet);
 
   /**
    * Initialize game session
@@ -94,14 +95,24 @@ const useGameController = () => {
     }
 
     try {
-      console.log('GameController: Calling API...');
+      // Calculate effective bet (includes boost multipliers)
+      const effectiveBet = getEffectiveBet();
+      console.log('GameController: Calling API...', {
+        baseBet: betAmount,
+        effectiveBet,
+        scatterBoost: scatterBoostActive,
+        wildBoost: wildBoostActive,
+      });
       setIsSpinning(true);
 
-      // Call backend API
+      // Call backend API with boost state
       const result = await apiService.play({
         sessionID: sessionId,
-        betAmount,
+        betAmount: effectiveBet,  // Send effective bet (with boost multipliers)
         clientSeed,
+        // Send boost state so backend knows the probability boost is active
+        scatterBoostActive,
+        wildBoostActive,
       });
 
       console.log('GameController: API response', {
@@ -110,8 +121,6 @@ const useGameController = () => {
         events: result.events.length,
         freeSpins: result.freeSpinsRemaining,
         isFreeSpin: result.isFreeSpin,
-        scatterBoost: result.scatterBoostSpins,
-        wildBoost: result.wildBoostSpins,
       });
 
       // NOTE: Don't update win-related state here!
@@ -121,10 +130,6 @@ const useGameController = () => {
       // Only update non-visual tracking stats
       setTumbleCount(result.tumbleCount);
       setMaxMultiplier(result.maxMultiplier);
-
-      // Update boost spins remaining
-      setScatterBoostSpins(result.scatterBoostSpins || 0);
-      setWildBoostSpins(result.wildBoostSpins || 0);
 
       // Stop spinning indicator
       setIsSpinning(false);
@@ -142,14 +147,15 @@ const useGameController = () => {
     betAmount,
     clientSeed,
     freeSpinsRemaining,
+    scatterBoostActive,
+    wildBoostActive,
+    getEffectiveBet,
     setIsSpinning,
     setTumbleCount,
     setMaxMultiplier,
     setMultiplierGrid,
     setFreeSpins,
     setLastJackpotWon,
-    setScatterBoostSpins,
-    setWildBoostSpins,
   ]);
 
   /**
@@ -254,59 +260,10 @@ const useGameController = () => {
     }
   }, [sessionId, clientSeed, betAmount, setIsSpinning, setBalance]);
 
-  /**
-   * Activate a boost feature (Scatter Hunt or Wild Boost)
-   * These increase scatter/wild probability for a number of spins
-   */
-  const activateBoost = useCallback(async (boostType) => {
-    if (!sessionId) {
-      console.error('GameController: No session');
-      return null;
-    }
-
-    // Get current balance BEFORE API call
-    const balanceBefore = useGameStore.getState().balance;
-    console.log('[GameController] Balance BEFORE boost:', balanceBefore);
-
-    try {
-      console.log('GameController: Activating boost', boostType, 'at bet', betAmount);
-      const result = await apiService.activateBoost({
-        sessionID: sessionId,
-        boostType,
-        betAmount,
-      });
-
-      console.log('[GameController] Boost API response:', JSON.stringify(result));
-
-      // Verify balance is a valid number
-      if (typeof result.balance !== 'number' || isNaN(result.balance)) {
-        console.error('[GameController] Invalid balance in response:', result.balance);
-        return result;
-      }
-
-      // Update balance
-      console.log('[GameController] Setting balance from', balanceBefore, 'to', result.balance);
-      setBalance(result.balance);
-
-      // Update boost spins in store
-      console.log('[GameController] boostType:', result.boostType, 'spinsRemaining:', result.boostSpinsRemaining);
-      if (result.boostType === 'scatter_boost') {
-        console.log('[GameController] Setting scatterBoostSpins to:', result.boostSpinsRemaining);
-        setScatterBoostSpins(result.boostSpinsRemaining);
-      } else if (result.boostType === 'wild_boost') {
-        console.log('[GameController] Setting wildBoostSpins to:', result.boostSpinsRemaining);
-        setWildBoostSpins(result.boostSpinsRemaining);
-      }
-
-      // Ensure spinning states are reset (safeguard)
-      setIsSpinning(false);
-
-      return result;
-    } catch (error) {
-      console.error('GameController: Boost activation error', error);
-      throw error;
-    }
-  }, [sessionId, betAmount, setBalance, setScatterBoostSpins, setWildBoostSpins, setIsSpinning]);
+  // NOTE: Boost toggles (Scatter Hunt, Wild Boost) are now managed entirely in the frontend store.
+  // When active, the effective bet is multiplied (scatterBoost = 2x, wildBoost = 5x).
+  // The spin() function sends the effective bet to the backend.
+  // No separate API call needed to "activate" boost.
 
   return {
     spin,
@@ -314,7 +271,6 @@ const useGameController = () => {
     initSession,
     buyBonus,
     bonusTriggerSpin,
-    activateBoost,
   };
 };
 

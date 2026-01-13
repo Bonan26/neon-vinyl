@@ -25,6 +25,12 @@ SYMBOLS_WITH_IMAGES.forEach(id => {
 // Custom drawn symbols (Wild and Scatter)
 const CUSTOM_DRAWN_SYMBOLS = ['WD', 'SC'];
 
+// All available symbols for spinning animation (including SC)
+const ALL_SYMBOLS_FOR_SPIN = ['DJ', 'GV', 'HP', 'CS', 'NP', 'NB', 'NU', 'SC'];
+
+// Multiplier values for wild wheel animation
+const WILD_MULTIPLIERS = [2, 4, 8, 16, 32, 64, 128, 256];
+
 const Cell = ({
   row,
   col,
@@ -34,6 +40,10 @@ const Cell = ({
   isRemoving = false,
   isNew = false,
   isExploding = false,
+  isPendingReveal = false,
+  isSpinning = false,  // Cell is spinning (showing cycling symbols)
+  wildMultiplierTarget = null,  // Target multiplier for wild animation (null = not spinning)
+  onWildMultiplierComplete = null, // Callback when wild multiplier animation completes
 }) => {
   const containerRef = useRef(null);
   const [animatedAlpha, setAnimatedAlpha] = useState(symbol ? 1 : 0);
@@ -41,8 +51,85 @@ const Cell = ({
   const [offsetY, setOffsetY] = useState(0);
   const prevSymbolRef = useRef(symbol);
 
+  // Spinning animation state
+  const [spinningSymbolIndex, setSpinningSymbolIndex] = useState(0);
+  const spinIntervalRef = useRef(null);
+
+  // Wild multiplier spinning animation state
+  const [wildSpinningMultiplier, setWildSpinningMultiplier] = useState(null);
+  const wildMultiplierIntervalRef = useRef(null);
+
   // Get suspense mode from store for enhanced scatter animations
   const suspenseMode = useGameStore((state) => state.suspenseMode);
+
+  // Spinning animation - REMOVED colorful cycling, just show empty state
+  useEffect(() => {
+    if (isSpinning) {
+      // Just keep alpha visible but don't cycle symbols
+      setAnimatedAlpha(0.3);
+    } else {
+      // When not spinning, restore normal alpha if we have a symbol
+      if (symbol) {
+        setAnimatedAlpha(1);
+      }
+    }
+
+    return () => {
+      if (spinIntervalRef.current) {
+        clearInterval(spinIntervalRef.current);
+        spinIntervalRef.current = null;
+      }
+    };
+  }, [isSpinning, symbol]);
+
+  // Wild multiplier spinning animation - cycles through multipliers then lands on target
+  useEffect(() => {
+    if (wildMultiplierTarget !== null && symbol === 'WD') {
+      // Start spinning through multipliers
+      let spinCount = 0;
+      const maxSpins = 20 + Math.floor(Math.random() * 10); // 20-30 cycles
+      let currentIndex = 0;
+
+      // Start fast, then slow down
+      const animate = () => {
+        spinCount++;
+        currentIndex = (currentIndex + 1) % WILD_MULTIPLIERS.length;
+        setWildSpinningMultiplier(WILD_MULTIPLIERS[currentIndex]);
+
+        if (spinCount < maxSpins) {
+          // Speed starts at 50ms and slows to 200ms near the end
+          const progress = spinCount / maxSpins;
+          const delay = 50 + Math.pow(progress, 2) * 200;
+          wildMultiplierIntervalRef.current = setTimeout(animate, delay);
+        } else {
+          // Land on target
+          setWildSpinningMultiplier(wildMultiplierTarget);
+          // Call completion callback after brief pause
+          setTimeout(() => {
+            setWildSpinningMultiplier(null);
+            if (onWildMultiplierComplete) {
+              onWildMultiplierComplete(wildMultiplierTarget);
+            }
+          }, 500);
+        }
+      };
+
+      // Start animation
+      wildMultiplierIntervalRef.current = setTimeout(animate, 50);
+
+      return () => {
+        if (wildMultiplierIntervalRef.current) {
+          clearTimeout(wildMultiplierIntervalRef.current);
+          wildMultiplierIntervalRef.current = null;
+        }
+      };
+    } else {
+      setWildSpinningMultiplier(null);
+    }
+  }, [wildMultiplierTarget, symbol, onWildMultiplierComplete]);
+
+  // Get the symbol to display (null when spinning, otherwise the actual symbol)
+  const displaySymbol = isSpinning ? null : symbol;
 
   // Scatter animation state
   const [scatterAnim, setScatterAnim] = useState({ scale: 1, glow: 0, rotation: 0 });
@@ -56,7 +143,7 @@ const Cell = ({
   const x = col * (CELL_SIZE + 4);
   const y = row * (CELL_SIZE + 4);
 
-  // Scatter continuous animation - INTENSE during suspense mode
+  // Scatter continuous animation - gentle glow
   useEffect(() => {
     if (symbol === 'SC') {
       // Kill existing animation to rebuild with new parameters
@@ -65,67 +152,43 @@ const Cell = ({
         scatterAnimRef.current = null;
       }
 
-      // Animation intensity varies DRAMATICALLY based on suspense mode
-      const intensity = suspenseMode ? 2.5 : 1;  // Much more intense during suspense
-      const pulseSpeed = suspenseMode ? 0.25 : 0.8; // Much faster heartbeat pulse during suspense
+      // Gentle animation - only slightly more visible during suspense
+      const intensity = suspenseMode ? 1.2 : 0.8;  // Much gentler
+      const pulseSpeed = suspenseMode ? 0.6 : 1.0; // Slower, calmer
 
-      // Create continuous pulsing animation for scatter
+      // Create continuous gentle pulsing animation for scatter
       const anim = { scale: 1, glow: 0, rotation: 0 };
 
       if (suspenseMode) {
-        // SUSPENSE MODE: Rapid heartbeat-like pulsing
+        // SUSPENSE MODE: Gentle glow, no crazy pulsing
         scatterAnimRef.current = gsap.timeline({ repeat: -1 })
-          // Quick pulse up - like a heartbeat
           .to(anim, {
-            scale: 1.35,
+            scale: 1.08,
             glow: intensity,
-            rotation: 0.08,
-            duration: 0.15,
-            ease: 'power2.out',
+            rotation: 0.02,
+            duration: pulseSpeed,
+            ease: 'sine.inOut',
             onUpdate: () => {
               setScatterAnim({ scale: anim.scale, glow: anim.glow, rotation: anim.rotation });
             },
           })
-          // Quick pulse down
-          .to(anim, {
-            scale: 1.1,
-            glow: intensity * 0.6,
-            rotation: -0.04,
-            duration: 0.1,
-            ease: 'power2.in',
-            onUpdate: () => {
-              setScatterAnim({ scale: anim.scale, glow: anim.glow, rotation: anim.rotation });
-            },
-          })
-          // Second beat (double beat like heartbeat)
-          .to(anim, {
-            scale: 1.25,
-            glow: intensity * 0.9,
-            rotation: 0.05,
-            duration: 0.12,
-            ease: 'power2.out',
-            onUpdate: () => {
-              setScatterAnim({ scale: anim.scale, glow: anim.glow, rotation: anim.rotation });
-            },
-          })
-          // Rest between beats
           .to(anim, {
             scale: 1,
-            glow: intensity * 0.4,
-            rotation: 0,
-            duration: 0.3,
-            ease: 'power1.inOut',
+            glow: intensity * 0.5,
+            rotation: -0.02,
+            duration: pulseSpeed,
+            ease: 'sine.inOut',
             onUpdate: () => {
               setScatterAnim({ scale: anim.scale, glow: anim.glow, rotation: anim.rotation });
             },
           });
       } else {
-        // NORMAL MODE: Gentle pulsing
+        // NORMAL MODE: Very gentle pulsing
         scatterAnimRef.current = gsap.timeline({ repeat: -1 })
           .to(anim, {
-            scale: 1.15,
-            glow: 1,
-            rotation: 0.05,
+            scale: 1.05,
+            glow: intensity,
+            rotation: 0.02,
             duration: pulseSpeed,
             ease: 'sine.inOut',
             onUpdate: () => {
@@ -135,7 +198,7 @@ const Cell = ({
           .to(anim, {
             scale: 1,
             glow: 0.3,
-            rotation: -0.05,
+            rotation: -0.02,
             duration: pulseSpeed,
             ease: 'sine.inOut',
             onUpdate: () => {
@@ -160,46 +223,33 @@ const Cell = ({
     };
   }, [symbol, suspenseMode]);
 
-  // Wild continuous animation - rainbow pulsing glow
+  // Wild continuous animation - subtle golden glow (no rainbow)
   useEffect(() => {
     if (symbol === 'WD') {
-      // Create continuous rainbow animation for wild
-      const anim = { scale: 1, glow: 0.5, rotation: 0, hue: 0 };
+      // Create gentle pulsing animation for wild - golden theme
+      const anim = { scale: 1, glow: 0.3, rotation: 0, hue: 45 };
       wildAnimRef.current = gsap.timeline({ repeat: -1 })
-        // Pulse up with rainbow shift
+        // Gentle pulse
         .to(anim, {
-          scale: 1.12,
-          glow: 1,
-          rotation: 0.03,
-          hue: 120,
-          duration: 0.6,
+          scale: 1.05,
+          glow: 0.6,
+          rotation: 0.01,
+          hue: 50,
+          duration: 1.0,
           ease: 'sine.inOut',
           onUpdate: () => {
             setWildAnim({ scale: anim.scale, glow: anim.glow, rotation: anim.rotation, hue: anim.hue });
           },
         })
-        // Continue color shift
-        .to(anim, {
-          scale: 1.08,
-          glow: 0.7,
-          rotation: -0.02,
-          hue: 240,
-          duration: 0.6,
-          ease: 'sine.inOut',
-          onUpdate: () => {
-            setWildAnim({ scale: anim.scale, glow: anim.glow, rotation: anim.rotation, hue: anim.hue });
-          },
-        })
-        // Pulse down
         .to(anim, {
           scale: 1,
-          glow: 0.5,
+          glow: 0.3,
           rotation: 0,
-          hue: 360,
-          duration: 0.6,
+          hue: 45,
+          duration: 1.0,
           ease: 'sine.inOut',
           onUpdate: () => {
-            setWildAnim({ scale: anim.scale, glow: anim.glow, rotation: anim.rotation, hue: anim.hue % 360 });
+            setWildAnim({ scale: anim.scale, glow: anim.glow, rotation: anim.rotation, hue: anim.hue });
           },
         });
     } else {
@@ -219,10 +269,10 @@ const Cell = ({
     };
   }, [symbol]);
 
-  // Get symbol config and texture
-  const symbolConfig = symbol ? SYMBOLS[symbol] : null;
-  const hasTexture = symbol && SYMBOLS_WITH_IMAGES.includes(symbol);
-  const symbolTexture = hasTexture ? symbolTextures[symbol] : null;
+  // Get symbol config and texture (use displaySymbol for rendering, symbol for logic)
+  const symbolConfig = displaySymbol ? SYMBOLS[displaySymbol] : null;
+  const hasTexture = displaySymbol && SYMBOLS_WITH_IMAGES.includes(displaySymbol);
+  const symbolTexture = hasTexture ? symbolTextures[displaySymbol] : null;
   const glowColor = multiplier > 1 ? MULTIPLIER_COLORS[multiplier] : null;
 
   // Animate when isNew changes (new symbol appearing)
@@ -368,6 +418,40 @@ const Cell = ({
     }
   }, [isWinning]);
 
+  // Pending reveal animation (suspense highlight before reveal)
+  const [pendingGlow, setPendingGlow] = useState(0);
+  const pendingAnimRef = useRef(null);
+  useEffect(() => {
+    if (isPendingReveal) {
+      // Pulsing highlight effect when cell is about to be revealed
+      const anim = { glow: 0 };
+      pendingAnimRef.current = gsap.timeline({ repeat: -1 })
+        .to(anim, {
+          glow: 1,
+          duration: 0.15,
+          ease: 'power2.out',
+          onUpdate: () => setPendingGlow(anim.glow),
+        })
+        .to(anim, {
+          glow: 0.4,
+          duration: 0.15,
+          ease: 'power2.in',
+          onUpdate: () => setPendingGlow(anim.glow),
+        });
+    } else {
+      if (pendingAnimRef.current) {
+        pendingAnimRef.current.kill();
+        pendingAnimRef.current = null;
+      }
+      setPendingGlow(0);
+    }
+    return () => {
+      if (pendingAnimRef.current) {
+        pendingAnimRef.current.kill();
+      }
+    };
+  }, [isPendingReveal]);
+
   // Animate explosion effect (Wild explosion sets cell to max multiplier)
   const [explosionGlow, setExplosionGlow] = useState(0);
   useEffect(() => {
@@ -443,14 +527,12 @@ const Cell = ({
       g.drawRoundedRect(3, 3, CELL_SIZE - 6, CELL_SIZE - 6, 7);
     }
 
-    // Winning glow effect - more intense
+    // Winning glow effect - softer, less intense
     if (isWinning) {
-      g.lineStyle(5, 0xffffff, 0.7);
-      g.drawRoundedRect(-3, -3, CELL_SIZE + 6, CELL_SIZE + 6, 12);
-      g.lineStyle(10, 0xffd700, 0.5);
-      g.drawRoundedRect(-6, -6, CELL_SIZE + 12, CELL_SIZE + 12, 14);
-      g.lineStyle(15, 0xff00ff, 0.25);
-      g.drawRoundedRect(-10, -10, CELL_SIZE + 20, CELL_SIZE + 20, 18);
+      g.lineStyle(3, 0xffffff, 0.5);
+      g.drawRoundedRect(-2, -2, CELL_SIZE + 4, CELL_SIZE + 4, 11);
+      g.lineStyle(6, 0xccaa66, 0.35);
+      g.drawRoundedRect(-4, -4, CELL_SIZE + 8, CELL_SIZE + 8, 13);
     }
 
     // Multiplier glow (Ghost Spot) - more vibrant
@@ -479,6 +561,17 @@ const Cell = ({
       g.lineStyle(20, 0xffee00, explosionGlow * 0.4); // Yellow outer ring
       g.drawRoundedRect(-14, -14, CELL_SIZE + 28, CELL_SIZE + 28, 20);
     }
+
+    // Pending reveal effect (suspense - cell about to be revealed) - subtle
+    if (pendingGlow > 0) {
+      // Soft blue highlight
+      g.lineStyle(2, 0x6699cc, pendingGlow * 0.6);
+      g.drawRoundedRect(-1, -1, CELL_SIZE + 2, CELL_SIZE + 2, 11);
+      // Very subtle inner fill
+      g.beginFill(0x88aacc, pendingGlow * 0.08);
+      g.drawRoundedRect(2, 2, CELL_SIZE - 4, CELL_SIZE - 4, 8);
+      g.endFill();
+    }
   };
 
   // Multiplier text style - bigger and more visible
@@ -505,87 +598,53 @@ const Cell = ({
       <Graphics draw={drawCell} />
 
       {/* Symbol container with animations - centered with pivot for scale */}
-      {symbol && (
+      {(displaySymbol || isSpinning) && (
         <Container
           x={CELL_SIZE / 2}
           y={CELL_SIZE / 2 + offsetY}
           alpha={animatedAlpha}
-          scale={animatedScale * winExplosion.scale * (symbol === 'SC' ? scatterAnim.scale : symbol === 'WD' ? wildAnim.scale : 1)}
-          rotation={winExplosion.rotation + (symbol === 'SC' ? scatterAnim.rotation : symbol === 'WD' ? wildAnim.rotation : 0)}
+          scale={animatedScale * winExplosion.scale * (displaySymbol === 'SC' && !isSpinning ? scatterAnim.scale : displaySymbol === 'WD' && !isSpinning ? wildAnim.scale : 1)}
+          rotation={winExplosion.rotation + (displaySymbol === 'SC' && !isSpinning ? scatterAnim.rotation : displaySymbol === 'WD' && !isSpinning ? wildAnim.rotation : 0)}
         >
-          {/* Wild glow effect - rainbow pulsing */}
-          {symbol === 'WD' && wildAnim.glow > 0 && (
+          {/* Wild glow effect - subtle golden glow (only for actual wild, not spinning) */}
+          {displaySymbol === 'WD' && !isSpinning && wildAnim.glow > 0 && (
             <Graphics
               draw={(g) => {
                 g.clear();
-                // Convert hue to RGB for rainbow effect
-                const hue = wildAnim.hue;
-                const h = hue / 60;
-                const c = 1;
-                const x = c * (1 - Math.abs(h % 2 - 1));
-                let r, gb, b;
-                if (h < 1) { r = c; gb = x; b = 0; }
-                else if (h < 2) { r = x; gb = c; b = 0; }
-                else if (h < 3) { r = 0; gb = c; b = x; }
-                else if (h < 4) { r = 0; gb = x; b = c; }
-                else if (h < 5) { r = x; gb = 0; b = c; }
-                else { r = c; gb = 0; b = x; }
-                const color = (Math.floor(r * 255) << 16) | (Math.floor(gb * 255) << 8) | Math.floor(b * 255);
-
-                // Outer rainbow glow
-                g.beginFill(color, wildAnim.glow * 0.35);
-                g.drawCircle(0, 0, spriteSize * 0.8);
+                // Soft golden glow
+                g.beginFill(0xccaa66, wildAnim.glow * 0.2);
+                g.drawCircle(0, 0, spriteSize * 0.7);
                 g.endFill();
-                // Inner bright glow
-                g.beginFill(0xffffff, wildAnim.glow * 0.2);
+                // Inner subtle glow
+                g.beginFill(0xddbb77, wildAnim.glow * 0.1);
                 g.drawCircle(0, 0, spriteSize * 0.5);
                 g.endFill();
               }}
             />
           )}
 
-          {/* Scatter glow effect - MASSIVE during suspense */}
-          {symbol === 'SC' && scatterAnim.glow > 0 && (
+          {/* Scatter glow effect - subtle and gentle */}
+          {displaySymbol === 'SC' && !isSpinning && scatterAnim.glow > 0 && (
             <Graphics
               draw={(g) => {
                 g.clear();
-                // Glow intensity increases during suspense mode (glow > 1.5 means suspense)
-                const isSuspense = scatterAnim.glow > 1.5;
-                const glowMult = isSuspense ? 1.8 : 1;
-                const glowIntensity = Math.min(scatterAnim.glow, 2.5);
+                const glowIntensity = Math.min(scatterAnim.glow, 1.2);
 
-                if (isSuspense) {
-                  // MASSIVE outer ring during suspense - pulsing beacon
-                  g.beginFill(0xff00ff, (glowIntensity - 1) * 0.15);
-                  g.drawCircle(0, 0, spriteSize * 1.5 * glowMult);
-                  g.endFill();
+                // Soft outer glow - muted cyan
+                g.beginFill(0x4488aa, glowIntensity * 0.15);
+                g.drawCircle(0, 0, spriteSize * 0.8);
+                g.endFill();
 
-                  // Secondary magenta ring
-                  g.beginFill(0xff44ff, (glowIntensity - 1) * 0.2);
-                  g.drawCircle(0, 0, spriteSize * 1.2 * glowMult);
-                  g.endFill();
-
-                  // Cyan ring
-                  g.beginFill(0x00ffff, (glowIntensity - 1) * 0.25);
-                  g.drawCircle(0, 0, spriteSize * 1.0 * glowMult);
-                  g.endFill();
-
-                  // White hot center
-                  g.beginFill(0xffffff, (glowIntensity - 1) * 0.15);
-                  g.drawCircle(0, 0, spriteSize * 0.6);
-                  g.endFill();
-                }
-
-                // Main cyan/blue outer glow
-                g.beginFill(0x00ddff, Math.min(glowIntensity, 1) * 0.3 * glowMult);
-                g.drawCircle(0, 0, spriteSize * 0.75 * glowMult);
+                // Inner subtle glow
+                g.beginFill(0x66aacc, glowIntensity * 0.1);
+                g.drawCircle(0, 0, spriteSize * 0.6);
                 g.endFill();
               }}
             />
           )}
 
           {/* Symbol image or custom drawn - offset to center around pivot */}
-          {symbol === 'WD' ? (
+          {displaySymbol === 'WD' ? (
             /* Custom Wild Symbol - Neon Vinyl Disc */
             <>
               <Graphics
@@ -632,22 +691,44 @@ const Cell = ({
                   g.endFill();
                 }}
               />
-              <Text
-                text="WILD"
-                x={0}
-                y={0}
-                anchor={0.5}
-                style={new TextStyle({
-                  fontFamily: 'Arial Black, Arial, sans-serif',
-                  fontSize: 11,
-                  fontWeight: 'bold',
-                  fill: '#1a0030',
-                  stroke: '#ffd700',
-                  strokeThickness: 1,
-                })}
-              />
+              {/* Show spinning multiplier OR "WILD" text */}
+              {wildSpinningMultiplier ? (
+                <Text
+                  text={`x${wildSpinningMultiplier}`}
+                  x={0}
+                  y={0}
+                  anchor={0.5}
+                  style={new TextStyle({
+                    fontFamily: 'Arial Black, Arial, sans-serif',
+                    fontSize: 16,
+                    fontWeight: 'bold',
+                    fill: '#ffffff',
+                    stroke: '#ff00ff',
+                    strokeThickness: 3,
+                    dropShadow: true,
+                    dropShadowColor: '#ff00ff',
+                    dropShadowBlur: 8,
+                    dropShadowDistance: 0,
+                  })}
+                />
+              ) : (
+                <Text
+                  text="WILD"
+                  x={0}
+                  y={0}
+                  anchor={0.5}
+                  style={new TextStyle({
+                    fontFamily: 'Arial Black, Arial, sans-serif',
+                    fontSize: 11,
+                    fontWeight: 'bold',
+                    fill: '#1a0030',
+                    stroke: '#ffd700',
+                    strokeThickness: 1,
+                  })}
+                />
+              )}
             </>
-          ) : symbol === 'SC' ? (
+          ) : displaySymbol === 'SC' ? (
             /* Custom Scatter Symbol - Glowing Crystal/Gem */
             <>
               <Graphics
@@ -782,7 +863,7 @@ const Cell = ({
               />
               {/* Symbol text */}
               <Text
-                text={symbol}
+                text={displaySymbol}
                 x={0}
                 y={0}
                 anchor={0.5}
