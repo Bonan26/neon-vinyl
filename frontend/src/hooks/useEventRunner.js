@@ -163,6 +163,11 @@ const useEventRunner = () => {
         // SUSPENSE MODE: Reveal cell by cell with increasing delays
         setSuspenseMode(true);
 
+        // Start the continuous suspense music loop (only on first entry)
+        if (suspenseStartRow === rowIndex - 1 || suspenseStartRow === rowIndex) {
+          audioService.startSuspenseLoop?.();
+        }
+
         // Calculate progressive delay based on how many rows since suspense started
         const rowsSinceSuspense = rowIndex - suspenseStartRow;
         let baseRowDelay = Math.min(
@@ -263,8 +268,9 @@ const useEventRunner = () => {
       updateCell(row, col, { isNew: false });
     }
 
-    // Reset suspense mode after reveal completes
+    // Reset suspense mode and stop suspense music after reveal completes
     setSuspenseMode(false);
+    audioService.stopSuspenseLoop?.();
 
     await sleep(TIMING.PAUSE_BETWEEN);
   }, [updateCell, getSpeedMultiplier, setSuspenseMode]);

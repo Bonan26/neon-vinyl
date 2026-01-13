@@ -493,24 +493,75 @@ class AudioService {
 
   /**
    * Play scatter suspense sound (when 2 scatters found, building tension)
-   * Creates a heartbeat-like tension effect
+   * Creates a dramatic drum roll / heartbeat effect
    */
   playScatterSuspenseSound() {
     if (!this.isInitialized || !this.sfxEnabled) return;
 
     const now = Tone.now();
 
-    // HEARTBEAT EFFECT - Deep thump
-    this.sfxSynths.scatter.triggerAttackRelease('C2', '8n', now, 0.6);
-    this.sfxSynths.scatter.triggerAttackRelease('C2', '8n', now + 0.15, 0.4);
+    // DRAMATIC DRUM ROLL / HEARTBEAT EFFECT
+    // Deep bass thump (heartbeat)
+    this.sfxSynths.scatter.triggerAttackRelease('C2', '8n', now, 0.7);
+    this.sfxSynths.scatter.triggerAttackRelease('C2', '16n', now + 0.12, 0.5);
 
-    // Rising tension notes
-    this.sfxSynths.scatter.triggerAttackRelease('E3', '8n', now + 0.3, 0.3);
-    this.sfxSynths.scatter.triggerAttackRelease('G3', '8n', now + 0.4, 0.35);
+    // Rising tension drone
+    this.sfxSynths.bigWin.triggerAttackRelease(['C3', 'G3'], '4n', now, 0.25);
 
-    // High shimmer for anticipation
-    this.sfxSynths.winChime.triggerAttackRelease('B5', '16n', now + 0.2, 0.2);
-    this.sfxSynths.winChime.triggerAttackRelease('E6', '16n', now + 0.35, 0.25);
+    // Snare-like roll effect
+    this.sfxSynths.whoosh.triggerAttackRelease('16n', now + 0.1, 0.4);
+    this.sfxSynths.whoosh.triggerAttackRelease('16n', now + 0.2, 0.35);
+    this.sfxSynths.whoosh.triggerAttackRelease('16n', now + 0.28, 0.3);
+
+    // High tension shimmer
+    this.sfxSynths.winChime.triggerAttackRelease('B5', '16n', now + 0.15, 0.25);
+    this.sfxSynths.winChime.triggerAttackRelease('E6', '16n', now + 0.3, 0.3);
+  }
+
+  /**
+   * Start continuous suspense music loop (call when entering suspense mode)
+   */
+  startSuspenseLoop() {
+    if (!this.isInitialized || !this.sfxEnabled) return;
+    if (this.suspenseLoop) return; // Already running
+
+    const now = Tone.now();
+    let beatCount = 0;
+
+    // Create a continuous heartbeat/tension loop
+    this.suspenseLoop = setInterval(() => {
+      if (!this.sfxEnabled) {
+        this.stopSuspenseLoop();
+        return;
+      }
+
+      const t = Tone.now();
+      beatCount++;
+
+      // Heartbeat thump - gets faster over time
+      this.sfxSynths.scatter.triggerAttackRelease('C2', '16n', t, 0.5 + (beatCount * 0.02));
+      this.sfxSynths.scatter.triggerAttackRelease('C2', '32n', t + 0.08, 0.35);
+
+      // Rising pitch for tension
+      const pitchIndex = Math.min(beatCount, 8);
+      const tensionNotes = ['C3', 'D3', 'E3', 'F3', 'G3', 'A3', 'B3', 'C4', 'D4'];
+      this.sfxSynths.bigWin.triggerAttackRelease(tensionNotes[pitchIndex], '8n', t, 0.2 + (beatCount * 0.02));
+
+      // Shimmer effect
+      if (beatCount % 2 === 0) {
+        this.sfxSynths.winChime.triggerAttackRelease('E6', '32n', t + 0.05, 0.15);
+      }
+    }, 350 - Math.min(beatCount * 10, 150)); // Gets faster
+  }
+
+  /**
+   * Stop the suspense music loop
+   */
+  stopSuspenseLoop() {
+    if (this.suspenseLoop) {
+      clearInterval(this.suspenseLoop);
+      this.suspenseLoop = null;
+    }
   }
 
   /**
