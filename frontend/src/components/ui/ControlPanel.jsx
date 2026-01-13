@@ -32,7 +32,12 @@ const ControlPanel = ({
   const isAnimating = useGameStore((state) => state.isAnimating);
   const lastWin = useGameStore((state) => state.lastWin);
   const freeSpinsRemaining = useGameStore((state) => state.freeSpinsRemaining);
+  const scatterBoostSpins = useGameStore((state) => state.scatterBoostSpins);
+  const wildBoostSpins = useGameStore((state) => state.wildBoostSpins);
   const toggleBonusMenu = useGameStore((state) => state.toggleBonusMenu);
+
+  // Check if any bonus is active (only 1 bonus at a time!)
+  const isBonusActive = freeSpinsRemaining > 0 || scatterBoostSpins > 0 || wildBoostSpins > 0;
 
   // Autospin state from store
   const autoSpinActive = useGameStore((state) => state.autoSpinActive);
@@ -170,12 +175,12 @@ const ControlPanel = ({
             </svg>
           </button>
 
-          {/* Bonus Buy Button */}
+          {/* Bonus Buy Button - disabled when any bonus is active */}
           <button
             className="hud-btn bonus-btn"
             onClick={toggleBonusMenu}
-            disabled={isSpinning || freeSpinsRemaining > 0}
-            title="Buy Bonus"
+            disabled={isSpinning || isBonusActive}
+            title={isBonusActive ? "Bonus in progress" : "Buy Bonus"}
           >
             <span className="bonus-btn-text">BONUS</span>
           </button>
@@ -233,7 +238,7 @@ const ControlPanel = ({
                   setShowAutoSpinMenu(!showAutoSpinMenu);
                 }
               }}
-              disabled={isSpinning || freeSpinsRemaining > 0}
+              disabled={isSpinning || isBonusActive}
               title={autoSpinPending ? "Cancel Auto Spin" : "Auto Spin"}
               style={autoSpinPending ? { '--pending-color': pendingSpeedColor } : {}}
             >
@@ -255,7 +260,7 @@ const ControlPanel = ({
             {/* Auto-Spin Menu */}
             {showAutoSpinMenu && (
               <div className="auto-spin-menu">
-                <div className="auto-spin-header">Vitesse</div>
+                <div className="auto-spin-header">Speed</div>
                 <div className="speed-options">
                   {SPEED_OPTIONS.map((speed) => (
                     <button
@@ -269,7 +274,7 @@ const ControlPanel = ({
                     </button>
                   ))}
                 </div>
-                <div className="auto-spin-header">Nombre de spins</div>
+                <div className="auto-spin-header">Number of spins</div>
                 <div className="spin-count-options">
                   {AUTO_SPIN_OPTIONS.map((count) => (
                     <button

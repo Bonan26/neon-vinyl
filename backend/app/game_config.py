@@ -146,11 +146,11 @@ for w in FREE_SPIN_WEIGHTS_LIST:
 # =============================================================================
 
 PAYTABLE: Dict[Symbol, Dict[int, float]] = {
-    # Wild pays same as DJ (best) - Calibrated for 96% RTP
+    # Wild pays same as DJ (best) - Calibrated for 96% RTP with Wild explosion on current round
     Symbol.WILD: {
-        5: 2.8, 6: 4.6, 7: 7.4, 8: 12.0, 9: 18.5,
-        10: 27.8, 11: 46.4, 12: 74.2, 13: 111.2, 14: 185.4,
-        15: 278.0,
+        5: 0.69, 6: 1.13, 7: 1.82, 8: 3.03, 9: 4.55,
+        10: 6.9, 11: 11.3, 12: 18.2, 13: 27.6, 14: 45.5,
+        15: 69.0,
     },
     # Scatter - no direct payout, triggers free spins
     Symbol.SCATTER: {
@@ -160,43 +160,43 @@ PAYTABLE: Dict[Symbol, Dict[int, float]] = {
     },
     # High Tier: DJ Spooky (best payouts)
     Symbol.DJ_SPOOKY: {
-        5: 2.8, 6: 4.6, 7: 7.4, 8: 12.0, 9: 18.5,
-        10: 27.8, 11: 46.4, 12: 74.2, 13: 111.2, 14: 185.4,
-        15: 278.0,
+        5: 0.69, 6: 1.13, 7: 1.82, 8: 3.03, 9: 4.55,
+        10: 6.9, 11: 11.3, 12: 18.2, 13: 27.6, 14: 45.5,
+        15: 69.0,
     },
     # High Tier: Gold Vinyl
     Symbol.GOLD_VINYL: {
-        5: 1.85, 6: 3.3, 7: 5.6, 8: 9.3, 9: 14.8,
-        10: 22.2, 11: 37.0, 12: 59.3, 13: 92.7, 14: 148.3,
-        15: 222.5,
+        5: 0.46, 6: 0.76, 7: 1.38, 8: 2.28, 9: 3.66,
+        10: 5.5, 11: 9.1, 12: 14.5, 13: 22.8, 14: 36.6,
+        15: 55.0,
     },
     # Mid Tier: Headphones
     Symbol.HEADPHONES: {
-        5: 1.13, 6: 1.85, 7: 3.0, 8: 5.15, 9: 8.3,
-        10: 13.0, 11: 22.2, 12: 33.4, 13: 55.6, 14: 92.7,
-        15: 139.0,
+        5: 0.28, 6: 0.46, 7: 0.76, 8: 1.31, 9: 2.07,
+        10: 3.2, 11: 5.5, 12: 8.3, 13: 13.8, 14: 22.8,
+        15: 34.5,
     },
     # Mid Tier: Cassette
     Symbol.CASSETTE: {
-        5: 0.74, 6: 1.3, 7: 2.22, 8: 3.7, 9: 5.93,
-        10: 9.3, 11: 15.8, 12: 26.0, 13: 40.8, 14: 64.9,
-        15: 102.0,
+        5: 0.19, 6: 0.32, 7: 0.55, 8: 0.91, 9: 1.45,
+        10: 2.28, 11: 3.86, 12: 6.4, 13: 10.0, 14: 15.9,
+        15: 24.8,
     },
-    # Low Tier: Music Notes - Lower payouts (they win 88% of the time!)
+    # Low Tier: Music Notes - Low payouts (they win most often!)
     Symbol.MUSIC_NOTE_PINK: {
-        5: 0.28, 6: 0.46, 7: 0.74, 8: 1.3, 9: 2.04,
-        10: 3.34, 11: 5.56, 12: 9.27, 13: 14.83, 14: 24.1,
-        15: 37.1,
+        5: 0.064, 6: 0.11, 7: 0.17, 8: 0.31, 9: 0.5,
+        10: 0.76, 11: 1.31, 12: 2.12, 13: 3.45, 14: 5.5,
+        15: 8.3,
     },
     Symbol.MUSIC_NOTE_BLUE: {
-        5: 0.28, 6: 0.46, 7: 0.74, 8: 1.3, 9: 2.04,
-        10: 3.34, 11: 5.56, 12: 9.27, 13: 14.83, 14: 24.1,
-        15: 37.1,
+        5: 0.064, 6: 0.11, 7: 0.17, 8: 0.31, 9: 0.5,
+        10: 0.76, 11: 1.31, 12: 2.12, 13: 3.45, 14: 5.5,
+        15: 8.3,
     },
     Symbol.MUSIC_NOTE_PURPLE: {
-        5: 0.28, 6: 0.46, 7: 0.74, 8: 1.3, 9: 2.04,
-        10: 3.34, 11: 5.56, 12: 9.27, 13: 14.83, 14: 24.1,
-        15: 37.1,
+        5: 0.064, 6: 0.11, 7: 0.17, 8: 0.31, 9: 0.5,
+        10: 0.76, 11: 1.31, 12: 2.12, 13: 3.45, 14: 5.5,
+        15: 8.3,
     },
 }
 
@@ -397,5 +397,8 @@ MAX_BET: float = 100.0
 DEFAULT_BET: float = 1.0
 
 # RTP Configuration
-TARGET_RTP: float = 96.0  # Target RTP percentage
-RTP_VARIANCE: float = 2.0  # Acceptable variance (+/- 2%)
+TARGET_RTP: float = 96.0  # Target RTP percentage (96% target)
+RTP_VARIANCE: float = 1.0  # Acceptable variance (+/- 1%)
+
+# Max Win Cap
+MAX_WIN_MULTIPLIER: float = 40000.0  # Maximum win capped at 40,000x bet

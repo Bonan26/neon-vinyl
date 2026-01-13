@@ -112,10 +112,16 @@ const useGameStore = create((set, get) => ({
   autoSpinRemaining: 0,       // Spins left
   autoSpinSpeed: AutoSpinSpeed.NORMAL,
 
+  // Manual speed mode for bonus/free spins (when not in autospin)
+  manualSpeedMode: AutoSpinSpeed.NORMAL,
+
   // UI state
   showProvablyFair: false,
   soundEnabled: true,
   musicEnabled: true,
+
+  // Suspense mode for scatter reveal animation
+  suspenseMode: false,
 
   // Actions
   setSession: (sessionData) => set({
@@ -229,6 +235,8 @@ const useGameStore = create((set, get) => ({
 
   setMusicEnabled: (enabled) => set({ musicEnabled: enabled }),
 
+  setSuspenseMode: (mode) => set({ suspenseMode: mode }),
+
   toggleBonusMenu: () => set((state) => ({
     showBonusMenu: !state.showBonusMenu,
   })),
@@ -281,6 +289,8 @@ const useGameStore = create((set, get) => ({
     return {
       autoSpinRemaining: newRemaining,
       autoSpinActive: !shouldStop,
+      // Reset speed to NORMAL when autospin stops
+      autoSpinSpeed: shouldStop ? AutoSpinSpeed.NORMAL : state.autoSpinSpeed,
     };
   }),
 
@@ -288,9 +298,26 @@ const useGameStore = create((set, get) => ({
     autoSpinActive: false,
     autoSpinCount: 0,
     autoSpinRemaining: 0,
+    autoSpinSpeed: AutoSpinSpeed.NORMAL, // Reset speed when stopping
   }),
 
   setAutoSpinSpeed: (speed) => set({ autoSpinSpeed: speed }),
+
+  // Manual speed mode for bonus/free spins
+  setManualSpeedMode: (speed) => set({ manualSpeedMode: speed }),
+
+  // Get effective speed: autospin speed if autospin active, otherwise manual speed mode
+  getEffectiveSpeed: () => {
+    const state = get();
+    if (state.autoSpinActive) {
+      return state.autoSpinSpeed;
+    }
+    // Use manual speed during free spins when not in autospin
+    if (state.freeSpinsRemaining > 0) {
+      return state.manualSpeedMode;
+    }
+    return AutoSpinSpeed.NORMAL;
+  },
 
   // Game state machine
   setGameState: (state) => set({ gameState: state }),

@@ -131,14 +131,14 @@ export default function WildWheelPopup({ show, targetMultiplier = 64, onComplete
 
         {/* Spinning text */}
         {spinning && (
-          <div className="ww-spinning">Bonne chance...</div>
+          <div className="ww-spinning">Good luck...</div>
         )}
 
         {/* Result */}
         {showResult && wonSegment && (
           <div className="ww-result">
             <div className="ww-result-value">{wonSegment.label}</div>
-            <div className="ww-result-text">Multiplicateur gagné !</div>
+            <div className="ww-result-text">Multiplier won!</div>
           </div>
         )}
       </div>

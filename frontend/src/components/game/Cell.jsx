@@ -7,6 +7,7 @@ import { Container, Graphics, Text, Sprite } from '@pixi/react';
 import { TextStyle, Texture } from 'pixi.js';
 import gsap from 'gsap';
 import { CELL_SIZE, SYMBOLS, MULTIPLIER_COLORS } from '../../config/gameConfig';
+import useGameStore from '../../stores/gameStore';
 
 // Symbols that have actual image files (excluding WD and SC which are custom drawn)
 const SYMBOLS_WITH_IMAGES = ['DJ', 'GV', 'HP', 'CS', 'NP', 'NB', 'NU'];
@@ -40,6 +41,9 @@ const Cell = ({
   const [offsetY, setOffsetY] = useState(0);
   const prevSymbolRef = useRef(symbol);
 
+  // Get suspense mode from store for enhanced scatter animations
+  const suspenseMode = useGameStore((state) => state.suspenseMode);
+
   // Scatter animation state
   const [scatterAnim, setScatterAnim] = useState({ scale: 1, glow: 0, rotation: 0 });
   const scatterAnimRef = useRef(null);
@@ -52,34 +56,93 @@ const Cell = ({
   const x = col * (CELL_SIZE + 4);
   const y = row * (CELL_SIZE + 4);
 
-  // Scatter continuous animation
+  // Scatter continuous animation - INTENSE during suspense mode
   useEffect(() => {
     if (symbol === 'SC') {
+      // Kill existing animation to rebuild with new parameters
+      if (scatterAnimRef.current) {
+        scatterAnimRef.current.kill();
+        scatterAnimRef.current = null;
+      }
+
+      // Animation intensity varies DRAMATICALLY based on suspense mode
+      const intensity = suspenseMode ? 2.5 : 1;  // Much more intense during suspense
+      const pulseSpeed = suspenseMode ? 0.25 : 0.8; // Much faster heartbeat pulse during suspense
+
       // Create continuous pulsing animation for scatter
       const anim = { scale: 1, glow: 0, rotation: 0 };
-      scatterAnimRef.current = gsap.timeline({ repeat: -1 })
-        // Pulse up with glow
-        .to(anim, {
-          scale: 1.15,
-          glow: 1,
-          rotation: 0.05,
-          duration: 0.8,
-          ease: 'sine.inOut',
-          onUpdate: () => {
-            setScatterAnim({ scale: anim.scale, glow: anim.glow, rotation: anim.rotation });
-          },
-        })
-        // Pulse down
-        .to(anim, {
-          scale: 1,
-          glow: 0.3,
-          rotation: -0.05,
-          duration: 0.8,
-          ease: 'sine.inOut',
-          onUpdate: () => {
-            setScatterAnim({ scale: anim.scale, glow: anim.glow, rotation: anim.rotation });
-          },
-        });
+
+      if (suspenseMode) {
+        // SUSPENSE MODE: Rapid heartbeat-like pulsing
+        scatterAnimRef.current = gsap.timeline({ repeat: -1 })
+          // Quick pulse up - like a heartbeat
+          .to(anim, {
+            scale: 1.35,
+            glow: intensity,
+            rotation: 0.08,
+            duration: 0.15,
+            ease: 'power2.out',
+            onUpdate: () => {
+              setScatterAnim({ scale: anim.scale, glow: anim.glow, rotation: anim.rotation });
+            },
+          })
+          // Quick pulse down
+          .to(anim, {
+            scale: 1.1,
+            glow: intensity * 0.6,
+            rotation: -0.04,
+            duration: 0.1,
+            ease: 'power2.in',
+            onUpdate: () => {
+              setScatterAnim({ scale: anim.scale, glow: anim.glow, rotation: anim.rotation });
+            },
+          })
+          // Second beat (double beat like heartbeat)
+          .to(anim, {
+            scale: 1.25,
+            glow: intensity * 0.9,
+            rotation: 0.05,
+            duration: 0.12,
+            ease: 'power2.out',
+            onUpdate: () => {
+              setScatterAnim({ scale: anim.scale, glow: anim.glow, rotation: anim.rotation });
+            },
+          })
+          // Rest between beats
+          .to(anim, {
+            scale: 1,
+            glow: intensity * 0.4,
+            rotation: 0,
+            duration: 0.3,
+            ease: 'power1.inOut',
+            onUpdate: () => {
+              setScatterAnim({ scale: anim.scale, glow: anim.glow, rotation: anim.rotation });
+            },
+          });
+      } else {
+        // NORMAL MODE: Gentle pulsing
+        scatterAnimRef.current = gsap.timeline({ repeat: -1 })
+          .to(anim, {
+            scale: 1.15,
+            glow: 1,
+            rotation: 0.05,
+            duration: pulseSpeed,
+            ease: 'sine.inOut',
+            onUpdate: () => {
+              setScatterAnim({ scale: anim.scale, glow: anim.glow, rotation: anim.rotation });
+            },
+          })
+          .to(anim, {
+            scale: 1,
+            glow: 0.3,
+            rotation: -0.05,
+            duration: pulseSpeed,
+            ease: 'sine.inOut',
+            onUpdate: () => {
+              setScatterAnim({ scale: anim.scale, glow: anim.glow, rotation: anim.rotation });
+            },
+          });
+      }
     } else {
       // Kill animation if symbol changes
       if (scatterAnimRef.current) {
@@ -95,7 +158,7 @@ const Cell = ({
         scatterAnimRef.current = null;
       }
     };
-  }, [symbol]);
+  }, [symbol, suspenseMode]);
 
   // Wild continuous animation - rainbow pulsing glow
   useEffect(() => {
@@ -481,14 +544,41 @@ const Cell = ({
             />
           )}
 
-          {/* Scatter glow effect */}
+          {/* Scatter glow effect - MASSIVE during suspense */}
           {symbol === 'SC' && scatterAnim.glow > 0 && (
             <Graphics
               draw={(g) => {
                 g.clear();
-                // Cyan/blue outer glow to match the orb
-                g.beginFill(0x00ddff, scatterAnim.glow * 0.25);
-                g.drawCircle(0, 0, spriteSize * 0.75);
+                // Glow intensity increases during suspense mode (glow > 1.5 means suspense)
+                const isSuspense = scatterAnim.glow > 1.5;
+                const glowMult = isSuspense ? 1.8 : 1;
+                const glowIntensity = Math.min(scatterAnim.glow, 2.5);
+
+                if (isSuspense) {
+                  // MASSIVE outer ring during suspense - pulsing beacon
+                  g.beginFill(0xff00ff, (glowIntensity - 1) * 0.15);
+                  g.drawCircle(0, 0, spriteSize * 1.5 * glowMult);
+                  g.endFill();
+
+                  // Secondary magenta ring
+                  g.beginFill(0xff44ff, (glowIntensity - 1) * 0.2);
+                  g.drawCircle(0, 0, spriteSize * 1.2 * glowMult);
+                  g.endFill();
+
+                  // Cyan ring
+                  g.beginFill(0x00ffff, (glowIntensity - 1) * 0.25);
+                  g.drawCircle(0, 0, spriteSize * 1.0 * glowMult);
+                  g.endFill();
+
+                  // White hot center
+                  g.beginFill(0xffffff, (glowIntensity - 1) * 0.15);
+                  g.drawCircle(0, 0, spriteSize * 0.6);
+                  g.endFill();
+                }
+
+                // Main cyan/blue outer glow
+                g.beginFill(0x00ddff, Math.min(glowIntensity, 1) * 0.3 * glowMult);
+                g.drawCircle(0, 0, spriteSize * 0.75 * glowMult);
                 g.endFill();
               }}
             />

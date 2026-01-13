@@ -18,7 +18,7 @@ from app.game_config import (
     GRID_ROWS, GRID_COLS, MIN_CLUSTER_SIZE,
     INITIAL_MULTIPLIER, GHOST_SPOT_BASE, MULTIPLIER_GROWTH, MAX_MULTIPLIER,
     SPECIAL_SYMBOLS, SCATTER_FREE_SPINS, SCATTER_RETRIGGER, FREE_SPIN_RETRIGGER,
-    JACKPOT_TIERS
+    JACKPOT_TIERS, MAX_WIN_MULTIPLIER
 )
 from app.random_generator import ProvablyFairRNG, create_rng, SeedData
 
@@ -445,8 +445,9 @@ class GridState:
                     break
 
             # First, include the Wild cell itself
+            # SET multiplier to wheel value (take max of current vs wheel, don't multiply)
             old_mult = self.multipliers[wild_row][wild_col]
-            new_mult = min(old_mult * wheel_multiplier, MAX_MULTIPLIER)
+            new_mult = max(old_mult, wheel_multiplier)  # Take higher value, don't compound
             self.multipliers[wild_row][wild_col] = new_mult
             affected_cells.append([wild_row, wild_col])
             cell_details.append({
@@ -461,7 +462,7 @@ class GridState:
 
                 if 0 <= new_row < self.rows and 0 <= new_col < self.cols:
                     old_mult = self.multipliers[new_row][new_col]
-                    new_mult = min(old_mult * wheel_multiplier, MAX_MULTIPLIER)
+                    new_mult = max(old_mult, wheel_multiplier)  # Take higher value, don't compound
                     self.multipliers[new_row][new_col] = new_mult
                     affected_cells.append([new_row, new_col])
                     cell_details.append({
@@ -722,18 +723,44 @@ def run_spin(
 
         tumble_count += 1
 
-        # Process each cluster
+        # Collect all winning positions and find Wilds FIRST
         all_winning_positions: List[Tuple[int, int]] = []
+        wild_positions_in_clusters: List[Tuple[int, int]] = []
 
         for cluster in clusters:
-            # Track max multiplier
-            max_multiplier_seen = max(max_multiplier_seen, cluster.multiplier)
+            all_winning_positions.extend(cluster.positions)
+            # Find Wild positions in this cluster
+            for row, col in cluster.positions:
+                if grid_state.symbols[row][col] == Symbol.WILD:
+                    if (row, col) not in wild_positions_in_clusters:
+                        wild_positions_in_clusters.append((row, col))
 
-            # Calculate payout for this cluster
-            cluster_payout = cluster.total_payout * bet_amount
+        # STEP 1: Process Wild explosions FIRST (before calculating wins)
+        # This applies multipliers to the 9 cells around each Wild
+        if wild_positions_in_clusters:
+            wild_explosions = grid_state.apply_wild_explosions(wild_positions_in_clusters, rng)
+            for explosion in wild_explosions:
+                events.append(GameEvent(
+                    type=EventType.WILD_EXPLOSION.value,
+                    data=explosion
+                ))
+                max_multiplier_seen = max(max_multiplier_seen, explosion["maxNewMultiplier"])
+
+        # STEP 2: Recalculate clusters with NEW multipliers after Wild explosion
+        # We need to recalculate payouts since multipliers have changed
+        for cluster in clusters:
+            # Recalculate the max multiplier in this cluster (may have increased from Wild explosion)
+            new_max_mult = max(grid_state.multipliers[r][c] for r, c in cluster.positions)
+            new_total_payout = cluster.base_payout * new_max_mult
+
+            # Track max multiplier
+            max_multiplier_seen = max(max_multiplier_seen, new_max_mult)
+
+            # Calculate payout for this cluster with updated multiplier
+            cluster_payout = new_total_payout * bet_amount
             total_payout += cluster_payout
 
-            # Add win event
+            # Add win event with updated multiplier
             events.append(GameEvent(
                 type=EventType.WIN.value,
                 data={
@@ -742,14 +769,12 @@ def run_spin(
                     "positions": [[r, c] for r, c in cluster.positions],
                     "size": cluster.size,
                     "basePayout": cluster.base_payout,
-                    "multiplier": cluster.multiplier,
+                    "multiplier": new_max_mult,
                     "amount": cluster_payout
                 }
             ))
 
-            all_winning_positions.extend(cluster.positions)
-
-        # Upgrade multipliers BEFORE removing symbols
+        # STEP 3: Upgrade multipliers for winning positions (ghost spots)
         upgrades = grid_state.upgrade_multipliers(all_winning_positions)
 
         # Add multiplier upgrade events
@@ -763,18 +788,8 @@ def run_spin(
             ))
             max_multiplier_seen = max(max_multiplier_seen, new_value)
 
-        # Remove winning symbols (returns Wild positions)
-        wild_positions = grid_state.remove_symbols(all_winning_positions)
-
-        # Apply Wild Wheel - spin wheel to determine multiplier for 9 cells
-        if wild_positions:
-            wild_explosions = grid_state.apply_wild_explosions(wild_positions, rng)
-            for explosion in wild_explosions:
-                events.append(GameEvent(
-                    type=EventType.WILD_EXPLOSION.value,
-                    data=explosion
-                ))
-                max_multiplier_seen = max(max_multiplier_seen, explosion["maxNewMultiplier"])
+        # STEP 4: Remove winning symbols (Wilds already processed, no explosion here)
+        grid_state.remove_symbols(all_winning_positions)
 
         # Apply gravity
         movements = grid_state.apply_gravity()
@@ -814,8 +829,9 @@ def run_spin(
             ))
             total_payout += jackpot_amount
 
-    # Calculate final payout multiplier
+    # Calculate final payout multiplier (capped at MAX_WIN_MULTIPLIER)
     payout_multiplier = total_payout / bet_amount if bet_amount > 0 else 0.0
+    payout_multiplier = min(payout_multiplier, MAX_WIN_MULTIPLIER)
 
     # Calculate remaining free spins
     new_remaining = free_spins_remaining - 1 if free_spin_mode else 0

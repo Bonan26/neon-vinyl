@@ -166,3 +166,73 @@
     transform: translateY(0);
   }
 }
+
+/* Speed Toggles Row */
+.speed-row {
+  background: rgba(0, 255, 136, 0.08);
+  border: 1px solid rgba(0, 255, 136, 0.2);
+}
+
+.speed-row .setting-icon {
+  color: #00ff88;
+}
+
+.speed-toggles {
+  display: flex;
+  gap: 8px;
+}
+
+.speed-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.speed-toggle input {
+  display: none;
+}
+
+.speed-toggle-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #888;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: color 0.2s;
+}
+
+.speed-toggle:hover {
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+.speed-toggle:hover .speed-toggle-label {
+  color: #ccc;
+}
+
+/* Booster active */
+.speed-toggle.active.booster {
+  background: rgba(255, 255, 0, 0.15);
+  border-color: #ffff00;
+  box-shadow: 0 0 12px rgba(255, 255, 0, 0.3);
+}
+
+.speed-toggle.active.booster .speed-toggle-label {
+  color: #ffff00;
+}
+
+/* Super Booster active */
+.speed-toggle.active.super {
+  background: rgba(255, 0, 255, 0.15);
+  border-color: #ff00ff;
+  box-shadow: 0 0 12px rgba(255, 0, 255, 0.3);
+}
+
+.speed-toggle.active.super .speed-toggle-label {
+  color: #ff00ff;
+}

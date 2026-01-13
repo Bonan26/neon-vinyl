@@ -1,9 +1,10 @@
 /**
  * NEON VINYL: GHOST GROOVES - Settings Menu
- * Popup menu with toggles for music, SFX, intro screen
+ * Popup menu with toggles for music, SFX, intro screen, and speed mode
  */
 import React, { useCallback, useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
+import useGameStore, { AutoSpinSpeed } from '../../stores/gameStore';
 import './SettingsMenu.css';
 
 const INTRO_STORAGE_KEY = 'neonvinyl_skip_intro';
@@ -17,6 +18,15 @@ const SettingsMenu = ({
   onSfxToggle,
 }) => {
   const menuRef = useRef(null);
+
+  // Speed mode state from store
+  const freeSpinsRemaining = useGameStore((state) => state.freeSpinsRemaining);
+  const manualSpeedMode = useGameStore((state) => state.manualSpeedMode);
+  const setManualSpeedMode = useGameStore((state) => state.setManualSpeedMode);
+  const autoSpinActive = useGameStore((state) => state.autoSpinActive);
+
+  // Show speed selector during free spins when NOT in autospin
+  const showSpeedSelector = freeSpinsRemaining > 0 && !autoSpinActive;
 
   // Get intro screen preference
   const [showIntro, setShowIntro] = React.useState(() => {
@@ -142,6 +152,41 @@ const SettingsMenu = ({
             <span className="toggle-slider" />
           </label>
         </div>
+
+        {/* Speed Mode Toggles - Only visible during free spins */}
+        {showSpeedSelector && (
+          <div className="setting-row speed-row">
+            <div className="setting-info">
+              <svg className="setting-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M20.38 8.57l-1.23 1.85a8 8 0 01-.22 7.58H5.07A8 8 0 0115.58 6.85l1.85-1.23A10 10 0 003.35 19a2 2 0 001.72 1h13.85a2 2 0 001.74-1 10 10 0 00-.27-10.44z" />
+                <path d="M10.59 15.41a2 2 0 002.83 0l5.66-8.49-8.49 5.66a2 2 0 000 2.83z" />
+              </svg>
+              <span>Speed</span>
+            </div>
+            <div className="speed-toggles">
+              <label className={`speed-toggle ${manualSpeedMode === AutoSpinSpeed.BOOSTER ? 'active booster' : ''}`}>
+                <input
+                  type="checkbox"
+                  checked={manualSpeedMode === AutoSpinSpeed.BOOSTER}
+                  onChange={() => setManualSpeedMode(
+                    manualSpeedMode === AutoSpinSpeed.BOOSTER ? AutoSpinSpeed.NORMAL : AutoSpinSpeed.BOOSTER
+                  )}
+                />
+                <span className="speed-toggle-label">Booster</span>
+              </label>
+              <label className={`speed-toggle ${manualSpeedMode === AutoSpinSpeed.SUPER_BOOSTER ? 'active super' : ''}`}>
+                <input
+                  type="checkbox"
+                  checked={manualSpeedMode === AutoSpinSpeed.SUPER_BOOSTER}
+                  onChange={() => setManualSpeedMode(
+                    manualSpeedMode === AutoSpinSpeed.SUPER_BOOSTER ? AutoSpinSpeed.NORMAL : AutoSpinSpeed.SUPER_BOOSTER
+                  )}
+                />
+                <span className="speed-toggle-label">Super</span>
+              </label>
+            </div>
+          </div>
+        )}
       </div>
 
       <div className="settings-footer">

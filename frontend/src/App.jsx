@@ -435,6 +435,8 @@ function App() {
         console.log('[App] Activating boost:', bonusData.boostType);
         const result = await activateBoost(bonusData.boostType);
         console.log('[App] activateBoost result:', result);
+        // Ensure animation state is reset after boost purchase (safeguard)
+        setIsAnimating(false);
         return result;
       }
       // Otherwise it's a regular bonus (free spins)
@@ -442,9 +444,11 @@ function App() {
       return await buyBonus(bonusData);
     } catch (error) {
       console.error('[App] Bonus buy failed:', error);
+      // Reset animation state on error
+      setIsAnimating(false);
       throw error;
     }
-  }, [buyBonus, activateBoost]);
+  }, [buyBonus, activateBoost, setIsAnimating]);
 
   /**
    * Handle Bonus Trigger Spin - spins the real grid then shows popup
@@ -480,7 +484,7 @@ function App() {
 
     } catch (error) {
       console.error('App: Bonus trigger spin error', error);
-      alert('Échec de l\'achat: ' + error.message);
+      alert('Purchase failed: ' + error.message);
     } finally {
       setIsAnimating(false);
     }

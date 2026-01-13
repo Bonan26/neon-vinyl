@@ -492,6 +492,28 @@ class AudioService {
   }
 
   /**
+   * Play scatter suspense sound (when 2 scatters found, building tension)
+   * Creates a heartbeat-like tension effect
+   */
+  playScatterSuspenseSound() {
+    if (!this.isInitialized || !this.sfxEnabled) return;
+
+    const now = Tone.now();
+
+    // HEARTBEAT EFFECT - Deep thump
+    this.sfxSynths.scatter.triggerAttackRelease('C2', '8n', now, 0.6);
+    this.sfxSynths.scatter.triggerAttackRelease('C2', '8n', now + 0.15, 0.4);
+
+    // Rising tension notes
+    this.sfxSynths.scatter.triggerAttackRelease('E3', '8n', now + 0.3, 0.3);
+    this.sfxSynths.scatter.triggerAttackRelease('G3', '8n', now + 0.4, 0.35);
+
+    // High shimmer for anticipation
+    this.sfxSynths.winChime.triggerAttackRelease('B5', '16n', now + 0.2, 0.2);
+    this.sfxSynths.winChime.triggerAttackRelease('E6', '16n', now + 0.35, 0.25);
+  }
+
+  /**
    * Play retrigger sound (during free spins)
    */
   playRetriggerSound() {

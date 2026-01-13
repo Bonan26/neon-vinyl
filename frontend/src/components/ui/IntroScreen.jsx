@@ -1,6 +1,6 @@
 /**
  * WOLFIE GROOVE - Intro Screen
- * Page d'accueil moderne et animée
+ * Modern animated intro screen
  */
 import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { gsap } from 'gsap';
@@ -182,7 +182,7 @@ const IntroScreen = ({ onStart }) => {
         {/* Max Win Badge */}
         <div className="intro-max-badge" ref={badgeRef}>
           <span className="badge-label">MAX WIN</span>
-          <span className="badge-value">5,000x</span>
+          <span className="badge-value">40,000x</span>
           <div className="badge-shine" />
         </div>
 
@@ -195,7 +195,7 @@ const IntroScreen = ({ onStart }) => {
               </svg>
             </div>
             <div className="card-content">
-              <span className="card-label">GRILLE</span>
+              <span className="card-label">GRID</span>
               <span className="card-value">7x7</span>
             </div>
           </div>
@@ -207,8 +207,8 @@ const IntroScreen = ({ onStart }) => {
               </svg>
             </div>
             <div className="card-content">
-              <span className="card-label">VOLATILITE</span>
-              <span className="card-value high">HAUTE</span>
+              <span className="card-label">VOLATILITY</span>
+              <span className="card-value high">HIGH</span>
             </div>
           </div>
 
@@ -225,29 +225,130 @@ const IntroScreen = ({ onStart }) => {
           </div>
         </div>
 
-        {/* Features */}
-        <div className="intro-features" ref={featuresRef}>
-          <div className="intro-feature">
-            <div className="feature-icon wild-icon">W</div>
-            <div className="feature-text">
-              <span className="feature-name">WILD EXPLOSIF</span>
-              <span className="feature-desc">Multiplie les cellules adjacentes</span>
+        {/* Features Section */}
+        <div className="intro-features-section" ref={featuresRef}>
+          {/* Main Mechanics */}
+          <div className="intro-features-group">
+            <h3 className="features-group-title">Mechanics</h3>
+            <div className="intro-features">
+              <div className="intro-feature">
+                <div className="feature-icon cluster-icon">
+                  <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M4 4h4v4H4zm6 0h4v4h-4zm6 0h4v4h-4zM4 10h4v4H4zm6 0h4v4h-4zm6 0h4v4h-4zM4 16h4v4H4zm6 0h4v4h-4zm6 0h4v4h-4z"/>
+                  </svg>
+                </div>
+                <div className="feature-text">
+                  <span className="feature-name">CLUSTER PAYS</span>
+                  <span className="feature-desc">5+ connected symbols = win</span>
+                </div>
+              </div>
+
+              <div className="intro-feature">
+                <div className="feature-icon tumble-icon">
+                  <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/>
+                  </svg>
+                </div>
+                <div className="feature-text">
+                  <span className="feature-name">TUMBLE</span>
+                  <span className="feature-desc">Wins explode, new symbols fall</span>
+                </div>
+              </div>
+
+              <div className="intro-feature">
+                <div className="feature-icon mult-icon">x256</div>
+                <div className="feature-text">
+                  <span className="feature-name">MULTIPLIERS</span>
+                  <span className="feature-desc">Stack on every tumble (max x256)</span>
+                </div>
+              </div>
             </div>
           </div>
 
-          <div className="intro-feature">
-            <div className="feature-icon scatter-icon">SC</div>
-            <div className="feature-text">
-              <span className="feature-name">FREE SPINS</span>
-              <span className="feature-desc">3+ scatters = 8-20 tours gratuits</span>
+          {/* Special Symbols */}
+          <div className="intro-features-group">
+            <h3 className="features-group-title">Special Symbols</h3>
+            <div className="intro-features">
+              <div className="intro-feature">
+                <div className="feature-icon wild-icon">W</div>
+                <div className="feature-text">
+                  <span className="feature-name">EXPLOSIVE WILD</span>
+                  <span className="feature-desc">Substitutes all, multiplies adjacent cells</span>
+                </div>
+              </div>
+
+              <div className="intro-feature">
+                <div className="feature-icon scatter-icon">SC</div>
+                <div className="feature-text">
+                  <span className="feature-name">SCATTER</span>
+                  <span className="feature-desc">3+ scatters = 8-20 free spins</span>
+                </div>
+              </div>
             </div>
           </div>
 
-          <div className="intro-feature">
-            <div className="feature-icon mult-icon">x256</div>
-            <div className="feature-text">
-              <span className="feature-name">MULTIPLICATEURS</span>
-              <span className="feature-desc">S'accumulent pendant les tumbles</span>
+          {/* Boost Features */}
+          <div className="intro-features-group">
+            <h3 className="features-group-title">Bonus Boosts</h3>
+            <div className="intro-features">
+              <div className="intro-feature scatter-hunt-feature">
+                <div className="feature-icon scatter-hunt-icon">
+                  <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                  </svg>
+                </div>
+                <div className="feature-text">
+                  <span className="feature-name">SCATTER HUNT</span>
+                  <span className="feature-desc">Collect scatters to boost your bonus chances</span>
+                </div>
+                <div className="feature-badge">5 SPINS</div>
+              </div>
+
+              <div className="intro-feature wild-boost-feature">
+                <div className="feature-icon wild-boost-icon">
+                  <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M7 2v11h3v9l7-12h-4l4-8z"/>
+                  </svg>
+                </div>
+                <div className="feature-text">
+                  <span className="feature-name">WILD BOOST</span>
+                  <span className="feature-desc">Wilds with guaranteed x2-x5 multipliers</span>
+                </div>
+                <div className="feature-badge orange">3 SPINS</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Bonus Buy */}
+          <div className="intro-features-group">
+            <h3 className="features-group-title">Bonus Buy</h3>
+            <div className="intro-features">
+              <div className="intro-feature bonus-buy-feature">
+                <div className="feature-icon bonus-icon">$</div>
+                <div className="feature-text">
+                  <span className="feature-name">BUY BONUS</span>
+                  <span className="feature-desc">Instantly access Free Spins</span>
+                </div>
+              </div>
+
+              <div className="intro-bonus-options">
+                <div className="bonus-option">
+                  <span className="bonus-name">Scatter Hunt</span>
+                  <span className="bonus-price">2x bet</span>
+                </div>
+                <div className="bonus-option">
+                  <span className="bonus-name">Wild Boost</span>
+                  <span className="bonus-price">5x bet</span>
+                </div>
+                <div className="bonus-option">
+                  <span className="bonus-name">Free Spins</span>
+                  <span className="bonus-price">24x bet</span>
+                </div>
+                <div className="bonus-option highlight">
+                  <span className="bonus-name">Super Spins</span>
+                  <span className="bonus-price">36x bet</span>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -255,7 +356,7 @@ const IntroScreen = ({ onStart }) => {
         {/* Start Button */}
         <button className="intro-start-btn" ref={buttonRef} onClick={handleStart}>
           <span className="btn-bg" />
-          <span className="btn-text">JOUER</span>
+          <span className="btn-text">PLAY</span>
           <span className="btn-shine" />
         </button>
 
@@ -267,7 +368,7 @@ const IntroScreen = ({ onStart }) => {
             onChange={handleCheckboxChange}
           />
           <span className="checkmark" />
-          <span>Ne plus afficher</span>
+          <span>Don't show again</span>
         </label>
       </div>
     </div>

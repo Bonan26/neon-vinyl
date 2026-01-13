@@ -288,12 +288,6 @@ const useGameController = () => {
       console.log('[GameController] Setting balance from', balanceBefore, 'to', result.balance);
       setBalance(result.balance);
 
-      // Verify balance was updated
-      setTimeout(() => {
-        const balanceAfter = useGameStore.getState().balance;
-        console.log('[GameController] Balance AFTER setBalance:', balanceAfter);
-      }, 100);
-
       // Update boost spins in store
       console.log('[GameController] boostType:', result.boostType, 'spinsRemaining:', result.boostSpinsRemaining);
       if (result.boostType === 'scatter_boost') {
@@ -304,12 +298,15 @@ const useGameController = () => {
         setWildBoostSpins(result.boostSpinsRemaining);
       }
 
+      // Ensure spinning states are reset (safeguard)
+      setIsSpinning(false);
+
       return result;
     } catch (error) {
       console.error('GameController: Boost activation error', error);
       throw error;
     }
-  }, [sessionId, betAmount, setBalance, setScatterBoostSpins, setWildBoostSpins]);
+  }, [sessionId, betAmount, setBalance, setScatterBoostSpins, setWildBoostSpins, setIsSpinning]);
 
   return {
     spin,

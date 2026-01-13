@@ -56,16 +56,30 @@ const useEventRunner = () => {
   const resetForNewSpin = useGameStore((state) => state.resetForNewSpin);
   const setFreeSpins = useGameStore((state) => state.setFreeSpins);
   const setMultiplierGrid = useGameStore((state) => state.setMultiplierGrid);
+  const setSuspenseMode = useGameStore((state) => state.setSuspenseMode);
 
   // Get state from store
   const betAmount = useGameStore((state) => state.betAmount);
   const freeSpinsRemaining = useGameStore((state) => state.freeSpinsRemaining);
+  const autoSpinActive = useGameStore((state) => state.autoSpinActive);
   const autoSpinSpeed = useGameStore((state) => state.autoSpinSpeed);
+  const manualSpeedMode = useGameStore((state) => state.manualSpeedMode);
 
-  // Calculate timing based on speed
+  // Calculate timing based on effective speed
+  // - During autospin: use autoSpinSpeed
+  // - During free spins (not autospin): use manualSpeedMode
+  // - Otherwise: NORMAL speed
   const getSpeedMultiplier = useCallback(() => {
-    return SPEED_MULTIPLIERS[autoSpinSpeed] || 1;
-  }, [autoSpinSpeed]);
+    let effectiveSpeed;
+    if (autoSpinActive) {
+      effectiveSpeed = autoSpinSpeed;
+    } else if (freeSpinsRemaining > 0) {
+      effectiveSpeed = manualSpeedMode;
+    } else {
+      effectiveSpeed = 'normal';
+    }
+    return SPEED_MULTIPLIERS[effectiveSpeed] || 1;
+  }, [autoSpinActive, autoSpinSpeed, freeSpinsRemaining, manualSpeedMode]);
 
   /**
    * Set callback for bonus trigger event
@@ -103,7 +117,7 @@ const useEventRunner = () => {
   }, []);
 
   /**
-   * Process REVEAL event - Cascade reveal row by row
+   * Process REVEAL event - Cascade reveal row by row with INTENSE scatter suspense
    */
   const processReveal = useCallback(async (event) => {
     const TIMING = getTiming(getSpeedMultiplier());
@@ -121,22 +135,123 @@ const useEventRunner = () => {
     // Reveal row by row from top to bottom
     const rows = Object.keys(rowGroups).sort((a, b) => Number(a) - Number(b));
 
-    for (const rowKey of rows) {
+    // Track scatter count and positions for suspense
+    let scatterCount = 0;
+    const SCATTER_SYMBOL = 'SC';
+    let suspenseStartRow = -1; // Row where we hit 2 scatters
+
+    // Timing constants
+    const BASE_ROW_DELAY = Math.max(50, TIMING.REVEAL_PER_ROW);
+
+    // SUSPENSE MODE TIMING - Progressive slowdown
+    const SUSPENSE_BASE = 400;        // Starting delay after 2 scatters
+    const SUSPENSE_INCREMENT = 250;   // Each row gets this much slower
+    const SUSPENSE_CELL_DELAY = 120;  // Delay between cells in suspense mode
+    const MAX_SUSPENSE_DELAY = 1200;  // Cap for row delay
+    const FINAL_ROW_EXTRA = 500;      // Extra delay on final 2 rows
+
+    for (let rowIndex = 0; rowIndex < rows.length; rowIndex++) {
+      const rowKey = rows[rowIndex];
       const rowData = rowGroups[rowKey];
+      const isLastTwoRows = rowIndex >= rows.length - 2;
+      const isLastRow = rowIndex === rows.length - 1;
 
-      // Update all cells in this row simultaneously
-      for (const { pos, symbol } of rowData) {
-        const [row, col] = pos;
-        updateCell(row, col, {
-          symbol,
-          isNew: true,
-          isWinning: false,
-          isRemoving: false,
-        });
+      // Check if we're in suspense mode (2+ scatters already found)
+      const inSuspenseMode = scatterCount >= 2;
+
+      if (inSuspenseMode) {
+        // SUSPENSE MODE: Reveal cell by cell with increasing delays
+        setSuspenseMode(true);
+
+        // Calculate progressive delay based on how many rows since suspense started
+        const rowsSinceSuspense = rowIndex - suspenseStartRow;
+        let baseRowDelay = Math.min(
+          SUSPENSE_BASE + (rowsSinceSuspense * SUSPENSE_INCREMENT),
+          MAX_SUSPENSE_DELAY
+        );
+
+        // Extra delay on final rows
+        if (isLastTwoRows) {
+          baseRowDelay += FINAL_ROW_EXTRA;
+        }
+
+        // Play suspense sound periodically
+        if (rowsSinceSuspense > 0 && rowsSinceSuspense % 2 === 0) {
+          audioService.playScatterSuspenseSound?.();
+        }
+
+        // Reveal cells one by one for maximum tension
+        for (let cellIndex = 0; cellIndex < rowData.length; cellIndex++) {
+          const { pos, symbol } = rowData[cellIndex];
+          const [row, col] = pos;
+
+          // Pause before revealing each cell (longer on last rows)
+          const cellDelay = isLastTwoRows
+            ? SUSPENSE_CELL_DELAY * 2
+            : SUSPENSE_CELL_DELAY;
+
+          if (cellIndex > 0) {
+            await sleep(cellDelay);
+          }
+
+          // Reveal the cell
+          updateCell(row, col, {
+            symbol,
+            isNew: true,
+            isWinning: false,
+            isRemoving: false,
+          });
+
+          // Check if this is a scatter!
+          if (symbol === SCATTER_SYMBOL) {
+            scatterCount++;
+            // JACKPOT! We got the 3rd scatter - dramatic pause
+            if (scatterCount === 3) {
+              audioService.playScatterTriggerSound?.();
+              await sleep(800); // Dramatic pause on 3rd scatter
+            }
+          }
+        }
+
+        // Wait after row with progressive delay
+        await sleep(baseRowDelay);
+
+      } else {
+        // NORMAL MODE: Fast row reveal
+        let newScatterInRow = false;
+
+        // Reveal all cells in row at once
+        for (const { pos, symbol } of rowData) {
+          const [row, col] = pos;
+          updateCell(row, col, {
+            symbol,
+            isNew: true,
+            isWinning: false,
+            isRemoving: false,
+          });
+
+          if (symbol === SCATTER_SYMBOL) {
+            scatterCount++;
+            newScatterInRow = true;
+
+            // If we just hit 2 scatters, mark the suspense start
+            if (scatterCount === 2) {
+              suspenseStartRow = rowIndex;
+              // Play sound when entering suspense
+              audioService.playScatterSuspenseSound?.();
+            }
+          }
+        }
+
+        // Normal delay or slightly longer if scatter appeared
+        const rowDelay = newScatterInRow ? BASE_ROW_DELAY * 2 : BASE_ROW_DELAY;
+        await sleep(rowDelay);
       }
+    }
 
-      // Small delay between rows
-      await sleep(TIMING.REVEAL_PER_ROW);
+    // If we ended with 3+ scatters, add celebration pause
+    if (scatterCount >= 3) {
+      await sleep(500);
     }
 
     // Wait for animations to settle
@@ -148,8 +263,11 @@ const useEventRunner = () => {
       updateCell(row, col, { isNew: false });
     }
 
+    // Reset suspense mode after reveal completes
+    setSuspenseMode(false);
+
     await sleep(TIMING.PAUSE_BETWEEN);
-  }, [updateCell, getSpeedMultiplier]);
+  }, [updateCell, getSpeedMultiplier, setSuspenseMode]);
 
   /**
    * Process WIN event - Highlight winning cells (removal handled separately)
@@ -532,29 +650,30 @@ const useEventRunner = () => {
       });
 
       // Group events into phases
-      // A phase contains: multiplier_upgrades + wins, ending at tumble/fill/reveal
-      // Order within phase: 1) ALL multipliers, 2) ALL wins (no removal), 3) remove all winning cells
+      // NEW ORDER: wild_explosion -> wins -> multiplier_upgrades -> tumble/fill
+      // Wild explosions happen FIRST so their multipliers apply to current round wins
       let i = 0;
       while (i < events.length) {
         const event = events[i];
 
-        // Non-win/multiplier events are processed directly
-        if (event.type !== 'win' && event.type !== 'multiplier_upgrade') {
+        // Non-win/multiplier/wild_explosion events are processed directly
+        if (event.type !== 'win' && event.type !== 'multiplier_upgrade' && event.type !== 'wild_explosion') {
           console.log(`EventRunner: Processing ${event.type}`);
           await processEvent(event, false, isBonusBuy);
           i++;
           continue;
         }
 
-        // Collect all wins and multiplier_upgrades in this phase
-        const phaseMultipliers = [];
+        // Collect all events in this phase (wild_explosions, wins, multiplier_upgrades)
+        const phaseWildExplosions = [];
         const phaseWins = [];
+        const phaseMultipliers = [];
         const allWinPositions = new Set();
 
         while (i < events.length) {
           const e = events[i];
-          if (e.type === 'multiplier_upgrade') {
-            phaseMultipliers.push(e);
+          if (e.type === 'wild_explosion') {
+            phaseWildExplosions.push(e);
             i++;
           } else if (e.type === 'win') {
             phaseWins.push(e);
@@ -563,21 +682,30 @@ const useEventRunner = () => {
               allWinPositions.add(`${pos[0]}-${pos[1]}`);
             }
             i++;
+          } else if (e.type === 'multiplier_upgrade') {
+            phaseMultipliers.push(e);
+            i++;
           } else {
-            // End of win/multiplier phase
+            // End of phase (tumble, fill, reveal, etc.)
             break;
           }
         }
 
-        console.log(`EventRunner: Phase with ${phaseMultipliers.length} multipliers and ${phaseWins.length} wins`);
+        console.log(`EventRunner: Phase with ${phaseWildExplosions.length} wild explosions, ${phaseWins.length} wins, ${phaseMultipliers.length} multipliers`);
 
-        // Step 1: Play ALL win animations (without removal)
+        // Step 1: Process Wild explosions FIRST (sets multipliers for current round)
+        for (const explosion of phaseWildExplosions) {
+          console.log(`EventRunner: Processing Wild explosion`);
+          await processWildExplosion(explosion);
+        }
+
+        // Step 2: Play ALL win animations (without removal) - now with updated multipliers from Wild
         for (const win of phaseWins) {
-          console.log(`EventRunner: Win animation for ${win.symbol}`);
+          console.log(`EventRunner: Win animation for ${win.symbol} with multiplier ${win.multiplier}`);
           await processWin(win, false); // false = don't remove
         }
 
-        // Step 2: Remove all winning cells at once
+        // Step 3: Remove all winning cells at once
         if (allWinPositions.size > 0) {
           const positionsToRemove = Array.from(allWinPositions).map(key => {
             const [row, col] = key.split('-').map(Number);
@@ -587,9 +715,9 @@ const useEventRunner = () => {
           await removeCells(positionsToRemove);
         }
 
-        // Step 3: Show ALL multipliers at once AFTER cells are removed
+        // Step 4: Show ghost spot multipliers AFTER cells are removed
         if (phaseMultipliers.length > 0) {
-          console.log(`EventRunner: Updating ${phaseMultipliers.length} multipliers at once`);
+          console.log(`EventRunner: Updating ${phaseMultipliers.length} ghost spot multipliers`);
           for (const mult of phaseMultipliers) {
             const [row, col] = mult.position;
             setCellMultiplier(row, col, mult.value);

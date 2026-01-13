@@ -8,23 +8,34 @@ import { BET_OPTIONS } from '../../config/gameConfig';
 import './BonusBuyMenu.css';
 
 // Bonus multipliers (cost = bet * multiplier)
+// Must match backend BONUS_BUY_OPTIONS in game_config.py
 const BONUS_OPTIONS = [
   {
     id: 'scatter_hunt',
     name: 'Scatter Hunt',
     scatters: 0,
     multiplier: 2,
-    description: 'Chance x3 de scatter pendant 10 spins',
+    description: '3x scatter chance for 10 spins',
     color: '#00ff88',
     icon: 'SC',
     feature: 'scatter_boost',
   },
   {
+    id: 'wild_boost',
+    name: 'Wild Boost',
+    scatters: 0,
+    multiplier: 5,
+    description: '5x wild chance for 5 spins',
+    color: '#ff6600',
+    icon: 'WD',
+    feature: 'wild_boost',
+  },
+  {
     id: 'standard',
     name: 'Free Spins',
     scatters: 3,
-    multiplier: 100,
-    description: '8 tours gratuits garantis',
+    multiplier: 24,
+    description: '8 guaranteed free spins',
     color: '#ff00ff',
     icon: '3x',
     feature: 'free_spins',
@@ -33,21 +44,11 @@ const BONUS_OPTIONS = [
     id: 'super',
     name: 'Super Spins',
     scatters: 4,
-    multiplier: 200,
-    description: '12 tours + multiplicateur x2',
+    multiplier: 36,
+    description: '12 spins + x2 multiplier start',
     color: '#ffd700',
     icon: '4x',
     feature: 'super_free_spins',
-  },
-  {
-    id: 'wild_boost',
-    name: 'Wild Boost',
-    scatters: 0,
-    multiplier: 5,
-    description: 'Chance x5 de wild pendant 5 spins',
-    color: '#ff6600',
-    icon: 'WD',
-    feature: 'wild_boost',
   },
 ];
 
@@ -137,7 +138,7 @@ const BonusBuyMenu = ({ onBuyBonus, onBonusTriggerSpin, disabled }) => {
       <div className="bonus-popup" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="bonus-popup-header">
-          <h2>ACHETER UN BONUS</h2>
+          <h2>BUY BONUS</h2>
           <button className="bonus-close-btn" onClick={toggleBonusMenu}>
             <svg viewBox="0 0 24 24" fill="currentColor">
               <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
@@ -148,13 +149,13 @@ const BonusBuyMenu = ({ onBuyBonus, onBonusTriggerSpin, disabled }) => {
         {/* Warning during free spins */}
         {freeSpinsRemaining > 0 && (
           <div className="bonus-warning">
-            Impossible d'acheter un bonus pendant les Free Spins!
+            Cannot buy bonus during Free Spins!
           </div>
         )}
 
         {/* Bet Selector */}
         <div className="bonus-bet-selector">
-          <span className="bet-label">MISE</span>
+          <span className="bet-label">BET</span>
           <div className="bet-controls">
             <button
               className="bet-btn"
@@ -192,20 +193,20 @@ const BonusBuyMenu = ({ onBuyBonus, onBonusTriggerSpin, disabled }) => {
                 <div className="bonus-info">
                   <h3>{bonus.name}</h3>
                   <div className="bonus-multiplier">
-                    {bonus.multiplier}x la mise
+                    {bonus.multiplier}x bet
                   </div>
                 </div>
 
                 {/* Price Display */}
                 <div className="bonus-price-display">
-                  <span className="price-label">PRIX</span>
+                  <span className="price-label">PRICE</span>
                   <span className="price-value">${cost.toFixed(2)}</span>
                 </div>
 
                 {/* Status indicator */}
                 {!canAfford && (
                   <div className="bonus-status insufficient">
-                    Solde insuffisant
+                    Insufficient balance
                   </div>
                 )}
               </div>
@@ -215,7 +216,7 @@ const BonusBuyMenu = ({ onBuyBonus, onBonusTriggerSpin, disabled }) => {
 
         {/* Balance Footer */}
         <div className="bonus-footer">
-          <span className="balance-label">Votre solde:</span>
+          <span className="balance-label">Your balance:</span>
           <span className="balance-value">${balance.toFixed(2)}</span>
         </div>
       </div>
@@ -224,23 +225,23 @@ const BonusBuyMenu = ({ onBuyBonus, onBonusTriggerSpin, disabled }) => {
       {selectedBonus && (
         <div className="confirm-overlay" onClick={handleCancelBuy}>
           <div className="confirm-popup" onClick={(e) => e.stopPropagation()}>
-            <h3>Confirmer l'achat</h3>
+            <h3>Confirm Purchase</h3>
             <p>
-              Voulez-vous acheter le <strong>{selectedBonus.name}</strong> pour{' '}
+              Buy <strong>{selectedBonus.name}</strong> for{' '}
               <span className="confirm-price" style={{ color: selectedBonus.color }}>
                 ${(betAmount * selectedBonus.multiplier).toFixed(2)}
-              </span> ?
+              </span>?
             </p>
             <div className="confirm-buttons">
               <button className="confirm-btn cancel" onClick={handleCancelBuy}>
-                Annuler
+                Cancel
               </button>
               <button
                 className="confirm-btn confirm"
                 onClick={handleConfirmBuy}
                 style={{ '--accent-color': selectedBonus.color }}
               >
-                Confirmer
+                Confirm
               </button>
             </div>
           </div>

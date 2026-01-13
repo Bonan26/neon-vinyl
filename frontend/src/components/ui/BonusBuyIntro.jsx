@@ -1,7 +1,6 @@
 /**
  * WOLFIE GROOVE - Bonus Buy Intro
- * Grand popup animé avec règles et bouton COMMENCER
- * Sans la section scatters - plus épuré et animé
+ * Animated popup with rules and START button
  */
 import React, { useEffect, useState, useRef, useCallback } from 'react';
 import gsap from 'gsap';
@@ -13,10 +12,10 @@ const BONUS_RULES = {
     subtitle: 'BONUS ROUND',
     spins: 8,
     rules: [
-      'Les multiplicateurs Ghost s\'accumulent',
-      'Chaque tumble augmente les multiplicateurs',
-      'Les WILD explosent et multiplient les cellules adjacentes',
-      'Bonne chance!',
+      'Ghost multipliers accumulate',
+      'Each tumble increases multipliers',
+      'WILD symbols explode and multiply adjacent cells',
+      'Good luck!',
     ],
   },
   super: {
@@ -24,10 +23,10 @@ const BONUS_RULES = {
     subtitle: 'MEGA BONUS',
     spins: 12,
     rules: [
-      'Multiplicateurs de départ x2 sur toute la grille',
-      'Progression des multiplicateurs accélérée',
-      'Les WILD explosent avec plus de puissance',
-      'Potentiel de gains maximal!',
+      'Starting x2 multipliers on entire grid',
+      'Accelerated multiplier progression',
+      'WILD symbols explode with more power',
+      'Maximum win potential!',
     ],
   },
 };
@@ -242,7 +241,7 @@ const BonusBuyIntro = ({ show, bonusType, scatterCount, onComplete }) => {
 
         {/* Start Button */}
         <button className="bbi-start-btn" ref={buttonRef} onClick={handleStart}>
-          <span className="bbi-btn-text">COMMENCER</span>
+          <span className="bbi-btn-text">START</span>
           <div className="bbi-btn-shine" />
         </button>
       </div>
