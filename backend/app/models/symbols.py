@@ -29,11 +29,11 @@ class Symbol(Enum):
     WOLF_GREEN = "W6"     # Green Snake Wolf
     WOLF_SPIRIT = "WS"    # Spirit Wolf (dark blue)
 
-    # Low Tier (Hats) - Common
-    HAT_CAP = "HC"        # W86 Cap
-    HAT_STEAMPUNK = "HS"  # Steampunk Hat
-    HAT_STRAW = "HW"      # Straw Hat
-    HAT_PEACOCK = "HK"    # Peacock Feather Hat
+    # Low Tier (Wolves) - Common
+    WOLF_WHITE = "HC"     # White Screaming Wolf
+    WOLF_SNAKE = "HS"     # Snake Screaming Wolf
+    WOLF_STREET = "HW"    # Street Relaxing Wolf
+    WOLF_BLUE = "HK"      # Blue Whistling Wolf
 
 
 @dataclass
@@ -59,11 +59,11 @@ SYMBOL_CONFIG: Dict[Symbol, SymbolInfo] = {
     Symbol.WOLF_GREEN: SymbolInfo(Symbol.WOLF_GREEN, SymbolTier.MID, 17),
     Symbol.WOLF_SPIRIT: SymbolInfo(Symbol.WOLF_SPIRIT, SymbolTier.MID, 20),
 
-    # Low tier hats - common (weight 25-35)
-    Symbol.HAT_CAP: SymbolInfo(Symbol.HAT_CAP, SymbolTier.LOW, 25),
-    Symbol.HAT_STEAMPUNK: SymbolInfo(Symbol.HAT_STEAMPUNK, SymbolTier.LOW, 28),
-    Symbol.HAT_STRAW: SymbolInfo(Symbol.HAT_STRAW, SymbolTier.LOW, 32),
-    Symbol.HAT_PEACOCK: SymbolInfo(Symbol.HAT_PEACOCK, SymbolTier.LOW, 35),
+    # Low tier wolves - common (weight 25-35)
+    Symbol.WOLF_WHITE: SymbolInfo(Symbol.WOLF_WHITE, SymbolTier.LOW, 25),
+    Symbol.WOLF_SNAKE: SymbolInfo(Symbol.WOLF_SNAKE, SymbolTier.LOW, 28),
+    Symbol.WOLF_STREET: SymbolInfo(Symbol.WOLF_STREET, SymbolTier.LOW, 32),
+    Symbol.WOLF_BLUE: SymbolInfo(Symbol.WOLF_BLUE, SymbolTier.LOW, 35),
 }
 
 # Symbols that should NOT be included in regular cluster matching
@@ -126,23 +126,23 @@ PAYTABLE: Dict[Symbol, Dict[int, float]] = {
         10: 2.60, 11: 4.40, 12: 7.00, 13: 11.20, 14: 18.00,
         15: 28.00,
     },
-    # Low Tier: Hats - Lower payouts (they win most often!)
-    Symbol.HAT_CAP: {
+    # Low Tier: Wolves - Lower payouts (they win most often!)
+    Symbol.WOLF_WHITE: {
         4: 0.06, 5: 0.10, 6: 0.18, 7: 0.30, 8: 0.50, 9: 0.80,
         10: 1.20, 11: 2.00, 12: 3.20, 13: 5.20, 14: 8.50,
         15: 13.00,
     },
-    Symbol.HAT_STEAMPUNK: {
+    Symbol.WOLF_SNAKE: {
         4: 0.05, 5: 0.08, 6: 0.14, 7: 0.24, 8: 0.40, 9: 0.65,
         10: 1.00, 11: 1.70, 12: 2.70, 13: 4.40, 14: 7.00,
         15: 10.50,
     },
-    Symbol.HAT_STRAW: {
+    Symbol.WOLF_STREET: {
         4: 0.04, 5: 0.062, 6: 0.105, 7: 0.162, 8: 0.295, 9: 0.476,
         10: 0.721, 11: 1.24, 12: 2.03, 13: 3.28, 14: 5.23,
         15: 7.88,
     },
-    Symbol.HAT_PEACOCK: {
+    Symbol.WOLF_BLUE: {
         4: 0.04, 5: 0.062, 6: 0.105, 7: 0.162, 8: 0.295, 9: 0.476,
         10: 0.721, 11: 1.24, 12: 2.03, 13: 3.28, 14: 5.23,
         15: 7.88,

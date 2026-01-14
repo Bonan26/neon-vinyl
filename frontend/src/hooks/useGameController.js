@@ -31,6 +31,8 @@ const useGameController = () => {
   const scatterBoostActive = useGameStore((state) => state.scatterBoostActive);
   const wildBoostActive = useGameStore((state) => state.wildBoostActive);
   const getEffectiveBet = useGameStore((state) => state.getEffectiveBet);
+  const activeFeatureMode = useGameStore((state) => state.activeFeatureMode);
+  const getTotalSpinCost = useGameStore((state) => state.getTotalSpinCost);
 
   /**
    * Initialize game session
@@ -95,24 +97,32 @@ const useGameController = () => {
     }
 
     try {
-      // Calculate effective bet (includes boost multipliers)
+      // Calculate effective bet (includes boost multipliers and feature mode cost)
       const effectiveBet = getEffectiveBet();
+      const totalSpinCost = getTotalSpinCost();
+
+      // Determine which boost is active based on feature mode or legacy boost
+      const scatterHuntActive = scatterBoostActive || (activeFeatureMode?.id === 'scatter_hunt');
+      const wildBoostModeActive = wildBoostActive || (activeFeatureMode?.id === 'wild_boost');
+
       console.log('GameController: Calling API...', {
         baseBet: betAmount,
         effectiveBet,
-        scatterBoost: scatterBoostActive,
-        wildBoost: wildBoostActive,
+        totalSpinCost,
+        activeFeatureMode: activeFeatureMode?.id,
+        scatterHunt: scatterHuntActive,
+        wildBoost: wildBoostModeActive,
       });
       setIsSpinning(true);
 
-      // Call backend API with boost state
+      // Call backend API with boost state (using total cost with feature mode)
       const result = await apiService.play({
         sessionID: sessionId,
-        betAmount: effectiveBet,  // Send effective bet (with boost multipliers)
+        betAmount: activeFeatureMode ? totalSpinCost : effectiveBet,  // Use total cost if feature mode active
         clientSeed,
         // Send boost state so backend knows the probability boost is active
-        scatterBoostActive,
-        wildBoostActive,
+        scatterBoostActive: scatterHuntActive,
+        wildBoostActive: wildBoostModeActive,
       });
 
       console.log('GameController: API response', {
@@ -150,6 +160,8 @@ const useGameController = () => {
     scatterBoostActive,
     wildBoostActive,
     getEffectiveBet,
+    activeFeatureMode,
+    getTotalSpinCost,
     setIsSpinning,
     setTumbleCount,
     setMaxMultiplier,

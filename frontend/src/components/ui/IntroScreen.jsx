@@ -3,12 +3,13 @@
  * Clean design inspired by "Le Bandit" (Hacksaw Gaming)
  */
 import React, { useState, useEffect, useCallback } from 'react';
+import { waitForTextures } from '../game/Cell';
 import './IntroScreen.css';
 
 const STORAGE_KEY = 'wolfs86_skip_intro';
 
-// All images to preload (with cache buster)
-const CACHE_VERSION = 'v14';
+// All images to preload (with cache buster) - MUST match Cell.jsx CACHE_VERSION
+const CACHE_VERSION = 'v20';
 const PRELOAD_IMAGES = [
   `/logo.png?${CACHE_VERSION}`,
   `/symbols/wolf_red.png?${CACHE_VERSION}`,
@@ -17,10 +18,10 @@ const PRELOAD_IMAGES = [
   `/symbols/wolf_gray.png?${CACHE_VERSION}`,
   `/symbols/wolf_green.png?${CACHE_VERSION}`,
   `/symbols/wolf_spirit.png?${CACHE_VERSION}`,
-  `/symbols/hat_cap.png?${CACHE_VERSION}`,
-  `/symbols/hat_steam.png?${CACHE_VERSION}`,
-  `/symbols/hat_straw.png?${CACHE_VERSION}`,
-  `/symbols/hat_peacock.png?${CACHE_VERSION}`,
+  `/symbols/wolf_white.png?${CACHE_VERSION}`,
+  `/symbols/wolf_snake.png?${CACHE_VERSION}`,
+  `/symbols/wolf_street.png?${CACHE_VERSION}`,
+  `/symbols/wolf_blue.png?${CACHE_VERSION}`,
   `/symbols/scatter_gold.jpg?${CACHE_VERSION}`,
   `/symbols/crown_matrix.png?${CACHE_VERSION}`,
 ];
@@ -56,8 +57,11 @@ const IntroScreen = ({ onStart }) => {
       });
     };
 
-    // Load all images
-    Promise.all(PRELOAD_IMAGES.map(preloadImage)).then(() => {
+    // Load all images and wait for PixiJS textures
+    Promise.all([
+      ...PRELOAD_IMAGES.map(preloadImage),
+      waitForTextures(), // Wait for PixiJS textures too
+    ]).then(() => {
       // Add minimum loading time for smooth UX
       setTimeout(() => {
         setIsLoading(false);
@@ -92,7 +96,7 @@ const IntroScreen = ({ onStart }) => {
         <div className="loading-content">
           {/* Logo */}
           <div className="loading-logo">
-            <img src={`/logo.png?v14`} alt="Les Wolfs 86" className="main-logo-img" />
+            <img src={`/logo.png?v15`} alt="Les Wolfs 86" className="main-logo-img" />
           </div>
 
           {/* Loading bar */}
@@ -136,7 +140,7 @@ const IntroScreen = ({ onStart }) => {
       <div className="intro-content">
         {/* Title - Main Logo */}
         <div className="intro-header">
-          <img src={`/logo.png?v14`} alt="Les Wolfs 86" className="intro-main-logo" />
+          <img src={`/logo.png?v15`} alt="Les Wolfs 86" className="intro-main-logo" />
         </div>
 
         {/* Volatility indicator */}
@@ -196,7 +200,7 @@ const IntroScreen = ({ onStart }) => {
 
       {/* Corner logo */}
       <div className="intro-corner-logo">
-        <img src={`/logo.png?v14`} alt="Les Wolfs 86" />
+        <img src={`/logo.png?v15`} alt="Les Wolfs 86" />
       </div>
     </div>
   );

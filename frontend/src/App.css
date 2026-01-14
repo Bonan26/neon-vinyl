@@ -277,7 +277,16 @@
   pointer-events: none;
 }
 
-/* Wolf image with premium animation */
+/* Animated wrapper - contains wolf and accessories, animated together */
+.wolf-animated-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  animation: wolfIdle 4s ease-in-out infinite;
+  transform-origin: bottom center;
+}
+
+/* Wolf image styling (no animation - wrapper handles it) */
 .mascot-character .wolf-image {
   width: 100%;
   height: 100%;
@@ -285,26 +294,18 @@
   filter:
     drop-shadow(0 0 30px rgba(255, 100, 50, 0.4))
     drop-shadow(0 15px 40px rgba(0, 0, 0, 0.9));
-  animation: wolfIdle 4s ease-in-out infinite;
-  transform-origin: bottom center;
 }
 
 /* Idle animation - breathing, subtle movement */
 @keyframes wolfIdle {
   0%, 100% {
     transform: translateY(0) scaleY(1) rotate(0deg);
-    filter:
-      drop-shadow(0 0 30px rgba(255, 100, 50, 0.4))
-      drop-shadow(0 15px 40px rgba(0, 0, 0, 0.9));
   }
   25% {
     transform: translateY(-8px) scaleY(1.02) rotate(-1deg);
   }
   50% {
     transform: translateY(-15px) scaleY(1.04) rotate(1deg);
-    filter:
-      drop-shadow(0 0 50px rgba(255, 100, 50, 0.6))
-      drop-shadow(0 20px 50px rgba(0, 0, 0, 0.9));
   }
   75% {
     transform: translateY(-6px) scaleY(1.01) rotate(-0.5deg);
@@ -312,25 +313,25 @@
 }
 
 /* Breathing animation when spinning */
-.mascot-character.breathing .wolf-image {
+.mascot-character.breathing .wolf-animated-wrapper {
   animation: wolfBreathing 0.8s ease-in-out infinite;
+}
+
+.mascot-character.breathing .wolf-image {
+  filter:
+    drop-shadow(0 0 50px rgba(255, 150, 50, 0.6))
+    drop-shadow(0 15px 40px rgba(0, 0, 0, 0.9));
 }
 
 @keyframes wolfBreathing {
   0%, 100% {
     transform: scaleY(1) scaleX(1) translateY(0);
-    filter:
-      drop-shadow(0 0 40px rgba(255, 150, 50, 0.5))
-      drop-shadow(0 15px 40px rgba(0, 0, 0, 0.9));
   }
   25% {
     transform: scaleY(1.06) scaleX(0.97) translateY(-5px);
   }
   50% {
     transform: scaleY(0.94) scaleX(1.04) translateY(-2px);
-    filter:
-      drop-shadow(0 0 60px rgba(255, 180, 50, 0.7))
-      drop-shadow(0 20px 50px rgba(0, 0, 0, 0.9));
   }
   75% {
     transform: scaleY(1.03) scaleX(0.98) translateY(-8px);
@@ -338,67 +339,55 @@
 }
 
 /* Excited animation when winning */
-.mascot-character.excited .wolf-image {
+.mascot-character.excited .wolf-animated-wrapper {
   animation: wolfExcited 0.3s ease-in-out infinite;
+}
+
+.mascot-character.excited .wolf-image {
+  filter:
+    drop-shadow(0 0 60px rgba(255, 200, 50, 0.9))
+    drop-shadow(0 15px 40px rgba(0, 0, 0, 0.9));
 }
 
 @keyframes wolfExcited {
   0%, 100% {
     transform: translateY(0) rotate(0deg) scale(1);
-    filter:
-      drop-shadow(0 0 50px rgba(255, 200, 50, 0.8))
-      drop-shadow(0 15px 40px rgba(0, 0, 0, 0.9));
   }
   25% {
     transform: translateY(-25px) rotate(-5deg) scale(1.08);
-    filter:
-      drop-shadow(0 0 70px rgba(255, 220, 50, 1))
-      drop-shadow(0 25px 50px rgba(0, 0, 0, 0.9));
   }
   50% {
     transform: translateY(-10px) rotate(4deg) scale(1.04);
   }
   75% {
     transform: translateY(-20px) rotate(-3deg) scale(1.06);
-    filter:
-      drop-shadow(0 0 80px rgba(255, 200, 50, 0.9))
-      drop-shadow(0 20px 50px rgba(0, 0, 0, 0.9));
   }
 }
 
 /* Wolf Burst animation - intense 2.5 second howl */
-.mascot-character.wolf-burst .wolf-image {
+.mascot-character.wolf-burst .wolf-animated-wrapper {
   animation: wolfBurst 0.25s ease-in-out infinite;
+}
+
+.mascot-character.wolf-burst .wolf-image {
+  filter:
+    drop-shadow(0 0 80px rgba(0, 255, 100, 1))
+    drop-shadow(0 0 120px rgba(0, 255, 100, 0.7))
+    drop-shadow(0 15px 40px rgba(0, 0, 0, 0.9));
 }
 
 @keyframes wolfBurst {
   0%, 100% {
     transform: translateY(0) rotate(0deg) scale(1.15);
-    filter:
-      drop-shadow(0 0 60px rgba(0, 255, 100, 0.9))
-      drop-shadow(0 0 100px rgba(0, 255, 100, 0.6))
-      drop-shadow(0 15px 40px rgba(0, 0, 0, 0.9));
   }
   25% {
     transform: translateY(-30px) rotate(-8deg) scale(1.25);
-    filter:
-      drop-shadow(0 0 80px rgba(0, 255, 150, 1))
-      drop-shadow(0 0 120px rgba(0, 255, 100, 0.8))
-      drop-shadow(0 25px 50px rgba(0, 0, 0, 0.9));
   }
   50% {
     transform: translateY(-15px) rotate(6deg) scale(1.18);
-    filter:
-      drop-shadow(0 0 70px rgba(100, 255, 100, 0.95))
-      drop-shadow(0 0 110px rgba(0, 255, 100, 0.7))
-      drop-shadow(0 20px 50px rgba(0, 0, 0, 0.9));
   }
   75% {
     transform: translateY(-25px) rotate(-5deg) scale(1.22);
-    filter:
-      drop-shadow(0 0 90px rgba(0, 255, 100, 1))
-      drop-shadow(0 0 130px rgba(0, 255, 150, 0.9))
-      drop-shadow(0 20px 50px rgba(0, 0, 0, 0.9));
   }
 }
 
@@ -457,6 +446,104 @@
   border-radius: 50%;
 }
 
+/* Wolf Dress-Up Feature - Accessories overlay */
+.wolf-accessory {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+  animation: accessory-appear 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes accessory-appear {
+  0% {
+    opacity: 0;
+    transform: scale(0.5) translateY(-20px);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+/* Wolf Dress-Up Feature - Fully Dressed Glow */
+.wolf-fully-dressed-glow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(ellipse at center,
+    rgba(255, 215, 0, 0.4) 0%,
+    rgba(255, 200, 0, 0.2) 40%,
+    transparent 70%
+  );
+  animation: fully-dressed-pulse 0.5s ease-in-out infinite alternate;
+  pointer-events: none;
+  z-index: -1;
+}
+
+@keyframes fully-dressed-pulse {
+  0% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1.1);
+  }
+}
+
+/* Wolf fully dressed animation */
+.mascot-character.fully-dressed .wolf-animated-wrapper {
+  animation: wolf-fully-dressed 0.4s ease-in-out infinite;
+}
+
+.mascot-character.fully-dressed .wolf-image {
+  filter:
+    drop-shadow(0 0 50px rgba(255, 215, 0, 0.9))
+    drop-shadow(0 0 80px rgba(255, 215, 0, 0.6))
+    drop-shadow(0 15px 40px rgba(0, 0, 0, 0.9)) !important;
+}
+
+@keyframes wolf-fully-dressed {
+  0%, 100% {
+    transform: translateY(0) rotate(0deg) scale(1.05);
+  }
+  50% {
+    transform: translateY(-15px) rotate(3deg) scale(1.1);
+  }
+}
+
+/* Accessory counter indicator */
+.wolf-accessory-indicator {
+  position: absolute;
+  top: 20%;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #1a1a2e, #0f0f1a);
+  border: 3px solid #ffd700;
+  border-radius: 15px;
+  padding: 8px 16px;
+  font-family: 'Arial Black', sans-serif;
+  font-size: 18px;
+  color: #ffd700;
+  text-shadow: 0 0 10px rgba(255, 215, 0, 0.6);
+  box-shadow:
+    0 0 20px rgba(255, 215, 0, 0.5),
+    0 0 40px rgba(255, 215, 0, 0.3);
+  z-index: 20;
+  animation: indicator-pulse 1s ease-in-out infinite;
+}
+
+@keyframes indicator-pulse {
+  0%, 100% { transform: translateX(-50%) scale(1); }
+  50% { transform: translateX(-50%) scale(1.1); }
+}
+
 /* ========================================
    WIN POPUP
    ======================================== */
@@ -499,107 +586,425 @@
 /* ========================================
    CONTROL BAR - Sleek Gaming Style
    ======================================== */
+/* ========================================
+   NEW CONTROL BAR - Le Bandit Style
+   ======================================== */
 .control-bar {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 12px;
+  justify-content: center;
+  gap: 15px;
   margin-top: 15px;
-  padding: 10px 20px;
-  background: linear-gradient(180deg, #1a1510 0%, #0d0a08 100%);
-  border: 2px solid #4a3a28;
-  border-radius: 50px;
-  box-shadow:
-    0 6px 30px rgba(0, 0, 0, 0.7),
-    inset 0 1px 0 rgba(255, 200, 100, 0.1);
+  padding: 12px 20px;
+  background: linear-gradient(180deg, #2a2520 0%, #1a1510 100%);
+  border-radius: 10px;
+  box-shadow: 0 6px 30px rgba(0, 0, 0, 0.7);
 }
 
-/* BONUS Button - Golden Pill Style */
-.bonus-btn-round {
-  padding: 10px 20px;
-  border-radius: 20px;
+/* BUY BONUS - Circular Yellow Button */
+.bonus-btn-circle {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
   background: linear-gradient(180deg, #f5c542 0%, #c9a030 50%, #9a7820 100%);
-  border: 2px solid #b8942a;
+  border: 3px solid #b8942a;
   color: #1a1005;
   font-family: 'Arial Black', sans-serif;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: 900;
-  letter-spacing: 2px;
   cursor: pointer;
-  box-shadow: 0 3px 0 #6a5010, 0 4px 15px rgba(201, 160, 48, 0.5);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  line-height: 1.2;
+  box-shadow: 0 4px 15px rgba(201, 160, 48, 0.5);
   transition: all 0.15s ease;
 }
 
-.bonus-btn-round:hover:not(:disabled) {
-  transform: translateY(-2px);
-  box-shadow: 0 5px 0 #6a5010, 0 6px 25px rgba(201, 160, 48, 0.6);
+.bonus-btn-circle:hover:not(:disabled) {
+  transform: scale(1.05);
+  box-shadow: 0 6px 25px rgba(201, 160, 48, 0.7);
 }
 
-.bonus-btn-round:active:not(:disabled) {
-  transform: translateY(1px);
-  box-shadow: 0 1px 0 #6a5010;
-}
-
-.bonus-btn-round:disabled {
+.bonus-btn-circle:disabled {
   opacity: 0.4;
   cursor: not-allowed;
 }
 
-/* Icon Buttons (Sound, Settings, Auto) */
-.icon-btn {
-  width: 38px;
-  height: 38px;
-  border-radius: 50%;
+/* Menu Button */
+.menu-wrapper {
+  position: relative;
+}
+
+.menu-btn {
+  width: 40px;
+  height: 40px;
   background: transparent;
-  border: 2px solid #3a3025;
-  color: #6a5a45;
+  border: none;
+  color: #8a8070;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+}
+
+.menu-btn svg {
+  width: 28px;
+  height: 28px;
+}
+
+.menu-btn:hover {
+  color: #c9a855;
+}
+
+/* Info Displays (Balance, Win) */
+.info-display-new {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  padding: 0 15px;
+}
+
+.info-display-new .label {
+  font-family: Arial, sans-serif;
+  font-size: 10px;
+  font-weight: bold;
+  color: #8a8070;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.info-display-new .value {
+  font-family: Arial, sans-serif;
+  font-size: 20px;
+  font-weight: bold;
+  color: #ffffff;
+}
+
+.info-display-new.win-display.has-win .value {
+  color: #f5c542;
+}
+
+/* Bet Control with Vertical Arrows */
+.bet-control-new {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 15px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 8px;
+}
+
+.bet-control-new .bet-display {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+}
+
+.bet-control-new .bet-display .label {
+  font-family: Arial, sans-serif;
+  font-size: 9px;
+  font-weight: bold;
+  color: #8a8070;
+  letter-spacing: 1px;
+}
+
+.bet-control-new .bet-display .value {
+  font-family: Arial, sans-serif;
+  font-size: 18px;
+  font-weight: bold;
+  color: #ffffff;
+}
+
+.bet-arrows {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.bet-arrow {
+  width: 28px;
+  height: 20px;
+  background: transparent;
+  border: none;
+  color: #8a8070;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.2s;
+}
+
+.bet-arrow svg {
+  width: 20px;
+  height: 20px;
+}
+
+.bet-arrow:hover:not(:disabled) {
+  color: #ffffff;
+}
+
+.bet-arrow:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* Main Spin/Autoplay Button - Large Circle */
+.main-spin-btn {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  background: linear-gradient(180deg, #3a3530 0%, #1a1510 100%);
+  border: 4px solid #4a4540;
+  color: #ffffff;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
   transition: all 0.2s ease;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
 }
 
-.icon-btn svg {
+.main-spin-btn .spin-arrows {
+  width: 45px;
+  height: 45px;
+}
+
+.main-spin-btn:hover:not(:disabled) {
+  border-color: #6a6560;
+  transform: scale(1.05);
+}
+
+.main-spin-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.main-spin-btn.spinning .spin-arrows {
+  animation: spin-rotate 0.8s linear infinite;
+}
+
+@keyframes spin-rotate {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+/* Autoplay Counter Display */
+.main-spin-btn .autoplay-counter {
+  width: 50px;
+  height: 50px;
+  background: #ffffff;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.main-spin-btn .autoplay-counter span {
+  font-family: Arial, sans-serif;
+  font-size: 24px;
+  font-weight: bold;
+  color: #1a1510;
+}
+
+/* Autoplay Menu Button (small) */
+.autoplay-menu-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: transparent;
+  border: 2px solid #4a4540;
+  color: #8a8070;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.autoplay-menu-btn svg {
   width: 18px;
   height: 18px;
 }
 
-.icon-btn:hover:not(:disabled) {
+.autoplay-menu-btn:hover:not(:disabled),
+.autoplay-menu-btn.active {
   border-color: #c9a855;
   color: #c9a855;
 }
 
-.icon-btn.active {
-  border-color: #c9a855;
-  color: #c9a855;
-  background: rgba(201, 168, 85, 0.1);
-}
-
-.icon-btn:disabled {
+.autoplay-menu-btn:disabled {
   opacity: 0.3;
   cursor: not-allowed;
 }
 
-/* Info Displays (Balance, Bet) */
-.info-display {
+/* ========================================
+   AUTOPLAY MENU POPUP
+   ======================================== */
+.autoplay-menu {
+  position: fixed;
+  bottom: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 320px;
+  background: #1a1510;
+  border-radius: 15px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.8);
+  z-index: 1000;
+  overflow: hidden;
+}
+
+.autoplay-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 15px 20px;
+  border-bottom: 1px solid #3a3530;
+}
+
+.autoplay-header .title {
+  font-family: Arial, sans-serif;
+  font-size: 16px;
+  font-weight: bold;
+  color: #ffffff;
+}
+
+.autoplay-header .close-btn {
+  width: 30px;
+  height: 30px;
+  background: transparent;
+  border: none;
+  color: #8a8070;
+  font-size: 24px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.autoplay-header .close-btn:hover {
+  color: #ffffff;
+}
+
+.autoplay-content {
+  padding: 20px;
+}
+
+.autoplay-content .section-title {
+  display: block;
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  font-weight: bold;
+  color: #c9a855;
+  letter-spacing: 1px;
+  margin-bottom: 15px;
+}
+
+.rounds-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+}
+
+.round-btn {
+  padding: 12px 8px;
+  background: #3a3530;
+  border: none;
+  border-radius: 25px;
+  color: #ffffff;
+  font-family: Arial, sans-serif;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.round-btn:hover {
+  background: #4a4540;
+}
+
+.round-btn.selected {
+  background: linear-gradient(180deg, #f5c542 0%, #c9a030 100%);
+  color: #1a1005;
+}
+
+/* ========================================
+   BONUS MODE CONTROL BAR
+   ======================================== */
+.control-bar.hidden {
+  display: none;
+}
+
+.control-bar.bonus-mode {
+  justify-content: flex-start;
+  background: linear-gradient(180deg, #2a2520 0%, #1a1510 100%);
+}
+
+.bonus-bar-spacer {
+  flex: 1;
+}
+
+.bonus-total-win {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 6px 12px;
-  background: rgba(0, 0, 0, 0.4);
-  border: 2px solid #3a3025;
-  border-radius: 10px;
-  min-width: 70px;
+  padding: 8px 20px;
+  background: linear-gradient(180deg, #4a3a30 0%, #3a2a20 100%);
+  border-radius: 8px;
 }
 
-.info-display .label {
+.bonus-total-win .label {
   font-family: Arial, sans-serif;
-  font-size: 9px;
+  font-size: 10px;
   font-weight: bold;
-  color: #6a5a48;
+  color: #8a8070;
   letter-spacing: 1px;
   text-transform: uppercase;
+}
+
+.bonus-total-win .value {
+  font-family: Arial, sans-serif;
+  font-size: 22px;
+  font-weight: bold;
+  color: #f5c542;
+}
+
+.bonus-spins-counter {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 8px 20px;
+  background: linear-gradient(180deg, #5a4535 0%, #4a3525 100%);
+  border-radius: 8px;
+  margin-left: 5px;
+}
+
+.bonus-spins-counter .label {
+  font-family: Arial, sans-serif;
+  font-size: 10px;
+  font-weight: bold;
+  color: #c9a855;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.bonus-spins-counter .value {
+  font-family: Arial, sans-serif;
+  font-size: 26px;
+  font-weight: bold;
+  color: #ffffff;
+}
+
+/* Keep old classes for compatibility but hide them */
+.bonus-btn-round,
+.icon-btn,
+.info-display,
+.bet-control,
+.bet-btn,
+.spin-btn {
+  display: none;
 }
 
 .info-display .value {
@@ -811,6 +1216,90 @@
   color: #00dd00;
 }
 
+/* Feature Mode Active Indicator - Above control bar */
+.feature-mode-indicator {
+  position: absolute;
+  bottom: 85px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 8px 16px;
+  background: linear-gradient(135deg, rgba(0, 40, 20, 0.95) 0%, rgba(0, 25, 12, 0.98) 100%);
+  border: 2px solid #00ff66;
+  border-radius: 20px;
+  z-index: 50;
+  animation: featureIndicatorGlow 2s ease-in-out infinite;
+  box-shadow:
+    0 0 15px rgba(0, 255, 102, 0.4),
+    0 0 30px rgba(0, 255, 102, 0.2);
+}
+
+@keyframes featureIndicatorGlow {
+  0%, 100% {
+    box-shadow:
+      0 0 15px rgba(0, 255, 102, 0.4),
+      0 0 30px rgba(0, 255, 102, 0.2);
+  }
+  50% {
+    box-shadow:
+      0 0 25px rgba(0, 255, 102, 0.6),
+      0 0 50px rgba(0, 255, 102, 0.3);
+  }
+}
+
+.feature-mode-label {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.feature-mode-label .mode-name {
+  font-family: 'Arial Black', sans-serif;
+  font-size: 12px;
+  font-weight: 900;
+  color: #00ff66;
+  letter-spacing: 1px;
+  text-shadow: 0 0 8px rgba(0, 255, 102, 0.6);
+}
+
+.feature-mode-label .mode-cost {
+  font-family: 'Arial Black', sans-serif;
+  font-size: 14px;
+  color: #fff;
+}
+
+.mode-disable-btn {
+  padding: 8px 16px;
+  background: linear-gradient(180deg, #00ff66 0%, #00cc52 50%, #00993d 100%);
+  border: none;
+  border-radius: 15px;
+  font-family: 'Arial Black', sans-serif;
+  font-size: 10px;
+  font-weight: 900;
+  color: #0a1a0a;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow:
+    0 2px 0 #006633,
+    0 3px 10px rgba(0, 255, 102, 0.4);
+}
+
+.mode-disable-btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow:
+    0 3px 0 #006633,
+    0 5px 15px rgba(0, 255, 102, 0.5);
+}
+
+.mode-disable-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 /* Session Info (Dev) */
 .session-info {
   position: fixed;
@@ -855,23 +1344,20 @@
     top: -140px;
   }
 
-  .machine-title {
-    font-size: 34px;
-    letter-spacing: 2px;
-  }
-
-  .machine-title .title-86 {
-    font-size: 40px;
-  }
-
   .control-bar {
     gap: 12px;
     padding: 12px 25px;
   }
 
-  .spin-btn {
+  .bonus-btn-circle {
     width: 60px;
     height: 60px;
+    font-size: 10px;
+  }
+
+  .main-spin-btn {
+    width: 70px;
+    height: 70px;
   }
 }
 
@@ -892,15 +1378,6 @@
     max-width: 250px;
   }
 
-  .machine-title {
-    font-size: 26px;
-    letter-spacing: 2px;
-  }
-
-  .machine-title .title-86 {
-    font-size: 30px;
-  }
-
   .control-bar {
     flex-wrap: wrap;
     gap: 10px;
@@ -908,23 +1385,28 @@
     border-radius: 25px;
   }
 
-  .info-display {
-    min-width: 70px;
-    padding: 6px 12px;
+  .info-display-new {
+    padding: 0 10px;
   }
 
-  .info-display .value {
-    font-size: 15px;
+  .info-display-new .value {
+    font-size: 16px;
   }
 
-  .spin-btn {
+  .bonus-btn-circle {
     width: 55px;
     height: 55px;
+    font-size: 9px;
   }
 
-  .bonus-btn-round {
-    padding: 8px 16px;
-    font-size: 11px;
+  .main-spin-btn {
+    width: 65px;
+    height: 65px;
+  }
+
+  .main-spin-btn .spin-arrows {
+    width: 35px;
+    height: 35px;
   }
 }
 
@@ -938,7 +1420,6 @@
   }
 
   .stage-wrapper {
-    /* Ensure crisp scaling */
     will-change: transform;
   }
 
@@ -956,7 +1437,6 @@
     max-width: 200px;
   }
 
-  /* Machine frame corner pieces smaller */
   .machine-frame::before,
   .machine-frame::after {
     width: 35px;
@@ -978,7 +1458,6 @@
     right: -18px;
   }
 
-  /* Control bar mobile layout */
   .control-bar {
     width: calc(100% - 20px);
     max-width: 400px;
@@ -987,52 +1466,97 @@
     margin-top: 12px;
   }
 
-  .info-display {
-    min-width: 60px;
-    padding: 5px 8px;
-  }
-
-  .info-display .label {
+  .bonus-btn-circle {
+    width: 50px;
+    height: 50px;
     font-size: 8px;
   }
 
-  .info-display .value {
-    font-size: 13px;
+  .menu-btn {
+    width: 35px;
+    height: 35px;
   }
 
-  .icon-btn {
-    width: 34px;
-    height: 34px;
-  }
-
-  .icon-btn svg {
-    width: 16px;
-    height: 16px;
-  }
-
-  .bet-btn {
-    width: 26px;
-    height: 26px;
-    font-size: 16px;
-  }
-
-  .spin-btn {
-    width: 50px;
-    height: 50px;
-  }
-
-  .spin-icon {
+  .menu-btn svg {
     width: 22px;
     height: 22px;
   }
 
-  .bonus-btn-round {
-    padding: 7px 12px;
-    font-size: 10px;
-    letter-spacing: 1px;
+  .info-display-new {
+    padding: 0 8px;
   }
 
-  /* Fixed UI adjustments */
+  .info-display-new .label {
+    font-size: 8px;
+  }
+
+  .info-display-new .value {
+    font-size: 14px;
+  }
+
+  .bet-control-new {
+    padding: 6px 10px;
+  }
+
+  .bet-control-new .bet-display .value {
+    font-size: 14px;
+  }
+
+  .bet-arrow {
+    width: 24px;
+    height: 18px;
+  }
+
+  .main-spin-btn {
+    width: 55px;
+    height: 55px;
+  }
+
+  .main-spin-btn .spin-arrows {
+    width: 30px;
+    height: 30px;
+  }
+
+  .main-spin-btn .autoplay-counter {
+    width: 38px;
+    height: 38px;
+  }
+
+  .main-spin-btn .autoplay-counter span {
+    font-size: 18px;
+  }
+
+  .autoplay-menu-btn {
+    width: 32px;
+    height: 32px;
+  }
+
+  .autoplay-menu-btn svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .autoplay-menu {
+    width: 280px;
+  }
+
+  /* Bonus mode responsive */
+  .bonus-total-win {
+    padding: 6px 15px;
+  }
+
+  .bonus-total-win .value {
+    font-size: 18px;
+  }
+
+  .bonus-spins-counter {
+    padding: 6px 15px;
+  }
+
+  .bonus-spins-counter .value {
+    font-size: 22px;
+  }
+
   .bonus-active-indicator {
     top: 10px;
     right: 10px;
@@ -1084,7 +1608,6 @@
     max-width: 170px;
   }
 
-  /* Hide corner pieces on very small screens */
   .machine-frame::before,
   .machine-frame::after,
   .game-container::before,
@@ -1092,12 +1615,10 @@
     display: none;
   }
 
-  /* Stage wrapper adjustments */
   .stage-wrapper {
     border-radius: 8px;
   }
 
-  /* Mobile control bar - stacked layout */
   .control-bar {
     flex-direction: row;
     flex-wrap: wrap;
@@ -1110,62 +1631,129 @@
     margin-top: 10px;
   }
 
-  /* Hide some buttons on mobile for cleaner UI */
-  .control-bar .icon-btn:not(.spin-btn):nth-child(n+4) {
-    display: none;
+  .bonus-btn-circle {
+    width: 45px;
+    height: 45px;
+    font-size: 7px;
+    border-width: 2px;
   }
 
-  .info-display {
-    min-width: 55px;
-    padding: 4px 6px;
-    border-radius: 8px;
+  .menu-btn {
+    width: 32px;
+    height: 32px;
   }
 
-  .info-display .label {
+  .info-display-new {
+    padding: 0 6px;
+  }
+
+  .info-display-new .label {
     font-size: 7px;
   }
 
-  .info-display .value {
+  .info-display-new .value {
     font-size: 12px;
   }
 
-  /* Bigger touch targets */
-  .spin-btn {
-    width: 56px;
-    height: 56px;
+  .bet-control-new {
+    padding: 5px 8px;
+  }
+
+  .bet-control-new .bet-display .label {
+    font-size: 7px;
+  }
+
+  .bet-control-new .bet-display .value {
+    font-size: 12px;
+  }
+
+  .bet-arrow {
+    width: 22px;
+    height: 16px;
+  }
+
+  .main-spin-btn {
+    width: 50px;
+    height: 50px;
     border-width: 3px;
   }
 
-  .spin-icon {
-    width: 24px;
-    height: 24px;
+  .main-spin-btn .spin-arrows {
+    width: 28px;
+    height: 28px;
   }
 
-  .icon-btn {
-    width: 36px;
-    height: 36px;
-    /* Better touch target */
-    min-width: 44px;
-    min-height: 44px;
+  .main-spin-btn .autoplay-counter {
+    width: 34px;
+    height: 34px;
+    border-radius: 6px;
   }
 
-  .bet-btn {
-    width: 32px;
-    height: 32px;
+  .main-spin-btn .autoplay-counter span {
+    font-size: 16px;
+  }
+
+  .autoplay-menu-btn {
+    width: 28px;
+    height: 28px;
+  }
+
+  .autoplay-menu-btn svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .autoplay-menu {
+    width: 260px;
+    bottom: 90px;
+  }
+
+  .autoplay-header {
+    padding: 12px 15px;
+  }
+
+  .autoplay-header .title {
+    font-size: 14px;
+  }
+
+  .autoplay-content {
+    padding: 15px;
+  }
+
+  .rounds-grid {
+    gap: 8px;
+  }
+
+  .round-btn {
+    padding: 10px 6px;
+    font-size: 12px;
+  }
+
+  /* Bonus mode mobile */
+  .bonus-total-win {
+    padding: 5px 12px;
+  }
+
+  .bonus-total-win .label {
+    font-size: 8px;
+  }
+
+  .bonus-total-win .value {
+    font-size: 14px;
+  }
+
+  .bonus-spins-counter {
+    padding: 5px 12px;
+  }
+
+  .bonus-spins-counter .label {
+    font-size: 8px;
+  }
+
+  .bonus-spins-counter .value {
     font-size: 18px;
-    /* Better touch target */
-    min-width: 44px;
-    min-height: 44px;
   }
 
-  .bonus-btn-round {
-    padding: 8px 14px;
-    font-size: 10px;
-    /* Better touch target */
-    min-height: 40px;
-  }
-
-  /* Win popup mobile */
   .win-popup-content {
     padding: 10px 20px;
   }
@@ -1174,7 +1762,6 @@
     font-size: 20px;
   }
 
-  /* Fixed UI mobile positioning */
   .bonus-active-indicator {
     top: 5px;
     right: 5px;
@@ -1196,6 +1783,25 @@
     padding: 4px 8px;
     font-size: 8px;
     border-radius: 10px;
+  }
+
+  .feature-mode-indicator {
+    bottom: 75px;
+    padding: 6px 10px;
+    gap: 8px;
+  }
+
+  .feature-mode-label .mode-name {
+    font-size: 10px;
+  }
+
+  .feature-mode-label .mode-cost {
+    font-size: 12px;
+  }
+
+  .mode-disable-btn {
+    padding: 6px 12px;
+    font-size: 9px;
   }
 
   .session-info {
@@ -1232,27 +1838,46 @@
     border-radius: 15px;
   }
 
-  .info-display {
-    min-width: 50px;
-    padding: 3px 5px;
-  }
-
-  .info-display .label {
+  .bonus-btn-circle {
+    width: 40px;
+    height: 40px;
     font-size: 6px;
   }
 
-  .info-display .value {
+  .info-display-new {
+    padding: 0 4px;
+  }
+
+  .info-display-new .label {
+    font-size: 6px;
+  }
+
+  .info-display-new .value {
     font-size: 11px;
   }
 
-  .spin-btn {
-    width: 50px;
-    height: 50px;
+  .bet-control-new {
+    padding: 4px 6px;
+    gap: 4px;
   }
 
-  .bonus-btn-round {
-    padding: 6px 10px;
-    font-size: 9px;
+  .main-spin-btn {
+    width: 45px;
+    height: 45px;
+  }
+
+  .main-spin-btn .spin-arrows {
+    width: 24px;
+    height: 24px;
+  }
+
+  .autoplay-menu-btn {
+    width: 24px;
+    height: 24px;
+  }
+
+  .autoplay-menu {
+    width: 240px;
   }
 }
 
@@ -1277,7 +1902,6 @@
     max-width: 180px;
   }
 
-  /* Control bar horizontal in landscape */
   .control-bar {
     position: fixed;
     bottom: 5px;
@@ -1291,46 +1915,47 @@
     margin-top: 0;
   }
 
-  .info-display {
-    min-width: 50px;
-    padding: 3px 6px;
-  }
-
-  .info-display .label {
+  .bonus-btn-circle {
+    width: 40px;
+    height: 40px;
     font-size: 7px;
   }
 
-  .info-display .value {
+  .info-display-new {
+    padding: 0 6px;
+  }
+
+  .info-display-new .label {
+    font-size: 7px;
+  }
+
+  .info-display-new .value {
     font-size: 11px;
   }
 
-  .spin-btn {
+  .bet-control-new {
+    padding: 4px 8px;
+  }
+
+  .main-spin-btn {
     width: 40px;
     height: 40px;
   }
 
-  .spin-icon {
-    width: 18px;
-    height: 18px;
+  .main-spin-btn .spin-arrows {
+    width: 22px;
+    height: 22px;
   }
 
-  .icon-btn {
-    width: 30px;
-    height: 30px;
+  .autoplay-menu-btn {
+    width: 28px;
+    height: 28px;
   }
 
-  .bet-btn {
-    width: 24px;
-    height: 24px;
-    font-size: 14px;
+  .autoplay-menu {
+    bottom: 60px;
   }
 
-  .bonus-btn-round {
-    padding: 5px 10px;
-    font-size: 9px;
-  }
-
-  /* Fixed UI in landscape */
   .bonus-active-indicator {
     top: 5px;
     right: 5px;
@@ -1390,37 +2015,46 @@
    ======================================== */
 @media (hover: none) and (pointer: coarse) {
   /* Remove hover effects for touch devices */
-  .icon-btn:hover:not(:disabled),
-  .bet-btn:hover:not(:disabled),
-  .spin-btn:hover:not(:disabled),
-  .bonus-btn-round:hover:not(:disabled) {
+  .bonus-btn-circle:hover:not(:disabled),
+  .menu-btn:hover:not(:disabled),
+  .bet-arrow:hover:not(:disabled),
+  .main-spin-btn:hover:not(:disabled),
+  .autoplay-menu-btn:hover:not(:disabled),
+  .round-btn:hover:not(:disabled) {
     transform: none;
   }
 
   /* Active states for touch feedback */
-  .icon-btn:active:not(:disabled) {
+  .bonus-btn-circle:active:not(:disabled) {
+    transform: scale(0.95);
+  }
+
+  .menu-btn:active:not(:disabled) {
     background: rgba(201, 168, 85, 0.2);
     transform: scale(0.95);
   }
 
-  .bet-btn:active:not(:disabled) {
+  .bet-arrow:active:not(:disabled) {
     background: rgba(201, 168, 85, 0.2);
     transform: scale(0.95);
   }
 
-  .spin-btn:active:not(:disabled) {
+  .main-spin-btn:active:not(:disabled) {
     transform: scale(0.95);
-    box-shadow: 0 1px 0 #166534, 0 2px 10px rgba(34, 197, 94, 0.4);
   }
 
-  .bonus-btn-round:active:not(:disabled) {
-    transform: scale(0.97);
-    box-shadow: 0 1px 0 #6a5010;
+  .autoplay-menu-btn:active:not(:disabled) {
+    transform: scale(0.95);
+  }
+
+  .round-btn:active:not(:disabled) {
+    transform: scale(0.95);
   }
 
   /* Ensure touch targets are at least 44px */
-  .icon-btn,
-  .bet-btn {
+  .menu-btn,
+  .bet-arrow,
+  .autoplay-menu-btn {
     min-width: 44px;
     min-height: 44px;
   }

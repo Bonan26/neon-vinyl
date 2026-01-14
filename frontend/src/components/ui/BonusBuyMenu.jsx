@@ -7,13 +7,18 @@ import useGameStore from '../../stores/gameStore';
 import { BET_OPTIONS } from '../../config/gameConfig';
 import './BonusBuyMenu.css';
 
-const BonusBuyMenu = ({ onBuyBonus, onBonusTriggerSpin, onWolfBurst, disabled }) => {
+const BonusBuyMenu = ({ onBuyBonus, onBonusTriggerSpin, onActivateFeature, disabled }) => {
   const showBonusMenu = useGameStore((state) => state.showBonusMenu);
   const toggleBonusMenu = useGameStore((state) => state.toggleBonusMenu);
   const balance = useGameStore((state) => state.balance);
   const betAmount = useGameStore((state) => state.betAmount);
   const setBetAmount = useGameStore((state) => state.setBetAmount);
   const freeSpinsRemaining = useGameStore((state) => state.freeSpinsRemaining);
+  const scatterBoostActive = useGameStore((state) => state.scatterBoostActive);
+  const wildBoostActive = useGameStore((state) => state.wildBoostActive);
+
+  // Check if any boost is active
+  const isBoostActive = scatterBoostActive || wildBoostActive;
 
   const [selectedBonus, setSelectedBonus] = useState(null);
 
@@ -29,9 +34,10 @@ const BonusBuyMenu = ({ onBuyBonus, onBonusTriggerSpin, onWolfBurst, disabled })
   }, [betAmount, setBetAmount]);
 
   const handleBuyClick = useCallback((bonusType) => {
-    if (disabled || freeSpinsRemaining > 0) return;
+    // Block purchases during free spins or active boosts
+    if (disabled || freeSpinsRemaining > 0 || isBoostActive) return;
     setSelectedBonus(bonusType);
-  }, [disabled, freeSpinsRemaining]);
+  }, [disabled, freeSpinsRemaining, isBoostActive]);
 
   const handleConfirmBuy = useCallback(async () => {
     if (!selectedBonus) return;
@@ -44,11 +50,8 @@ const BonusBuyMenu = ({ onBuyBonus, onBonusTriggerSpin, onWolfBurst, disabled })
       onBonusTriggerSpin?.({ bonusId: 'free_spins_8', bonusType, scatterCount: 3 });
     } else if (bonusType === 'super') {
       onBonusTriggerSpin?.({ bonusId: 'free_spins_12', bonusType, scatterCount: 4 });
-    } else if (bonusType === 'wolf_burst') {
-      // Wolf Burst uses regular bonus buy (single spin with forced wilds)
-      onWolfBurst?.({ bonusId: 'wolf_burst', bonusType });
     }
-  }, [selectedBonus, onBonusTriggerSpin, onWolfBurst, toggleBonusMenu]);
+  }, [selectedBonus, onBonusTriggerSpin, toggleBonusMenu]);
 
   const handleCancelBuy = useCallback(() => {
     setSelectedBonus(null);
@@ -56,49 +59,46 @@ const BonusBuyMenu = ({ onBuyBonus, onBonusTriggerSpin, onWolfBurst, disabled })
 
   if (!showBonusMenu) return null;
 
-  // Boost options (multiplier-based cost, multiple spins)
-  const boostOptions = [
+  // Feature Modes - Activate/Deactivate toggle (cost per spin while active)
+  const featureModes = [
     {
-      id: 'scatter_boost',
+      id: 'scatter_hunt',
       name: 'SCATTER HUNT',
-      subtitle: '10 Spins',
-      description: 'Chance de Scatter x3 pendant 10 spins',
-      multiplier: 2,
-      color: '#ff00ff',
+      subtitle: 'x3 Scatter Chance',
+      description: 'Triple la chance de Scatter a chaque spin',
+      multiplier: 2, // Cost = bet x2 per spin
+      color: '#00ff66',
       icon: '/symbols/scatter_gold.jpg',
-      isBoost: true,
     },
     {
       id: 'wild_boost',
       name: 'WILD BOOST',
-      subtitle: '5 Spins',
-      description: 'Chance de Wild x5 pendant 5 spins',
-      multiplier: 5,
+      subtitle: 'x5 Wild Chance',
+      description: 'Quintuple la chance de Wild a chaque spin',
+      multiplier: 3, // Cost = bet x3 per spin
       color: '#00ff66',
       icon: '/symbols/crown_matrix.png',
-      isBoost: true,
     },
-  ];
-
-  // Bonus options with costs
-  const bonusOptions = [
     {
       id: 'wolf_burst',
       name: 'WOLF BURST',
-      subtitle: 'Wilds Attack',
-      description: 'Le loup souffle 3-6 WILDS sur la grille',
-      multiplier: 25,
+      subtitle: '3-6 Wilds',
+      description: 'Le loup souffle des WILDS sur la grille',
+      multiplier: 10, // Cost = bet x10 per spin
       color: '#00ff66',
       icon: '/symbols/crown_matrix.png',
-      featured: false,
     },
+  ];
+
+  // Bonus options - One-time purchase with intro
+  const bonusOptions = [
     {
       id: 'standard',
       name: 'FREE SPINS',
       subtitle: '8 Tours Gratuits',
       description: 'Declenche le bonus avec 3 Scatters',
       multiplier: 100,
-      color: '#ff00ff',
+      color: '#c9a855',
       icon: '/symbols/scatter_gold.jpg',
       featured: true,
     },
@@ -158,38 +158,34 @@ const BonusBuyMenu = ({ onBuyBonus, onBonusTriggerSpin, onWolfBurst, disabled })
           </div>
         </div>
 
-        {/* Boost Options - Multiple Spins */}
-        <div className="boost-section">
-          <h3 className="section-title">BOOSTS</h3>
-          <div className="boost-cards">
-            {boostOptions.map((boost) => {
-              const cost = betAmount * boost.multiplier;
+        {/* Feature Modes - Compact horizontal layout */}
+        <div className="feature-section">
+          <h3 className="section-title">MODES DE JEU</h3>
+          <div className="feature-cards-compact">
+            {featureModes.map((feature) => {
+              const cost = betAmount * feature.multiplier;
               const canAfford = balance >= cost;
-              const isDisabled = disabled || !canAfford || freeSpinsRemaining > 0;
+              const isDisabled = disabled || !canAfford || freeSpinsRemaining > 0 || isBoostActive;
 
               return (
                 <div
-                  key={boost.id}
-                  className={`boost-card ${isDisabled ? 'disabled' : ''}`}
-                  style={{ '--accent': boost.color }}
+                  key={feature.id}
+                  className={`feature-card-compact ${isDisabled ? 'disabled' : ''}`}
+                  style={{ '--accent': feature.color }}
                   onClick={() => {
                     if (!isDisabled) {
-                      onBuyBonus?.({ boostType: boost.id });
+                      onActivateFeature?.({ featureId: feature.id, multiplier: feature.multiplier, name: feature.name });
                       toggleBonusMenu();
                     }
                   }}
                 >
-                  <div className="boost-icon">
-                    <img src={boost.icon} alt="" />
+                  <div className="feature-header">
+                    <span className="feature-name">{feature.name}</span>
+                    <span className="feature-effect">{feature.subtitle}</span>
                   </div>
-                  <div className="boost-info">
-                    <h4>{boost.name}</h4>
-                    <span className="boost-subtitle">{boost.subtitle}</span>
-                    <p>{boost.description}</p>
-                  </div>
-                  <div className="boost-cost">
-                    <span className="boost-mult">x{boost.multiplier}</span>
-                    <span>{cost.toFixed(2)} €</span>
+                  <div className="feature-price">
+                    <span className="price-mult">x{feature.multiplier}</span>
+                    <span className="price-value">{cost.toFixed(2)} €</span>
                   </div>
                 </div>
               );
@@ -199,7 +195,7 @@ const BonusBuyMenu = ({ onBuyBonus, onBonusTriggerSpin, onWolfBurst, disabled })
 
         {/* Bonus Cards Section */}
         <div className="bonus-section">
-          <h3 className="section-title">ACHAT INSTANT</h3>
+          <h3 className="section-title">ACHAT DE BONUS</h3>
         </div>
         <div className="bonus-cards">
           {bonusOptions.map((bonus) => {
@@ -251,23 +247,88 @@ const BonusBuyMenu = ({ onBuyBonus, onBonusTriggerSpin, onWolfBurst, disabled })
         </div>
       </div>
 
-      {/* Confirmation Modal */}
+      {/* Confirmation Modal - Premium Design */}
       {selectedBonus && (
         <div className="confirm-modal" onClick={handleCancelBuy}>
           <div className="confirm-content" onClick={(e) => e.stopPropagation()}>
-            <h3>Confirmer l'achat ?</h3>
-            <p>
-              {bonusOptions.find(b => b.id === selectedBonus)?.name} pour{' '}
-              <strong style={{ color: bonusOptions.find(b => b.id === selectedBonus)?.color }}>
+            {/* Header with icon */}
+            <div className="confirm-header">
+              <div className="confirm-icon">
+                <img
+                  src={bonusOptions.find(b => b.id === selectedBonus)?.icon}
+                  alt=""
+                />
+              </div>
+              <h3>{bonusOptions.find(b => b.id === selectedBonus)?.name}</h3>
+              <span className="confirm-subtitle">
+                {bonusOptions.find(b => b.id === selectedBonus)?.subtitle}
+              </span>
+            </div>
+
+            {/* Bonus explanation */}
+            <div className="confirm-explanation">
+              {selectedBonus === 'standard' && (
+                <>
+                  <div className="explain-row">
+                    <span className="explain-icon">🎰</span>
+                    <span>8 Tours Gratuits garantis</span>
+                  </div>
+                  <div className="explain-row">
+                    <span className="explain-icon">⚡</span>
+                    <span>Multiplicateurs progressifs sur chaque tumble</span>
+                  </div>
+                  <div className="explain-row">
+                    <span className="explain-icon">🎁</span>
+                    <span>+3 spins pour chaque Scatter additionnel</span>
+                  </div>
+                </>
+              )}
+              {selectedBonus === 'super' && (
+                <>
+                  <div className="explain-row highlight">
+                    <span className="explain-icon">👑</span>
+                    <span>12 Tours Gratuits PREMIUM</span>
+                  </div>
+                  <div className="explain-row highlight">
+                    <span className="explain-icon">✨</span>
+                    <span>Tous les multiplicateurs commencent a x2</span>
+                  </div>
+                  <div className="explain-row">
+                    <span className="explain-icon">🔥</span>
+                    <span>Multiplicateurs qui montent plus vite</span>
+                  </div>
+                  <div className="explain-row">
+                    <span className="explain-icon">💎</span>
+                    <span>Potentiel de gain MAXIMUM</span>
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Price display */}
+            <div className="confirm-price">
+              <span className="price-label">Cout total</span>
+              <span
+                className="price-amount"
+                style={{ color: bonusOptions.find(b => b.id === selectedBonus)?.color }}
+              >
                 {(betAmount * bonusOptions.find(b => b.id === selectedBonus)?.multiplier).toFixed(2)} €
-              </strong>
-            </p>
+              </span>
+            </div>
+
+            {/* Actions */}
             <div className="confirm-actions">
               <button className="confirm-cancel" onClick={handleCancelBuy}>
                 Annuler
               </button>
-              <button className="confirm-ok" onClick={handleConfirmBuy}>
-                Confirmer
+              <button
+                className="confirm-ok"
+                onClick={handleConfirmBuy}
+                style={{
+                  background: `linear-gradient(180deg, ${bonusOptions.find(b => b.id === selectedBonus)?.color} 0%, color-mix(in srgb, ${bonusOptions.find(b => b.id === selectedBonus)?.color} 70%, black) 100%)`
+                }}
+              >
+                Acheter Maintenant
               </button>
             </div>
           </div>

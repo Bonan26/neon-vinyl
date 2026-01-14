@@ -616,7 +616,8 @@ def run_spin(
     free_spins_remaining: int = 0,
     existing_multipliers: Optional[List[List[int]]] = None,
     scatter_boost: bool = False,
-    wild_boost: bool = False
+    wild_boost: bool = False,
+    forced_wild_positions: Optional[List[tuple]] = None
 ) -> SpinResult:
     """
     Execute a complete spin with the Stake Engine.
@@ -645,6 +646,13 @@ def run_spin(
 
     # Generate initial grid (different weights for free spins and boosts)
     initial_symbols = rng.generate_grid(free_spin_mode, scatter_boost, wild_boost)
+
+    # Apply forced wilds (Wolf Burst feature)
+    if forced_wild_positions:
+        for row, col in forced_wild_positions:
+            if 0 <= row < GRID_ROWS and 0 <= col < GRID_COLS:
+                initial_symbols[row][col] = Symbol.WILD
+
     grid_state = GridState(initial_symbols)
 
     # Restore multipliers during free spins
@@ -674,9 +682,9 @@ def run_spin(
 
     # Different scatter rules for base game vs free spins
     if free_spin_mode:
-        # DURING FREE SPINS: 2+ scatters = retrigger
-        # 2 scatters = +3 spins, 3 scatters = +5 spins, 4+ scatters = +10 spins
-        if scatter_count >= 2:
+        # DURING FREE SPINS: 3+ scatters = retrigger
+        # 3 scatters = +5 spins, 4 scatters = +8 spins, 5+ scatters = +10 spins
+        if scatter_count >= 3:
             free_spins_triggered = SCATTER_RETRIGGER.get(
                 min(scatter_count, 6),
                 SCATTER_RETRIGGER[6]  # Cap at 6
@@ -824,8 +832,8 @@ def run_spin(
             # Only check if we haven't already triggered free spins this spin
             if free_spins_triggered == 0:
                 if free_spin_mode:
-                    # DURING FREE SPINS: 2+ scatters = retrigger
-                    if new_scatter_count >= 2:
+                    # DURING FREE SPINS: 3+ scatters = retrigger
+                    if new_scatter_count >= 3:
                         free_spins_triggered = SCATTER_RETRIGGER.get(
                             min(new_scatter_count, 6),
                             SCATTER_RETRIGGER[6]

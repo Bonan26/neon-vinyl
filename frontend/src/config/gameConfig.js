@@ -31,11 +31,11 @@ export const SYMBOLS = {
   WG: { id: 'WG', name: 'Gray Wolf', tier: 'mid', color: 0x888888 },
   W6: { id: 'W6', name: 'Green Wolf', tier: 'mid', color: 0x339933 },
   WS: { id: 'WS', name: 'Spirit Wolf', tier: 'mid', color: 0x334466 },
-  // Low tier - Hats
-  HC: { id: 'HC', name: 'Cap W86', tier: 'low', color: 0x224422 },
-  HS: { id: 'HS', name: 'Steampunk Hat', tier: 'low', color: 0x996633 },
-  HW: { id: 'HW', name: 'Straw Hat', tier: 'low', color: 0xccaa33 },
-  HK: { id: 'HK', name: 'Peacock Hat', tier: 'low', color: 0x339999 },
+  // Low tier - Wolves
+  HC: { id: 'HC', name: 'Loup Blanc', tier: 'low', color: 0xeeeeee },
+  HS: { id: 'HS', name: 'Loup Serpent', tier: 'low', color: 0x66aa66 },
+  HW: { id: 'HW', name: 'Loup Street', tier: 'low', color: 0xcc9966 },
+  HK: { id: 'HK', name: 'Loup Bleu', tier: 'low', color: 0x6699cc },
 };
 
 // Free spins configuration

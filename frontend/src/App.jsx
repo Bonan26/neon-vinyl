@@ -4,6 +4,7 @@
  * Compact rectangular design inspired by "Le Bandit" (Hacksaw Gaming)
  */
 import React, { useCallback, useRef, useEffect, useState } from 'react';
+import { gsap } from 'gsap';
 import { GameStage } from './components/game';
 import ProvablyFairFooter from './components/ui/ProvablyFairFooter';
 import BonusBuyMenu from './components/ui/BonusBuyMenu';
@@ -13,6 +14,7 @@ import BonusOverlay from './components/ui/BonusOverlay';
 import IntroScreen from './components/ui/IntroScreen';
 import WinCelebration from './components/ui/WinCelebration';
 import SettingsMenu from './components/ui/SettingsMenu';
+import WolfDressUp from './components/ui/WolfDressUp';
 import useGameController from './hooks/useGameController';
 import useEventRunner from './hooks/useEventRunner';
 import useGameStore, { GameState, SPEED_MULTIPLIERS, AutoSpinSpeed } from './stores/gameStore';
@@ -88,8 +90,12 @@ function App() {
   const isAnimating = useGameStore((state) => state.isAnimating);
   const setIsAnimating = useGameStore((state) => state.setIsAnimating);
   const freeSpinsRemaining = useGameStore((state) => state.freeSpinsRemaining);
-  const scatterBoostSpins = useGameStore((state) => state.scatterBoostSpins);
-  const wildBoostSpins = useGameStore((state) => state.wildBoostSpins);
+  const freeSpinTotalWin = useGameStore((state) => state.freeSpinTotalWin);
+  const scatterBoostSpinsRemaining = useGameStore((state) => state.scatterBoostSpinsRemaining);
+  const wildBoostSpinsRemaining = useGameStore((state) => state.wildBoostSpinsRemaining);
+  const setScatterBoost = useGameStore((state) => state.setScatterBoost);
+  const setWildBoost = useGameStore((state) => state.setWildBoost);
+  const decrementBoostSpin = useGameStore((state) => state.decrementBoostSpin);
   const balance = useGameStore((state) => state.balance);
   const betAmount = useGameStore((state) => state.betAmount);
   const setBetAmount = useGameStore((state) => state.setBetAmount);
@@ -141,6 +147,9 @@ function App() {
     bonusType: 'standard',
     scatterCount: 3,
     freeSpinsToActivate: 0,
+    pendingWolfBurst: null, // Store wolf burst data if pending
+    pendingBoost: null, // Store boost data if pending (scatter_hunt or wild_boost)
+    naturalTriggerResolve: null, // Resolve function for natural scatter triggers
   });
 
   // Settings menu state
@@ -152,6 +161,18 @@ function App() {
 
   // Wolf Burst animation state
   const [wolfBurstActive, setWolfBurstActive] = useState(false);
+
+  // Active Feature Mode from store (scatter_hunt, wild_boost, or null)
+  const activeFeatureMode = useGameStore((state) => state.activeFeatureMode);
+  const setActiveFeatureMode = useGameStore((state) => state.setActiveFeatureMode);
+  const clearActiveFeatureMode = useGameStore((state) => state.clearActiveFeatureMode);
+  const getTotalSpinCost = useGameStore((state) => state.getTotalSpinCost);
+
+  // Wolf Dress-Up state
+  const wolfAccessoryCount = useGameStore((state) => state.wolfAccessoryCount);
+  const resetWolfDressUp = useGameStore((state) => state.resetWolfDressUp);
+  const isFreeSpin = useGameStore((state) => state.isFreeSpin);
+  const wolfDressUpRef = useRef(null);
 
   // Win animation state (auto-resets after 2 seconds)
   const [winAnimationActive, setWinAnimationActive] = useState(false);
@@ -165,25 +186,58 @@ function App() {
   const handleSpinRef = useRef(null);
   const spriteRefs = useRef(new Map());
 
+  // Get manual speed mode for global GSAP speed control
+  const manualSpeedMode = useGameStore((state) => state.manualSpeedMode);
+
   // Derived values
   const effectiveBet = getEffectiveBet();
   const hasActiveBoost = scatterBoostActive || wildBoostActive;
+  const hasActiveFeatureMode = activeFeatureMode !== null;
+  // Feature mode cost is bet × multiplier (NOT bet + bet×multiplier)
+  const totalSpinCost = activeFeatureMode ? betAmount * activeFeatureMode.multiplier : betAmount;
   const isBonusActive = freeSpinsRemaining > 0;
-  const canSpin = !isSpinning && !isAnimating && !isRunning && balance >= effectiveBet;
+  const canSpin = !isSpinning && !isAnimating && !isRunning && balance >= totalSpinCost;
+
+  // Update GSAP global timeline speed when speed mode changes
+  // This makes speed changes take effect IMMEDIATELY on all running animations
+  useEffect(() => {
+    const effectiveSpeed = autoSpinActive ? autoSpinSpeed : manualSpeedMode;
+    const speedMultiplier = SPEED_MULTIPLIERS[effectiveSpeed] || 1;
+    // TimeScale is inverse: lower multiplier = faster, so we use 1/multiplier
+    // But our multiplier is already inverted (0.5 = 2x speed), so we use 1/multiplier
+    const timeScale = 1 / speedMultiplier;
+    gsap.globalTimeline.timeScale(timeScale);
+    console.log('GSAP timeScale updated:', timeScale, '(speed mode:', effectiveSpeed, ')');
+  }, [autoSpinActive, autoSpinSpeed, manualSpeedMode]);
 
   // Setup event runner callbacks
   useEffect(() => {
     setOnBonusTrigger(async ({ freeSpinsAwarded, scatterCount, isRetrigger = false }) => {
       return new Promise((resolve) => {
-        setBonusOverlay({
-          show: true,
-          type: isRetrigger ? 'retrigger' : 'trigger',
-          freeSpinsAwarded,
-          totalWin: 0,
-          scatterCount,
-        });
-        const displayTime = isRetrigger ? 2000 : 3000;
-        setTimeout(resolve, displayTime);
+        if (isRetrigger) {
+          // Retrigger during bonus - use simple overlay
+          setBonusOverlay({
+            show: true,
+            type: 'retrigger',
+            freeSpinsAwarded,
+            totalWin: 0,
+            scatterCount,
+          });
+          setTimeout(resolve, 2000);
+        } else {
+          // Natural trigger in base game - use fancy BonusBuyIntro
+          // 3 scatters = standard (Free Spins), 4+ = super (Super Bonus)
+          const bonusType = scatterCount >= 4 ? 'super' : 'standard';
+          setBonusIntro({
+            show: true,
+            bonusType,
+            scatterCount,
+            freeSpinsToActivate: freeSpinsAwarded,
+            pendingWolfBurst: null,
+            pendingBoost: null,
+            naturalTriggerResolve: resolve, // Store resolve for when user clicks JOUER
+          });
+        }
       });
     });
 
@@ -336,6 +390,40 @@ function App() {
   const handleSpin = useCallback(async () => {
     if (isSpinning || isAnimating || isRunning) return;
 
+    // Check if Wolf Burst mode is active
+    const currentFeatureMode = useGameStore.getState().activeFeatureMode;
+    if (currentFeatureMode?.id === 'wolf_burst') {
+      // Clear the mode first (one-time action)
+      useGameStore.getState().clearActiveFeatureMode();
+
+      // Execute wolf burst inline
+      try {
+        setIsAnimating(true);
+        const buyResult = await buyBonus('wolf_burst');
+
+        if (buyResult?.success) {
+          // Play wolf burst animation (2.5 seconds) with sound
+          setWolfBurstActive(true);
+          audioService.playWolfBurstSound();
+          await new Promise(resolve => setTimeout(resolve, 2500));
+          setWolfBurstActive(false);
+
+          // Now trigger the actual spin (which will use wolf_burst_positions from session)
+          const spinResult = await spin();
+          if (spinResult) {
+            await playAllEvents(spinResult, { isWolfBurst: true, wolfDressUpRef });
+          }
+        }
+      } catch (error) {
+        console.error('Wolf burst error:', error);
+        alert('Achat échoué: ' + error.message);
+        setWolfBurstActive(false);
+      } finally {
+        setIsAnimating(false);
+      }
+      return;
+    }
+
     try {
       setIsAnimating(true);
       const wasFreeSpin = freeSpinsRemaining > 0;
@@ -359,6 +447,7 @@ function App() {
       await playAllEvents(result, {
         isBonusEnd: bonusJustEnded,
         bonusTotalWin,
+        wolfDressUpRef,
       });
 
       if (bonusJustEnded) {
@@ -369,7 +458,7 @@ function App() {
     } finally {
       setIsAnimating(false);
     }
-  }, [spin, playAllEvents, isSpinning, isAnimating, isRunning, setIsAnimating, freeSpinsRemaining]);
+  }, [spin, playAllEvents, isSpinning, isAnimating, isRunning, setIsAnimating, freeSpinsRemaining, buyBonus]);
 
   useEffect(() => {
     handleSpinRef.current = handleSpin;
@@ -401,6 +490,23 @@ function App() {
       return () => clearTimeout(autoSpinDelay);
     }
   }, [autoSpinActive, autoSpinSpeed, freeSpinsRemaining, isSpinning, isAnimating, isRunning, bonusOverlay.show, decrementAutoSpin]);
+
+  // Auto-spin during boost (Scatter Hunt / Wild Boost)
+  useEffect(() => {
+    const boostActive = scatterBoostSpinsRemaining > 0 || wildBoostSpinsRemaining > 0;
+    if (boostActive && !isSpinning && !isAnimating && !isRunning && !bonusOverlay.show && !bonusIntro.show) {
+      const speedMultiplier = SPEED_MULTIPLIERS[autoSpinSpeed] || 1;
+      const delay = Math.round(800 * speedMultiplier);
+      const boostSpinDelay = setTimeout(async () => {
+        if (handleSpinRef.current) {
+          handleSpinRef.current();
+          // Decrement boost spin after the spin starts
+          decrementBoostSpin();
+        }
+      }, delay);
+      return () => clearTimeout(boostSpinDelay);
+    }
+  }, [scatterBoostSpinsRemaining, wildBoostSpinsRemaining, isSpinning, isAnimating, isRunning, bonusOverlay.show, bonusIntro.show, autoSpinSpeed, decrementBoostSpin]);
 
   const handleRotateSeed = useCallback(async () => {
     try {
@@ -435,7 +541,7 @@ function App() {
         setIsAnimating(false);
         return;
       }
-      await playAllEvents(result, { isBonusBuy: true });
+      await playAllEvents(result, { isBonusBuy: true, wolfDressUpRef });
       setBonusIntro({
         show: true,
         bonusType,
@@ -453,32 +559,24 @@ function App() {
   const setFreeSpins = useGameStore((state) => state.setFreeSpins);
   const setMultiplierGrid = useGameStore((state) => state.setMultiplierGrid);
 
-  const handleBonusIntroComplete = useCallback(() => {
-    const { freeSpinsToActivate, scatterCount } = bonusIntro;
-    if (freeSpinsToActivate > 0) {
-      setFreeSpins(freeSpinsToActivate, 0);
-      if (scatterCount === 4) {
-        const x2Grid = Array(5).fill(null).map(() => Array(6).fill(2));
-        setMultiplierGrid(x2Grid);
-      }
-    }
-    setBonusIntro({ show: false, bonusType: 'standard', scatterCount: 3, freeSpinsToActivate: 0 });
-  }, [bonusIntro, setFreeSpins, setMultiplierGrid]);
-
-  // Wolf Burst handler - buys the wolf burst bonus (single spin with forced wilds)
-  const handleWolfBurst = useCallback(async ({ bonusId }) => {
+  // Execute the actual wolf burst (must be defined before handleBonusIntroComplete)
+  const executeWolfBurst = useCallback(async (bonusId) => {
     try {
       setIsAnimating(true);
-      const result = await buyBonus(bonusId);
-      if (result?.initialResult) {
+      const buyResult = await buyBonus(bonusId);
+
+      if (buyResult?.success) {
         // Play wolf burst animation (2.5 seconds) with sound
         setWolfBurstActive(true);
         audioService.playWolfBurstSound();
         await new Promise(resolve => setTimeout(resolve, 2500));
         setWolfBurstActive(false);
 
-        // Then play the spin result
-        await playAllEvents(result.initialResult, { isWolfBurst: true });
+        // Now trigger the actual spin (which will use wolf_burst_positions from session)
+        const spinResult = await spin();
+        if (spinResult) {
+          await playAllEvents(spinResult, { isWolfBurst: true, wolfDressUpRef });
+        }
       }
     } catch (error) {
       console.error('Wolf burst error:', error);
@@ -487,7 +585,109 @@ function App() {
     } finally {
       setIsAnimating(false);
     }
-  }, [buyBonus, playAllEvents, setIsAnimating]);
+  }, [buyBonus, spin, playAllEvents, setIsAnimating]);
+
+  const handleBonusIntroComplete = useCallback(async () => {
+    const { freeSpinsToActivate, scatterCount, pendingWolfBurst, pendingBoost, bonusType, naturalTriggerResolve } = bonusIntro;
+
+    // Handle Wolf Burst
+    if (bonusType === 'wolf_burst' && pendingWolfBurst) {
+      setBonusIntro({ show: false, bonusType: 'standard', scatterCount: 3, freeSpinsToActivate: 0, pendingWolfBurst: null, pendingBoost: null, naturalTriggerResolve: null });
+      executeWolfBurst(pendingWolfBurst.bonusId);
+      return;
+    }
+
+    // Handle Scatter Hunt or Wild Boost
+    if (pendingBoost) {
+      const { boostType, spins } = pendingBoost;
+      setBonusIntro({ show: false, bonusType: 'standard', scatterCount: 3, freeSpinsToActivate: 0, pendingWolfBurst: null, pendingBoost: null, naturalTriggerResolve: null });
+
+      // Map frontend boostType to backend API boostType
+      const apiBoostType = boostType === 'scatter_hunt' ? 'scatter_boost' : boostType;
+
+      try {
+        // Call API to activate boost and deduct cost
+        const result = await activateBoost(apiBoostType);
+        if (result?.success) {
+          // Activate the boost in the store (after successful payment)
+          if (boostType === 'scatter_hunt') {
+            setScatterBoost(spins);
+          } else if (boostType === 'wild_boost') {
+            setWildBoost(spins);
+          }
+        }
+      } catch (error) {
+        console.error('Boost activation failed:', error);
+        alert('Activation échouée: ' + error.message);
+      }
+      // Auto-spin will be triggered by the useEffect below
+      return;
+    }
+
+    // Handle Natural Scatter Trigger (from base game)
+    if (naturalTriggerResolve) {
+      // For 4+ scatters (Super Bonus), start with x2 multipliers
+      if (scatterCount >= 4) {
+        const x2Grid = Array(5).fill(null).map(() => Array(6).fill(2));
+        setMultiplierGrid(x2Grid);
+      }
+      setBonusIntro({ show: false, bonusType: 'standard', scatterCount: 3, freeSpinsToActivate: 0, pendingWolfBurst: null, pendingBoost: null, naturalTriggerResolve: null });
+      // Resolve the promise so the event runner can continue
+      naturalTriggerResolve();
+      return;
+    }
+
+    // Handle Free Spins (from bought bonus)
+    if (freeSpinsToActivate > 0) {
+      setFreeSpins(freeSpinsToActivate, 0);
+      if (scatterCount === 4) {
+        const x2Grid = Array(5).fill(null).map(() => Array(6).fill(2));
+        setMultiplierGrid(x2Grid);
+      }
+    }
+    setBonusIntro({ show: false, bonusType: 'standard', scatterCount: 3, freeSpinsToActivate: 0, pendingWolfBurst: null, pendingBoost: null, naturalTriggerResolve: null });
+  }, [bonusIntro, setFreeSpins, setMultiplierGrid, executeWolfBurst, setScatterBoost, setWildBoost, activateBoost]);
+
+  // Wolf Burst handler - shows intro first, then executes on confirmation
+  const handleWolfBurst = useCallback(async ({ bonusId }) => {
+    // Show the intro screen first
+    setBonusIntro({
+      show: true,
+      bonusType: 'wolf_burst',
+      scatterCount: 0,
+      freeSpinsToActivate: 0,
+      pendingWolfBurst: { bonusId },
+      pendingBoost: null,
+    });
+  }, []);
+
+  // Boost handler (Scatter Hunt / Wild Boost) - shows intro first
+  const handleBoostBuy = useCallback(async ({ boostType, spins }) => {
+    // boostType is 'scatter_hunt' or 'wild_boost'
+    setBonusIntro({
+      show: true,
+      bonusType: boostType,
+      scatterCount: 0,
+      freeSpinsToActivate: 0,
+      pendingWolfBurst: null,
+      pendingBoost: { boostType, spins },
+    });
+  }, []);
+
+  // Feature Mode Activation handler - no intro, just toggle on/off
+  const handleActivateFeature = useCallback(async ({ featureId, multiplier, name }) => {
+    // All feature modes show banner and execute on spin
+    setActiveFeatureMode({
+      id: featureId,
+      multiplier,
+      name,
+    });
+  }, [setActiveFeatureMode]);
+
+  // Disable feature mode handler
+  const handleDisableFeature = useCallback(() => {
+    clearActiveFeatureMode();
+  }, [clearActiveFeatureMode]);
 
   // Bet control handlers
   const handleBetChange = useCallback((direction) => {
@@ -516,6 +716,7 @@ function App() {
       startAutoSpin(autoSpinPending.count, autoSpinPending.speed);
       setAutoSpinPending(null);
     }
+    setShowAutoSpinMenu(false);
     handleSpin();
   }, [autoSpinPending, startAutoSpin, handleSpin]);
 
@@ -548,20 +749,21 @@ function App() {
       )}
 
       {/* Boost Indicators */}
-      {(scatterBoostSpins > 0 || wildBoostSpins > 0) && (
+      {(scatterBoostSpinsRemaining > 0 || wildBoostSpinsRemaining > 0) && (
         <div className="boost-indicators">
-          {scatterBoostSpins > 0 && (
+          {scatterBoostSpinsRemaining > 0 && (
             <div className="boost-indicator scatter-boost">
-              <span>SC x{scatterBoostSpins}</span>
+              <span>SCATTER HUNT x{scatterBoostSpinsRemaining}</span>
             </div>
           )}
-          {wildBoostSpins > 0 && (
+          {wildBoostSpinsRemaining > 0 && (
             <div className="boost-indicator wild-boost">
-              <span>WD x{wildBoostSpins}</span>
+              <span>WILD BOOST x{wildBoostSpinsRemaining}</span>
             </div>
           )}
         </div>
       )}
+
 
       {/* MAIN GAME AREA - Le Bandit style */}
       <div
@@ -582,7 +784,7 @@ function App() {
           <div className="game-container">
             {/* Stage Wrapper */}
             <div className="stage-wrapper">
-              <FreeSpinsCounter hideDuringOverlay={bonusOverlay.type === 'summary'} />
+              {/* FreeSpinsCounter is now integrated in bonus control bar */}
               <GameStage onSpriteReady={handleSpriteReady} />
 
               {/* Win Popup */}
@@ -596,41 +798,64 @@ function App() {
             </div>
           </div>
 
-          {/* Mascot wolf on right side with animated image */}
-          <div className={`mascot-character ${wolfBurstActive ? 'wolf-burst' : ''} ${winAnimationActive ? 'excited' : ''} ${isSpinning ? 'breathing' : ''}`} id="mascot-wolf">
-            <img src="/mascotte.png" alt="Wolf Mascot" className="wolf-image" />
+          {/* Mascot wolf on right side */}
+          <div
+            className={`mascot-character ${wolfBurstActive ? 'wolf-burst' : ''} ${winAnimationActive ? 'excited' : ''} ${isSpinning ? 'breathing' : ''} ${wolfAccessoryCount >= 5 ? 'fully-dressed' : ''}`}
+            id="mascot-wolf"
+          >
+            {/* Wolf and accessories wrapper - animated together */}
+            <div className="wolf-animated-wrapper">
+              <img src="/mascotte.png" alt="Wolf Mascot" className="wolf-image" />
+
+              {/* Wolf Dress-Up Accessories - appear during Free Spins */}
+              {isFreeSpin && wolfAccessoryCount >= 1 && (
+                <img src="/accessories/tshirt.png" alt="" className="wolf-accessory" />
+              )}
+              {isFreeSpin && wolfAccessoryCount >= 2 && (
+                <img src="/accessories/veste.png" alt="" className="wolf-accessory" />
+              )}
+              {isFreeSpin && wolfAccessoryCount >= 3 && (
+                <img src="/accessories/collier.png" alt="" className="wolf-accessory" />
+              )}
+              {isFreeSpin && wolfAccessoryCount >= 4 && (
+                <img src="/accessories/lunette.png" alt="" className="wolf-accessory" />
+              )}
+              {isFreeSpin && wolfAccessoryCount >= 5 && (
+                <img src="/accessories/chapeau.png" alt="" className="wolf-accessory" />
+              )}
+            </div>
+
+            {/* Glow effect when fully dressed */}
+            {isFreeSpin && wolfAccessoryCount >= 5 && (
+              <div className="wolf-fully-dressed-glow" />
+            )}
           </div>
+
+          {/* Wolf Dress-Up Multiplier Component (for animation only) */}
+          <WolfDressUp
+            ref={wolfDressUpRef}
+            accessoryCount={wolfAccessoryCount}
+            isVisible={false}
+            spinWin={lastWin}
+          />
         </div>
 
-        {/* Control Bar - Bottom */}
-        <div className="control-bar">
-          {/* BONUS Button (orange round) */}
+        {/* Control Bar - Bottom (Le Bandit Style) */}
+        {/* Normal control bar - hidden during Free Spins */}
+        <div className={`control-bar ${isBonusActive ? 'hidden' : ''}`}>
+          {/* BUY BONUS Button (circular yellow) */}
           <button
-            className="bonus-btn-round"
+            className="bonus-btn-circle"
             onClick={toggleBonusMenu}
             disabled={isSpinning || isBonusActive}
           >
-            BONUS
-          </button>
-
-          {/* Sound Toggle */}
-          <button
-            className={`icon-btn ${musicEnabled ? 'active' : ''}`}
-            onClick={handleToggleMusic}
-            style={musicEnabled ? { borderColor: '#c9a855', color: '#c9a855' } : {}}
-          >
-            <svg viewBox="0 0 24 24" fill="currentColor">
-              {musicEnabled ? (
-                <path d="M3 9v6h4l5 5V4L7 9H3zm13.5 3c0-1.77-1.02-3.29-2.5-4.03v8.05c1.48-.73 2.5-2.25 2.5-4.02z" />
-              ) : (
-                <path d="M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27 7.73 9H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z" />
-              )}
-            </svg>
+            <span>BUY</span>
+            <span>BONUS</span>
           </button>
 
           {/* Menu Button */}
-          <div style={{ position: 'relative' }}>
-            <button className="icon-btn" onClick={() => setShowSettings(!showSettings)}>
+          <div className="menu-wrapper">
+            <button className="menu-btn" onClick={() => setShowSettings(!showSettings)}>
               <svg viewBox="0 0 24 24" fill="currentColor">
                 <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" />
               </svg>
@@ -646,180 +871,178 @@ function App() {
           </div>
 
           {/* Balance Display */}
-          <div className="info-display">
+          <div className="info-display-new">
             <span className="label">SOLDE</span>
-            <span className="value">{balance.toFixed(2)}</span>
+            <span className="value">€{balance.toFixed(2)}</span>
           </div>
 
           {/* Win Display */}
-          <div className={`info-display win-display ${lastWin > 0 ? 'has-win' : ''}`}>
+          <div className={`info-display-new win-display ${lastWin > 0 ? 'has-win' : ''}`}>
             <span className="label">GAIN</span>
-            <span className="value win-value">{lastWin > 0 ? lastWin.toFixed(2) : '0.00'}</span>
+            <span className="value">€{lastWin > 0 ? lastWin.toFixed(2) : '0.00'}</span>
           </div>
 
-          {/* Bet Control with Popup */}
-          <div className="bet-control" style={{ position: 'relative' }}>
-            <button
-              className="bet-btn"
-              onClick={() => handleBetChange('down')}
-              disabled={isSpinning || betAmount === BET_OPTIONS[0]}
-            >
-              -
-            </button>
-            <div
-              className="info-display bet-clickable"
-              onClick={() => !isSpinning && setShowBetMenu(!showBetMenu)}
-              style={{ cursor: isSpinning ? 'not-allowed' : 'pointer' }}
-            >
-              <span className="label">{hasActiveBoost ? 'COUT' : 'MISE'}</span>
-              <span className="value">{hasActiveBoost ? effectiveBet.toFixed(2) : betAmount.toFixed(2)}</span>
+          {/* Bet Control with Arrows */}
+          <div className="bet-control-new">
+            <div className="bet-display">
+              <span className="label">{(hasActiveBoost || hasActiveFeatureMode) ? 'COUT' : 'MISE'}</span>
+              <span className="value">€{hasActiveFeatureMode ? totalSpinCost.toFixed(2) : (hasActiveBoost ? effectiveBet.toFixed(2) : betAmount.toFixed(2))}</span>
             </div>
-            <button
-              className="bet-btn"
-              onClick={() => handleBetChange('up')}
-              disabled={isSpinning || betAmount === BET_OPTIONS[BET_OPTIONS.length - 1]}
-            >
-              +
-            </button>
-
-            {/* Bet Selector Popup */}
-            {showBetMenu && (
-              <div style={{
-                position: 'absolute',
-                bottom: 'calc(100% + 10px)',
-                left: '50%',
-                transform: 'translateX(-50%)',
-                width: '200px',
-                background: '#1a1510',
-                border: '2px solid #4a4540',
-                borderRadius: '12px',
-                padding: '10px',
-                zIndex: 1000,
-              }}>
-                <div style={{ color: '#c4a060', fontSize: '10px', marginBottom: '8px', letterSpacing: '1px', textAlign: 'center', fontWeight: 'bold' }}>
-                  MISE RAPIDE
-                </div>
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '6px' }}>
-                  {BET_OPTIONS.map((bet) => (
-                    <button
-                      key={bet}
-                      onClick={() => {
-                        setBetAmount(bet);
-                        setShowBetMenu(false);
-                      }}
-                      style={{
-                        padding: '10px 8px',
-                        border: betAmount === bet ? '2px solid #c9a855' : '2px solid #3a3530',
-                        borderRadius: '8px',
-                        background: betAmount === bet ? 'rgba(201, 168, 85, 0.2)' : 'transparent',
-                        color: betAmount === bet ? '#f5d742' : '#8b8070',
-                        fontSize: '13px',
-                        fontWeight: 'bold',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      {bet.toFixed(2)}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Auto-Spin Button */}
-          <div style={{ position: 'relative' }}>
-            <button
-              className={`icon-btn ${autoSpinActive || autoSpinPending ? 'active' : ''}`}
-              onClick={() => {
-                if (autoSpinActive) {
-                  handleStopAutoSpin();
-                } else if (autoSpinPending) {
-                  setAutoSpinPending(null);
-                } else {
-                  setShowAutoSpinMenu(!showAutoSpinMenu);
-                }
-              }}
-              disabled={isSpinning || isBonusActive}
-              style={autoSpinActive || autoSpinPending ? { borderColor: '#c9a855', color: '#c9a855' } : {}}
-            >
-              {autoSpinActive ? (
-                <span style={{ fontSize: '11px', fontWeight: 'bold' }}>
-                  {autoSpinRemaining === Infinity ? '∞' : autoSpinRemaining}
-                </span>
-              ) : autoSpinPending ? (
-                <span style={{ fontSize: '11px', fontWeight: 'bold' }}>
-                  {autoSpinPending.count === Infinity ? '∞' : autoSpinPending.count}
-                </span>
-              ) : (
+            <div className="bet-arrows">
+              <button
+                className="bet-arrow up"
+                onClick={() => handleBetChange('up')}
+                disabled={isSpinning || betAmount === BET_OPTIONS[BET_OPTIONS.length - 1]}
+              >
                 <svg viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z" />
+                  <path d="M7 14l5-5 5 5z" />
                 </svg>
-              )}
-            </button>
-
-            {/* Auto-Spin Menu */}
-            {showAutoSpinMenu && (
-              <div style={{
-                position: 'absolute',
-                bottom: 'calc(100% + 10px)',
-                right: 0,
-                width: '160px',
-                background: '#1a1510',
-                border: '2px solid #4a4540',
-                borderRadius: '10px',
-                padding: '8px',
-                zIndex: 100,
-              }}>
-                <div style={{ color: '#6a6050', fontSize: '9px', marginBottom: '6px', letterSpacing: '1px' }}>
-                  TOURS
-                </div>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '4px' }}>
-                  {AUTO_SPIN_OPTIONS.map((count) => (
-                    <button
-                      key={count}
-                      onClick={() => handleAutoSpinSelect(count)}
-                      style={{
-                        flex: '1 0 28%',
-                        padding: '6px',
-                        border: '1px solid #3a3530',
-                        borderRadius: '8px',
-                        background: 'transparent',
-                        color: '#8b8070',
-                        fontSize: '11px',
-                        fontWeight: 'bold',
-                        cursor: 'pointer',
-                      }}
-                    >
-                      {count === Infinity ? '∞' : count}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            )}
+              </button>
+              <button
+                className="bet-arrow down"
+                onClick={() => handleBetChange('down')}
+                disabled={isSpinning || betAmount === BET_OPTIONS[0]}
+              >
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M7 10l5 5 5-5z" />
+                </svg>
+              </button>
+            </div>
           </div>
 
-          {/* Spin Button */}
+          {/* Large Autoplay/Spin Button */}
           <button
-            className={`spin-btn ${isSpinning ? 'spinning' : ''}`}
-            onClick={handleSpinClick}
-            disabled={!canSpin}
+            className={`main-spin-btn ${autoSpinActive ? 'autoplay-active' : ''} ${isSpinning ? 'spinning' : ''}`}
+            onClick={() => {
+              if (autoSpinActive) {
+                handleStopAutoSpin();
+              } else {
+                handleSpinClick();
+              }
+            }}
+            disabled={!canSpin && !autoSpinActive}
           >
-            <svg className={`spin-icon ${isSpinning ? 'rotating' : ''}`} viewBox="0 0 24 24" fill="currentColor">
-              {isSpinning ? (
-                <path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6s-2.69 6-6 6-6-2.69-6-6H4c0 4.42 3.58 8 8 8s8-3.58 8-8-3.58-8-8-8z" />
-              ) : (
-                <path d="M8 5v14l11-7z" />
-              )}
+            {autoSpinActive ? (
+              <div className="autoplay-counter">
+                <span>{autoSpinRemaining === Infinity ? '∞' : autoSpinRemaining}</span>
+              </div>
+            ) : (
+              <svg className="spin-arrows" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z" />
+              </svg>
+            )}
+          </button>
+
+          {/* Autoplay Menu Button */}
+          <button
+            className={`autoplay-menu-btn ${showAutoSpinMenu ? 'active' : ''}`}
+            onClick={() => setShowAutoSpinMenu(!showAutoSpinMenu)}
+            disabled={isSpinning || isBonusActive}
+          >
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <path d="M12 4V1L8 5l4 4V6c3.31 0 6 2.69 6 6 0 1.01-.25 1.97-.7 2.8l1.46 1.46C19.54 15.03 20 13.57 20 12c0-4.42-3.58-8-8-8zm0 14c-3.31 0-6-2.69-6-6 0-1.01.25-1.97.7-2.8L5.24 7.74C4.46 8.97 4 10.43 4 12c0 4.42 3.58 8 8 8v3l4-4-4-4v3z" />
             </svg>
           </button>
         </div>
+
+        {/* Feature Mode Active Indicator - Above control bar */}
+        {activeFeatureMode && !isBonusActive && (
+          <div className="feature-mode-indicator">
+            <div className="feature-mode-label">
+              <span className="mode-name">{activeFeatureMode.name}</span>
+              <span className="mode-cost">{totalSpinCost.toFixed(2)} €</span>
+            </div>
+            <button
+              className="mode-disable-btn"
+              onClick={handleDisableFeature}
+              disabled={isSpinning || isAnimating}
+            >
+              DISABLE
+            </button>
+          </div>
+        )}
+
+        {/* Autoplay Menu Popup */}
+        {showAutoSpinMenu && (
+          <div className="autoplay-menu">
+            <div className="autoplay-header">
+              <span className="title">AUTOPLAY</span>
+              <button className="close-btn" onClick={() => { setShowAutoSpinMenu(false); setAutoSpinPending(null); }}>×</button>
+            </div>
+            <div className="autoplay-content">
+              <span className="section-title">NOMBRE DE TOURS</span>
+              <div className="rounds-grid">
+                {[10, 25, 50, 75, 100, 500, 1000].map((count) => (
+                  <button
+                    key={count}
+                    className={`round-btn ${autoSpinPending?.count === count ? 'selected' : ''}`}
+                    onClick={() => {
+                      setAutoSpinPending({ count, speed: selectedSpeed });
+                    }}
+                  >
+                    {count}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Bonus Control Bar - Only during Free Spins */}
+        {isBonusActive && (
+          <div className="control-bar bonus-mode">
+            {/* Menu Button */}
+            <div className="menu-wrapper">
+              <button className="menu-btn" onClick={() => setShowSettings(!showSettings)}>
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M3 18h18v-2H3v2zm0-5h18v-2H3v2zm0-7v2h18V6H3z" />
+                </svg>
+              </button>
+              <SettingsMenu
+                isOpen={showSettings}
+                onClose={() => setShowSettings(false)}
+                musicEnabled={musicEnabled}
+                onMusicToggle={handleToggleMusic}
+                sfxEnabled={soundEnabled}
+                onSfxToggle={toggleSound}
+              />
+            </div>
+
+            {/* Balance Display */}
+            <div className="info-display-new">
+              <span className="label">SOLDE</span>
+              <span className="value">€{balance.toFixed(2)}</span>
+            </div>
+
+            {/* Bet Display */}
+            <div className="info-display-new">
+              <span className="label">MISE</span>
+              <span className="value">€{betAmount.toFixed(2)}</span>
+            </div>
+
+            {/* Spacer */}
+            <div className="bonus-bar-spacer" />
+
+            {/* Total Win Display */}
+            <div className="bonus-total-win">
+              <span className="label">TOTAL WIN</span>
+              <span className="value">€{(freeSpinTotalWin || 0).toFixed(2)}</span>
+            </div>
+
+            {/* Free Spins Counter */}
+            <div className="bonus-spins-counter">
+              <span className="label">FREE SPINS</span>
+              <span className="value">{freeSpinsRemaining}</span>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Bonus Buy Menu Modal */}
       <BonusBuyMenu
         onBuyBonus={handleBuyBonus}
         onBonusTriggerSpin={handleBonusTriggerSpin}
-        onWolfBurst={handleWolfBurst}
+        onActivateFeature={handleActivateFeature}
         disabled={isSpinning || isAnimating}
       />
 
@@ -828,6 +1051,7 @@ function App() {
         show={bonusIntro.show}
         bonusType={bonusIntro.bonusType}
         scatterCount={bonusIntro.scatterCount}
+        freeSpinsToActivate={bonusIntro.freeSpinsToActivate}
         onComplete={handleBonusIntroComplete}
       />
 

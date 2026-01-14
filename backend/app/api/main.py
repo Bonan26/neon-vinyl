@@ -595,11 +595,14 @@ async def wallet_play(request: PlayRequest):
 
     # Handle free spins state
     if result.free_spins_triggered > 0 and not is_free_spin:
+        # Free spins triggered from base game - initialize total to 0
+        # (base game win is separate, not part of free spin total)
         session["free_spins_remaining"] = result.free_spins_remaining
         session["free_spin_bet_amount"] = bet_amount_int
         session["free_spin_multipliers"] = result.final_multipliers
-        session["free_spin_total_win"] = payout_int
+        session["free_spin_total_win"] = 0
     elif is_free_spin:
+        # During free spins - accumulate wins
         session["free_spins_remaining"] = result.free_spins_remaining
         session["free_spin_multipliers"] = result.final_multipliers
         session["free_spin_total_win"] = session.get("free_spin_total_win", 0) + payout_int
@@ -817,6 +820,12 @@ async def play_legacy(request: LegacyPlayRequest):
 
     nonce = request.nonce if request.nonce is not None else session["nonce"]
 
+    # Check for wolf burst positions
+    wolf_burst_positions = session.get("wolf_burst_positions")
+    if wolf_burst_positions:
+        # Clear after use (one-time use)
+        session["wolf_burst_positions"] = None
+
     result: SpinResult = run_spin(
         server_seed=session["server_seed"],
         client_seed=request.clientSeed,
@@ -826,7 +835,8 @@ async def play_legacy(request: LegacyPlayRequest):
         free_spins_remaining=free_spins_remaining,
         existing_multipliers=existing_multipliers,
         scatter_boost=request.scatterBoostActive,
-        wild_boost=request.wildBoostActive
+        wild_boost=request.wildBoostActive,
+        forced_wild_positions=wolf_burst_positions
     )
 
     payout_float = result.payout_multiplier * bet_amount_float
@@ -837,11 +847,14 @@ async def play_legacy(request: LegacyPlayRequest):
 
     # Handle free spins
     if result.free_spins_triggered > 0 and not is_free_spin:
+        # Free spins triggered from base game - initialize total to 0
+        # (base game win is separate, not part of free spin total)
         session["free_spins_remaining"] = result.free_spins_remaining
         session["free_spin_bet_amount"] = bet_amount_int
         session["free_spin_multipliers"] = result.final_multipliers
-        session["free_spin_total_win"] = payout_int
+        session["free_spin_total_win"] = 0
     elif is_free_spin:
+        # During free spins - accumulate wins
         session["free_spins_remaining"] = result.free_spins_remaining
         session["free_spin_multipliers"] = result.final_multipliers
         session["free_spin_total_win"] = session.get("free_spin_total_win", 0) + payout_int

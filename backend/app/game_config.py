@@ -63,11 +63,11 @@ class Symbol(Enum):
     WOLF_GREEN = "W6"     # Green Snake Wolf
     WOLF_SPIRIT = "WS"    # Spirit Wolf (dark blue)
 
-    # Low Tier (Hats) - Common
-    HAT_CAP = "HC"        # W86 Cap
-    HAT_STEAMPUNK = "HS"  # Steampunk Hat
-    HAT_STRAW = "HW"      # Straw Hat
-    HAT_PEACOCK = "HK"    # Peacock Feather Hat
+    # Low Tier (Wolves) - Common
+    WOLF_WHITE = "HC"     # White Screaming Wolf
+    WOLF_SNAKE = "HS"     # Snake Screaming Wolf
+    WOLF_STREET = "HW"    # Street Relaxing Wolf
+    WOLF_BLUE = "HK"      # Blue Whistling Wolf
 
 
 # Special symbol set for quick lookup
@@ -102,11 +102,11 @@ SYMBOL_WEIGHTS: Dict[Symbol, SymbolConfig] = {
     Symbol.WOLF_GREEN: SymbolConfig(Symbol.WOLF_GREEN, SymbolTier.MID, 17),
     Symbol.WOLF_SPIRIT: SymbolConfig(Symbol.WOLF_SPIRIT, SymbolTier.MID, 20),
 
-    # Low tier hats - common (weight 25-35)
-    Symbol.HAT_CAP: SymbolConfig(Symbol.HAT_CAP, SymbolTier.LOW, 25),
-    Symbol.HAT_STEAMPUNK: SymbolConfig(Symbol.HAT_STEAMPUNK, SymbolTier.LOW, 28),
-    Symbol.HAT_STRAW: SymbolConfig(Symbol.HAT_STRAW, SymbolTier.LOW, 32),
-    Symbol.HAT_PEACOCK: SymbolConfig(Symbol.HAT_PEACOCK, SymbolTier.LOW, 35),
+    # Low tier wolves - common (weight 25-35)
+    Symbol.WOLF_WHITE: SymbolConfig(Symbol.WOLF_WHITE, SymbolTier.LOW, 25),
+    Symbol.WOLF_SNAKE: SymbolConfig(Symbol.WOLF_SNAKE, SymbolTier.LOW, 28),
+    Symbol.WOLF_STREET: SymbolConfig(Symbol.WOLF_STREET, SymbolTier.LOW, 32),
+    Symbol.WOLF_BLUE: SymbolConfig(Symbol.WOLF_BLUE, SymbolTier.LOW, 35),
 }
 
 # Weights for regular spins (includes Wild and Scatter)
@@ -132,10 +132,10 @@ FREE_SPIN_WEIGHTS: Dict[Symbol, int] = {
     Symbol.WOLF_GRAY: 14,
     Symbol.WOLF_GREEN: 17,
     Symbol.WOLF_SPIRIT: 20,
-    Symbol.HAT_CAP: 25,
-    Symbol.HAT_STEAMPUNK: 28,
-    Symbol.HAT_STRAW: 32,
-    Symbol.HAT_PEACOCK: 35,
+    Symbol.WOLF_WHITE: 25,
+    Symbol.WOLF_SNAKE: 28,
+    Symbol.WOLF_STREET: 32,
+    Symbol.WOLF_BLUE: 35,
 }
 FREE_SPIN_SYMBOLS_LIST = list(FREE_SPIN_WEIGHTS.keys())
 FREE_SPIN_WEIGHTS_LIST = list(FREE_SPIN_WEIGHTS.values())
@@ -203,23 +203,23 @@ PAYTABLE: Dict[Symbol, Dict[int, float]] = {
         10: 2.60, 11: 4.40, 12: 7.00, 13: 11.20, 14: 18.00,
         15: 28.00,
     },
-    # Low Tier: Hats - Lower payouts (they win most often!)
-    Symbol.HAT_CAP: {
+    # Low Tier: Wolves - Lower payouts (they win most often!)
+    Symbol.WOLF_WHITE: {
         4: 0.06, 5: 0.10, 6: 0.18, 7: 0.30, 8: 0.50, 9: 0.80,
         10: 1.20, 11: 2.00, 12: 3.20, 13: 5.20, 14: 8.50,
         15: 13.00,
     },
-    Symbol.HAT_STEAMPUNK: {
+    Symbol.WOLF_SNAKE: {
         4: 0.05, 5: 0.08, 6: 0.14, 7: 0.24, 8: 0.40, 9: 0.65,
         10: 1.00, 11: 1.70, 12: 2.70, 13: 4.40, 14: 7.00,
         15: 10.50,
     },
-    Symbol.HAT_STRAW: {
+    Symbol.WOLF_STREET: {
         4: 0.04, 5: 0.062, 6: 0.105, 7: 0.162, 8: 0.295, 9: 0.476,
         10: 0.721, 11: 1.24, 12: 2.03, 13: 3.28, 14: 5.23,
         15: 7.88,
     },
-    Symbol.HAT_PEACOCK: {
+    Symbol.WOLF_BLUE: {
         4: 0.04, 5: 0.062, 6: 0.105, 7: 0.162, 8: 0.295, 9: 0.476,
         10: 0.721, 11: 1.24, 12: 2.03, 13: 3.28, 14: 5.23,
         15: 7.88,
@@ -252,27 +252,25 @@ def get_payout(symbol: Symbol, cluster_size: int) -> float:
 # =============================================================================
 
 # Scatter requirements for free spins (BASE GAME)
-# Free spins are rarer but more rewarding!
-# 3 scatters = 10 free spins (standard bonus)
-# 4 scatters = 15 free spins (super bonus)
-# 5+ scatters = 20 free spins (ULTRA bonus with sticky wilds!)
+# Same as buying bonuses but earned naturally!
+# 3 scatters = 8 free spins (like buying Free Spins bonus)
+# 4 scatters = 12 free spins (like buying Super Bonus)
+# 5 scatters = 15 free spins
+# 6 scatters = 20 free spins
 SCATTER_FREE_SPINS: Dict[int, int] = {
-    3: 10,  # 3 scatters = 10 free spins (standard bonus)
-    4: 15,  # 4 scatters = 15 free spins (super bonus)
-    5: 20,  # 5 scatters = 20 free spins + STICKY WILDS (ultra rare!)
-    6: 25,  # 6 scatters = 25 free spins + STICKY WILDS (legendary!)
+    3: 8,   # 3 scatters = 8 free spins (same as Buy Free Spins)
+    4: 12,  # 4 scatters = 12 free spins (same as Buy Super Bonus)
+    5: 15,  # 5 scatters = 15 free spins
+    6: 20,  # 6 scatters = 20 free spins
 }
 
 # Scatter retrigger during FREE SPINS (different rules)
-# Retriggres are rarer but more rewarding
-# 3 scatters = +8 spins (was +5)
-# 4+ scatters = +12 spins (was +10)
-# NOTE: 2 scatters NO LONGER retrigger (too common, frustrating for user)
+# When already in bonus (bought or earned), retriggering adds extra spins
 SCATTER_RETRIGGER: Dict[int, int] = {
-    3: 8,   # 3 scatters = +8 spins (big reward for hitting 3!)
-    4: 12,  # 4+ scatters = +12 spins (massive reward!)
-    5: 12,
-    6: 12,
+    3: 5,   # 3 scatters = +5 spins
+    4: 8,   # 4 scatters = +8 spins
+    5: 10,  # 5 scatters = +10 spins
+    6: 12,  # 6 scatters = +12 spins
 }
 
 # Can retrigger free spins during free spins
@@ -318,7 +316,7 @@ BONUS_BUY_OPTIONS: Dict[str, BonusBuyOption] = {
         id="wolf_burst",
         name="Wolf Burst",
         description="Wolf mascot blows 3-6 WILDs onto the grid",
-        cost_multiplier=25.0,  # x25 bet cost
+        cost_multiplier=10.0,  # x10 bet cost (matches frontend)
         volatility="medium",
         feature="wolf_burst",
     ),

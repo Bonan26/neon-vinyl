@@ -67,8 +67,8 @@ export const AutoSpinSpeed = {
 // Speed multipliers for animations (lower = faster)
 export const SPEED_MULTIPLIERS = {
   [AutoSpinSpeed.NORMAL]: 1.0,
-  [AutoSpinSpeed.BOOSTER]: 0.5,
-  [AutoSpinSpeed.SUPER_BOOSTER]: 0.2,
+  [AutoSpinSpeed.BOOSTER]: 0.5,      // x2 speed
+  [AutoSpinSpeed.SUPER_BOOSTER]: 0.25, // x4 speed
 };
 
 const useGameStore = create((set, get) => ({
@@ -103,9 +103,14 @@ const useGameStore = create((set, get) => ({
   isFreeSpin: false,
 
   // Boost state (Scatter Hunt / Wild Boost)
-  // These are toggles - when active, each spin costs more (multiplier applied per spin)
-  scatterBoostActive: false,  // 2x cost per spin when active
-  wildBoostActive: false,     // 5x cost per spin when active
+  scatterBoostActive: false,
+  scatterBoostSpinsRemaining: 0,  // Scatter Hunt: 10 spins with 3x scatter chance
+  wildBoostActive: false,
+  wildBoostSpinsRemaining: 0,    // Wild Boost: 5 spins with 5x wild chance
+  boostTotalWin: 0,              // Track total win during boost
+
+  // Feature Mode state (persistent modes with per-spin cost)
+  activeFeatureMode: null, // { id: 'scatter_hunt' | 'wild_boost', multiplier: number, name: string }
 
   // Bonus state
   bonusBuyOptions: [],
@@ -139,6 +144,11 @@ const useGameStore = create((set, get) => ({
   // Turbo mode - skip animations when user spams space/click
   turboMode: false,
   turboCounter: 0,  // Counts rapid inputs to trigger turbo
+
+  // Wolf Dress-Up feature (Free Spins / Super Bonus)
+  wolfAccessoryCount: 0,          // 0-5 accessories on the wolf
+  wolfDressUpMultiplier: null,    // Multiplier awarded when fully dressed (2-10)
+  wolfDressUpPending: false,      // True when multiplier needs to be applied to current spin
 
   // Stake Engine config (from /wallet/authenticate)
   stakeConfig: null,
@@ -289,11 +299,15 @@ const useGameStore = create((set, get) => ({
   })),
 
   // Free Spins actions
-  setFreeSpins: (remaining, totalWin = 0) => set({
+  setFreeSpins: (remaining, totalWin = 0) => set((state) => ({
     freeSpinsRemaining: remaining,
     freeSpinTotalWin: totalWin,
     isFreeSpin: remaining > 0,
-  }),
+    // Reset wolf dress-up when starting fresh free spins
+    wolfAccessoryCount: totalWin === 0 ? 0 : state.wolfAccessoryCount,
+    wolfDressUpMultiplier: totalWin === 0 ? null : state.wolfDressUpMultiplier,
+    wolfDressUpPending: totalWin === 0 ? false : state.wolfDressUpPending,
+  })),
 
   updateFreeSpinWin: (amount) => set((state) => ({
     freeSpinTotalWin: state.freeSpinTotalWin + amount,
@@ -303,21 +317,89 @@ const useGameStore = create((set, get) => ({
     freeSpinsRemaining: 0,
     freeSpinTotalWin: 0,
     isFreeSpin: false,
+    // Reset wolf dress-up when free spins end
+    wolfAccessoryCount: 0,
+    wolfDressUpMultiplier: null,
+    wolfDressUpPending: false,
   }),
 
-  // Boost actions (Scatter Hunt / Wild Boost) - toggles that affect spin cost
-  setScatterBoostActive: (active) => set({ scatterBoostActive: active }),
-  setWildBoostActive: (active) => set({ wildBoostActive: active }),
-  toggleScatterBoost: () => set((state) => ({ scatterBoostActive: !state.scatterBoostActive })),
-  toggleWildBoost: () => set((state) => ({ wildBoostActive: !state.wildBoostActive })),
-  // Calculate effective bet amount (with boost multipliers)
-  getEffectiveBet: () => {
+  // Boost actions (Scatter Hunt / Wild Boost)
+  setScatterBoost: (spins) => set({
+    scatterBoostActive: spins > 0,
+    scatterBoostSpinsRemaining: spins,
+    boostTotalWin: spins > 0 ? 0 : get().boostTotalWin,
+  }),
+  setWildBoost: (spins) => set({
+    wildBoostActive: spins > 0,
+    wildBoostSpinsRemaining: spins,
+    boostTotalWin: spins > 0 ? 0 : get().boostTotalWin,
+  }),
+  decrementBoostSpin: () => set((state) => {
+    const newScatterSpins = state.scatterBoostActive ? Math.max(0, state.scatterBoostSpinsRemaining - 1) : state.scatterBoostSpinsRemaining;
+    const newWildSpins = state.wildBoostActive ? Math.max(0, state.wildBoostSpinsRemaining - 1) : state.wildBoostSpinsRemaining;
+    return {
+      scatterBoostSpinsRemaining: newScatterSpins,
+      scatterBoostActive: newScatterSpins > 0,
+      wildBoostSpinsRemaining: newWildSpins,
+      wildBoostActive: newWildSpins > 0,
+    };
+  }),
+  updateBoostWin: (amount) => set((state) => ({
+    boostTotalWin: state.boostTotalWin + amount,
+  })),
+  clearBoost: () => set({
+    scatterBoostActive: false,
+    scatterBoostSpinsRemaining: 0,
+    wildBoostActive: false,
+    wildBoostSpinsRemaining: 0,
+    boostTotalWin: 0,
+  }),
+  // Check if any boost is active
+  isBoostActive: () => {
     const state = get();
-    let multiplier = 1;
-    if (state.scatterBoostActive) multiplier *= 2;  // Scatter Hunt: 2x
-    if (state.wildBoostActive) multiplier *= 5;    // Wild Boost: 5x
-    return state.betAmount * multiplier;
+    return state.scatterBoostActive || state.wildBoostActive;
   },
+
+  // Feature Mode actions (persistent modes with per-spin cost)
+  setActiveFeatureMode: (featureMode) => set({ activeFeatureMode: featureMode }),
+  clearActiveFeatureMode: () => set({ activeFeatureMode: null }),
+  getFeatureModeCost: () => {
+    const state = get();
+    if (!state.activeFeatureMode) return 0;
+    return state.betAmount * state.activeFeatureMode.multiplier;
+  },
+  getTotalSpinCost: () => {
+    const state = get();
+    const baseBet = state.betAmount;
+    // Feature mode: total cost = bet × multiplier (NOT bet + bet×multiplier)
+    if (state.activeFeatureMode) {
+      return baseBet * state.activeFeatureMode.multiplier;
+    }
+    return baseBet;
+  },
+
+  // Wolf Dress-Up actions
+  addWolfAccessory: () => set((state) => {
+    const newCount = Math.min(state.wolfAccessoryCount + 1, 5);
+    return {
+      wolfAccessoryCount: newCount,
+      wolfDressUpPending: newCount === 5, // Set pending when fully dressed
+    };
+  }),
+
+  setWolfDressUpMultiplier: (multiplier) => set({
+    wolfDressUpMultiplier: multiplier,
+  }),
+
+  applyWolfMultiplier: () => set((state) => ({
+    wolfDressUpPending: false,
+  })),
+
+  resetWolfDressUp: () => set({
+    wolfAccessoryCount: 0,
+    wolfDressUpMultiplier: null,
+    wolfDressUpPending: false,
+  }),
 
   // Bonus options
   setBonusBuyOptions: (options) => set({ bonusBuyOptions: options }),
@@ -367,6 +449,12 @@ const useGameStore = create((set, get) => ({
     }
     // Always use manual speed mode when set (base game and free spins)
     return state.manualSpeedMode;
+  },
+
+  // Get effective bet (base bet, no multiplier for boosts since they're paid upfront)
+  getEffectiveBet: () => {
+    const state = get();
+    return state.betAmount;
   },
 
   // Game state machine

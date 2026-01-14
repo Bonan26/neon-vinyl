@@ -1,13 +1,14 @@
 /**
- * WOLFIE GROOVE - Bonus Buy Intro Styles
- * Grand popup animé avec fond dynamique - VERSION ÉPURÉE
+ * LES WOLFS 86 - Bonus Buy Intro Styles
+ * Premium Wolf Theme - Dark browns & Gold accents
  */
 
-/* Overlay - Full screen avec fond animé */
+/* Overlay - Full screen avec fond premium */
 .bbi-overlay {
   position: fixed;
   inset: 0;
-  background: linear-gradient(135deg, #0d0518 0%, #1a0a2e 30%, #2d0a4e 60%, #0d0518 100%);
+  background:
+    radial-gradient(ellipse at center, rgba(50, 40, 25, 0.98) 0%, rgba(20, 15, 10, 0.99) 100%);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -15,7 +16,7 @@
   overflow: hidden;
 }
 
-/* Animated particles */
+/* Animated particles - Gold theme */
 .bbi-particles {
   position: absolute;
   inset: 0;
@@ -29,7 +30,7 @@
   left: var(--x);
   width: var(--size, 8px);
   height: var(--size, 8px);
-  background: radial-gradient(circle, #ff00ff 0%, transparent 70%);
+  background: radial-gradient(circle, #f5d742 0%, transparent 70%);
   border-radius: 50%;
   animation: particleFloat var(--duration) ease-in-out infinite;
   animation-delay: var(--delay);
@@ -37,7 +38,7 @@
 }
 
 .bbi-particle:nth-child(odd) {
-  background: radial-gradient(circle, #00ffff 0%, transparent 70%);
+  background: radial-gradient(circle, #c4a050 0%, transparent 70%);
 }
 
 .bbi-particle:nth-child(3n) {
@@ -45,7 +46,7 @@
 }
 
 .bbi-particle:nth-child(5n) {
-  background: radial-gradient(circle, #ff6b00 0%, transparent 70%);
+  background: radial-gradient(circle, #ff9500 0%, transparent 70%);
 }
 
 @keyframes particleFloat {
@@ -66,7 +67,7 @@
   }
 }
 
-/* Light rays */
+/* Light rays - Gold theme */
 .bbi-rays {
   position: absolute;
   inset: 0;
@@ -79,10 +80,10 @@
   top: 50%;
   left: 50%;
   width: 200%;
-  height: 4px;
-  background: linear-gradient(90deg, transparent, rgba(255, 215, 0, 0.3), transparent);
+  height: 3px;
+  background: linear-gradient(90deg, transparent, rgba(245, 215, 66, 0.25), transparent);
   transform-origin: center;
-  animation: rayRotate 8s linear infinite;
+  animation: rayRotate 10s linear infinite;
 }
 
 .bbi-ray-1 {
@@ -90,13 +91,13 @@
 }
 
 .bbi-ray-2 {
-  animation-delay: -2.6s;
-  background: linear-gradient(90deg, transparent, rgba(255, 0, 255, 0.25), transparent);
+  animation-delay: -3.3s;
+  background: linear-gradient(90deg, transparent, rgba(196, 160, 80, 0.2), transparent);
 }
 
 .bbi-ray-3 {
-  animation-delay: -5.3s;
-  background: linear-gradient(90deg, transparent, rgba(0, 255, 255, 0.2), transparent);
+  animation-delay: -6.6s;
+  background: linear-gradient(90deg, transparent, rgba(255, 180, 50, 0.15), transparent);
 }
 
 @keyframes rayRotate {
@@ -104,45 +105,45 @@
   100% { transform: rotate(360deg); }
 }
 
-/* Glow effects */
+/* Glow effects - Warm gold tones */
 .bbi-glow {
   position: absolute;
   border-radius: 50%;
   filter: blur(100px);
   pointer-events: none;
-  animation: glowPulse 3s ease-in-out infinite alternate;
+  animation: glowPulse 4s ease-in-out infinite alternate;
 }
 
 .bbi-glow-1 {
   top: 10%;
   left: 15%;
-  width: 400px;
-  height: 400px;
-  background: rgba(255, 0, 255, 0.4);
+  width: 350px;
+  height: 350px;
+  background: rgba(245, 215, 66, 0.25);
 }
 
 .bbi-glow-2 {
   bottom: 10%;
   right: 15%;
-  width: 350px;
-  height: 350px;
-  background: rgba(0, 255, 255, 0.35);
-  animation-delay: 1.5s;
+  width: 300px;
+  height: 300px;
+  background: rgba(196, 160, 80, 0.2);
+  animation-delay: 2s;
 }
 
 .bbi-glow-3 {
   top: 40%;
   left: 50%;
   transform: translateX(-50%);
-  width: 500px;
-  height: 300px;
-  background: rgba(255, 215, 0, 0.2);
-  animation-delay: 0.8s;
+  width: 450px;
+  height: 250px;
+  background: rgba(255, 150, 50, 0.15);
+  animation-delay: 1s;
 }
 
 @keyframes glowPulse {
-  0% { transform: scale(1); opacity: 0.5; }
-  100% { transform: scale(1.4); opacity: 0.9; }
+  0% { transform: scale(1); opacity: 0.4; }
+  100% { transform: scale(1.3); opacity: 0.8; }
 }
 
 /* Main content container */
@@ -150,194 +151,280 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 25px;
-  max-width: 600px;
+  gap: 28px;
+  max-width: 550px;
   width: 95%;
-  padding: 20px;
+  padding: 25px;
   z-index: 1;
 }
 
 /* Title Section */
 .bbi-title-section {
   text-align: center;
-  margin-bottom: 10px;
+  margin-bottom: 5px;
 }
 
 .bbi-main-title {
   margin: 0;
-  font-family: 'Orbitron', sans-serif;
-  font-size: 56px;
+  font-family: 'Arial Black', Impact, sans-serif;
+  font-size: 52px;
   font-weight: 900;
-  color: #fff;
-  text-shadow:
-    0 0 30px #ff00ff,
-    0 0 60px #ff00ff,
-    0 0 100px #ff00ff,
-    0 4px 0 #990099;
-  letter-spacing: 6px;
-  animation: titleGlow 2s ease-in-out infinite alternate;
+  background: linear-gradient(180deg, #fff 0%, #f5d742 30%, #c4a050 70%, #9a7830 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: 5px;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.8)) drop-shadow(0 0 30px rgba(245, 215, 66, 0.5));
+  animation: titleGlow 3s ease-in-out infinite alternate;
 }
 
 @keyframes titleGlow {
   0% {
-    text-shadow:
-      0 0 30px #ff00ff,
-      0 0 60px #ff00ff,
-      0 0 100px #ff00ff,
-      0 4px 0 #990099;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.8)) drop-shadow(0 0 30px rgba(245, 215, 66, 0.4));
   }
   100% {
-    text-shadow:
-      0 0 40px #00ffff,
-      0 0 80px #00ffff,
-      0 0 120px #00ffff,
-      0 4px 0 #009999;
+    filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.8)) drop-shadow(0 0 50px rgba(245, 215, 66, 0.7));
   }
 }
 
 .bbi-subtitle {
-  font-family: 'Orbitron', sans-serif;
-  font-size: 18px;
-  font-weight: 600;
-  color: #ffd700;
-  letter-spacing: 12px;
-  margin-top: 10px;
-  text-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
-  animation: subtitlePulse 1.5s ease-in-out infinite;
+  font-family: 'Arial Black', sans-serif;
+  font-size: 16px;
+  font-weight: 700;
+  color: #d4c4a0;
+  letter-spacing: 8px;
+  margin-top: 12px;
+  text-shadow: 0 0 15px rgba(212, 196, 160, 0.5);
+  animation: subtitlePulse 2s ease-in-out infinite;
 }
 
 @keyframes subtitlePulse {
-  0%, 100% { opacity: 0.8; }
+  0%, 100% { opacity: 0.7; }
   50% { opacity: 1; }
 }
 
-/* Spins Badge - Central focus */
+/* Spins Badge - Premium Gold */
 .bbi-spins-badge {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 25px 50px;
-  background: linear-gradient(180deg, #ffd700 0%, #ff9500 50%, #ff6b00 100%);
-  border-radius: 24px;
+  padding: 28px 55px;
+  background:
+    linear-gradient(180deg,
+      #f5d742 0%,
+      #c4a050 40%,
+      #9a7830 100%
+    );
+  border: 4px solid #8b7340;
+  border-radius: 20px;
   box-shadow:
-    0 0 50px rgba(255, 215, 0, 0.6),
-    0 0 100px rgba(255, 215, 0, 0.3),
-    0 8px 0 #b37400,
-    inset 0 2px 0 rgba(255, 255, 255, 0.3);
+    0 0 0 2px rgba(245, 215, 66, 0.5),
+    0 0 50px rgba(245, 215, 66, 0.5),
+    0 0 100px rgba(245, 215, 66, 0.2),
+    0 8px 0 #5a4020,
+    inset 0 2px 0 rgba(255, 255, 255, 0.4),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.2);
   animation: badgeFloat 3s ease-in-out infinite;
 }
 
 @keyframes badgeFloat {
   0%, 100% { transform: translateY(0); }
-  50% { transform: translateY(-8px); }
+  50% { transform: translateY(-10px); }
 }
 
 .bbi-spins-value {
-  font-family: 'Orbitron', sans-serif;
-  font-size: 72px;
+  font-family: 'Arial Black', Impact, sans-serif;
+  font-size: 80px;
   font-weight: 900;
-  color: #000;
+  color: #1a1005;
   line-height: 1;
-  text-shadow: 0 2px 4px rgba(255, 255, 255, 0.4);
+  text-shadow:
+    0 2px 0 rgba(255, 255, 255, 0.5),
+    0 -1px 0 rgba(0, 0, 0, 0.2);
 }
 
 .bbi-spins-label {
-  font-family: 'Orbitron', sans-serif;
-  font-size: 16px;
+  font-family: 'Arial Black', sans-serif;
+  font-size: 15px;
   font-weight: 700;
-  color: #000;
-  letter-spacing: 4px;
+  color: #1a1005;
+  letter-spacing: 5px;
   opacity: 0.8;
-  margin-top: 5px;
+  margin-top: 6px;
 }
 
-/* Rules Panel */
+/* Wolf Burst Badge Variant */
+.bbi-spins-badge.wolf-burst-badge {
+  background:
+    linear-gradient(180deg,
+      #4ade80 0%,
+      #22c55e 40%,
+      #16a34a 100%
+    );
+  border-color: #166534;
+  box-shadow:
+    0 0 0 2px rgba(74, 222, 128, 0.5),
+    0 0 50px rgba(74, 222, 128, 0.5),
+    0 0 100px rgba(74, 222, 128, 0.2),
+    0 8px 0 #166534,
+    inset 0 2px 0 rgba(255, 255, 255, 0.4),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.2);
+}
+
+.bbi-wolf-icon {
+  font-size: 70px !important;
+  line-height: 1.1;
+  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.4));
+}
+
+/* Scatter Hunt Badge Variant - Purple/Magenta */
+.bbi-spins-badge.scatter-hunt-badge {
+  background:
+    linear-gradient(180deg,
+      #e879f9 0%,
+      #c026d3 40%,
+      #a21caf 100%
+    );
+  border-color: #701a75;
+  box-shadow:
+    0 0 0 2px rgba(232, 121, 249, 0.5),
+    0 0 50px rgba(232, 121, 249, 0.5),
+    0 0 100px rgba(232, 121, 249, 0.2),
+    0 8px 0 #701a75,
+    inset 0 2px 0 rgba(255, 255, 255, 0.4),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.2);
+}
+
+/* Wild Boost Badge Variant - Cyan/Teal */
+.bbi-spins-badge.wild-boost-badge {
+  background:
+    linear-gradient(180deg,
+      #22d3ee 0%,
+      #06b6d4 40%,
+      #0891b2 100%
+    );
+  border-color: #155e75;
+  box-shadow:
+    0 0 0 2px rgba(34, 211, 238, 0.5),
+    0 0 50px rgba(34, 211, 238, 0.5),
+    0 0 100px rgba(34, 211, 238, 0.2),
+    0 8px 0 #155e75,
+    inset 0 2px 0 rgba(255, 255, 255, 0.4),
+    inset 0 -2px 0 rgba(0, 0, 0, 0.2);
+}
+
+/* Rules Panel - Premium Dark Style */
 .bbi-rules-panel {
   width: 100%;
-  background: linear-gradient(180deg, rgba(26, 10, 46, 0.9) 0%, rgba(13, 5, 24, 0.95) 100%);
-  border: 2px solid rgba(255, 0, 255, 0.5);
+  background:
+    linear-gradient(180deg,
+      rgba(70, 55, 40, 0.95) 0%,
+      rgba(50, 40, 28, 0.98) 50%,
+      rgba(40, 30, 20, 0.99) 100%
+    );
+  border: 3px solid #c4a050;
   border-radius: 16px;
   overflow: hidden;
   box-shadow:
-    0 0 30px rgba(255, 0, 255, 0.2),
-    inset 0 0 20px rgba(255, 0, 255, 0.05);
+    0 0 0 1px rgba(245, 215, 66, 0.3),
+    0 0 40px rgba(245, 215, 66, 0.15),
+    0 15px 40px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
 }
 
 .bbi-rules-list {
-  padding: 20px 25px;
+  padding: 24px 28px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 14px;
 }
 
 .bbi-rule-item {
   display: flex;
   align-items: center;
-  gap: 12px;
-  padding: 8px 0;
+  gap: 16px;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, rgba(60, 50, 35, 0.6) 0%, rgba(40, 32, 22, 0.8) 100%);
+  border: 1px solid rgba(196, 160, 80, 0.3);
+  border-radius: 12px;
+  transition: all 0.3s ease;
+}
+
+.bbi-rule-item:hover {
+  border-color: rgba(245, 215, 66, 0.5);
+  transform: translateX(5px);
+  background: linear-gradient(135deg, rgba(80, 65, 45, 0.7) 0%, rgba(50, 40, 28, 0.9) 100%);
 }
 
 .bbi-rule-icon {
-  color: #ffd700;
-  font-size: 16px;
+  color: #f5d742;
+  font-size: 18px;
   flex-shrink: 0;
-  text-shadow: 0 0 10px #ffd700;
-  animation: iconSpin 4s linear infinite;
+  text-shadow: 0 0 15px rgba(245, 215, 66, 0.8);
+  animation: iconPulse 2s ease-in-out infinite;
 }
 
-@keyframes iconSpin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
+@keyframes iconPulse {
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.2); opacity: 1; }
 }
 
 .bbi-rule-text {
-  font-family: 'Rajdhani', sans-serif;
-  font-size: 16px;
-  color: #ddd;
+  font-family: Arial, sans-serif;
+  font-size: 15px;
+  font-weight: 500;
+  color: #e8d8c0;
   line-height: 1.4;
 }
 
-/* Start Button - Big and impressive */
+/* Start Button - Premium Gold */
 .bbi-start-btn {
   position: relative;
-  padding: 24px 100px;
+  padding: 22px 90px;
   border: none;
-  border-radius: 20px;
-  background: linear-gradient(180deg, #00ff88 0%, #00cc6a 100%);
+  border-radius: 50px;
+  background:
+    linear-gradient(180deg,
+      #f5d742 0%,
+      #c4a050 50%,
+      #9a7830 100%
+    );
   cursor: pointer;
   overflow: hidden;
-  transition: all 0.2s ease;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
   box-shadow:
-    0 10px 0 #009944,
-    0 0 60px rgba(0, 255, 136, 0.6),
-    inset 0 2px 0 rgba(255, 255, 255, 0.3);
-  margin-top: 10px;
+    0 8px 0 #5a4020,
+    0 0 50px rgba(245, 215, 66, 0.5),
+    0 0 100px rgba(245, 215, 66, 0.2),
+    inset 0 2px 0 rgba(255, 255, 255, 0.4);
+  margin-top: 5px;
 }
 
 .bbi-start-btn:hover {
-  transform: translateY(-4px);
+  transform: translateY(-5px);
   box-shadow:
-    0 14px 0 #009944,
-    0 0 80px rgba(0, 255, 136, 0.8),
-    inset 0 2px 0 rgba(255, 255, 255, 0.3);
+    0 13px 0 #5a4020,
+    0 0 70px rgba(245, 215, 66, 0.7),
+    0 0 120px rgba(245, 215, 66, 0.3),
+    inset 0 2px 0 rgba(255, 255, 255, 0.4);
 }
 
 .bbi-start-btn:active {
-  transform: translateY(6px);
+  transform: translateY(4px);
   box-shadow:
-    0 4px 0 #009944,
-    0 0 40px rgba(0, 255, 136, 0.5);
+    0 4px 0 #5a4020,
+    0 0 30px rgba(245, 215, 66, 0.4);
 }
 
 .bbi-btn-text {
   position: relative;
   z-index: 2;
-  font-family: 'Orbitron', sans-serif;
-  font-size: 28px;
+  font-family: 'Arial Black', Impact, sans-serif;
+  font-size: 26px;
   font-weight: 900;
-  color: #000;
-  letter-spacing: 6px;
-  text-shadow: 0 2px 4px rgba(255, 255, 255, 0.3);
+  color: #1a1005;
+  letter-spacing: 8px;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.4);
 }
 
 .bbi-btn-shine {
@@ -346,8 +433,8 @@
   left: -100%;
   width: 100%;
   height: 100%;
-  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.5), transparent);
-  animation: btnShine 2s ease-in-out infinite;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.4), transparent);
+  animation: btnShine 2.5s ease-in-out infinite;
 }
 
 @keyframes btnShine {
@@ -358,51 +445,79 @@
 /* Responsive */
 @media (max-width: 600px) {
   .bbi-content {
-    gap: 20px;
-    padding: 15px;
+    gap: 22px;
+    padding: 18px;
   }
 
   .bbi-main-title {
-    font-size: 36px;
+    font-size: 34px;
     letter-spacing: 3px;
   }
 
   .bbi-subtitle {
-    font-size: 14px;
-    letter-spacing: 6px;
+    font-size: 13px;
+    letter-spacing: 5px;
   }
 
   .bbi-spins-badge {
-    padding: 20px 40px;
+    padding: 22px 45px;
+    border-radius: 16px;
   }
 
   .bbi-spins-value {
-    font-size: 52px;
+    font-size: 58px;
   }
 
   .bbi-spins-label {
-    font-size: 14px;
+    font-size: 13px;
+    letter-spacing: 4px;
   }
 
   .bbi-rules-list {
-    padding: 15px 20px;
+    padding: 18px 20px;
     gap: 10px;
   }
 
+  .bbi-rule-item {
+    padding: 10px 14px;
+    gap: 12px;
+  }
+
   .bbi-rule-text {
-    font-size: 14px;
+    font-size: 13px;
   }
 
   .bbi-start-btn {
     padding: 18px 60px;
+    border-radius: 40px;
   }
 
   .bbi-btn-text {
-    font-size: 22px;
-    letter-spacing: 4px;
+    font-size: 20px;
+    letter-spacing: 5px;
   }
 
   .bbi-glow {
     display: none;
+  }
+}
+
+@media (max-width: 400px) {
+  .bbi-main-title {
+    font-size: 28px;
+    letter-spacing: 2px;
+  }
+
+  .bbi-spins-value {
+    font-size: 48px;
+  }
+
+  .bbi-start-btn {
+    padding: 16px 50px;
+  }
+
+  .bbi-btn-text {
+    font-size: 18px;
+    letter-spacing: 4px;
   }
 }

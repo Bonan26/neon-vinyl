@@ -1,5 +1,5 @@
 /**
- * WOLFIE GROOVE - Bonus Buy Intro
+ * LES WOLFS 86 - Bonus Buy Intro
  * Animated popup with rules and START button
  */
 import React, { useEffect, useState, useRef, useCallback } from 'react';
@@ -9,29 +9,62 @@ import './BonusBuyIntro.css';
 const BONUS_RULES = {
   standard: {
     title: 'FREE SPINS',
-    subtitle: 'BONUS ROUND',
+    subtitle: 'TOURS GRATUITS',
     spins: 8,
     rules: [
-      'Ghost multipliers accumulate',
-      'Each tumble increases multipliers',
-      'WILD symbols explode and multiply adjacent cells',
-      'Good luck!',
+      'Les multiplicateurs s\'accumulent a chaque tumble',
+      'Chaque cascade augmente les multiplicateurs',
+      'Les WILDS explosent et multiplient les cases adjacentes',
+      'Bonne chance !',
     ],
   },
   super: {
-    title: 'SUPER FREE SPINS',
-    subtitle: 'MEGA BONUS',
+    title: 'SUPER BONUS',
+    subtitle: 'BONUS PREMIUM',
     spins: 12,
     rules: [
-      'Starting x2 multipliers on entire grid',
-      'Accelerated multiplier progression',
-      'WILD symbols explode with more power',
-      'Maximum win potential!',
+      'Multiplicateurs x2 des le depart sur toute la grille',
+      'Progression des multiplicateurs acceleree',
+      'Les WILDS explosent avec plus de puissance',
+      'Potentiel de gain MAXIMUM !',
+    ],
+  },
+  wolf_burst: {
+    title: 'WOLF BURST',
+    subtitle: 'ATTAQUE DU LOUP',
+    spins: null, // Not spin-based
+    rules: [
+      'Le loup va souffler 3 a 6 WILDS sur la grille',
+      'Les Wilds sont places aleatoirement',
+      'Un seul spin avec des gains potentiels enormes',
+      'Preparez-vous !',
+    ],
+  },
+  scatter_hunt: {
+    title: 'SCATTER HUNT',
+    subtitle: 'CHASSE AU SCATTER',
+    spins: 10,
+    rules: [
+      'Chance de Scatter TRIPLEE (x3) !',
+      '10 spins automatiques',
+      'Trouvez 3+ Scatters pour declencher les Free Spins',
+      'Les gains s\'accumulent !',
+    ],
+  },
+  wild_boost: {
+    title: 'WILD BOOST',
+    subtitle: 'EXPLOSION DE WILDS',
+    spins: 5,
+    rules: [
+      'Chance de Wild QUINTUPLEE (x5) !',
+      '5 spins automatiques',
+      'Plus de Wilds = Plus de gains !',
+      'Bonne chance !',
     ],
   },
 };
 
-const BonusBuyIntro = ({ show, bonusType, scatterCount, onComplete }) => {
+const BonusBuyIntro = ({ show, bonusType, scatterCount, freeSpinsToActivate, onComplete }) => {
   const [visible, setVisible] = useState(false);
   const [phase, setPhase] = useState('hidden');
   const overlayRef = useRef(null);
@@ -44,6 +77,8 @@ const BonusBuyIntro = ({ show, bonusType, scatterCount, onComplete }) => {
   const ruleItemsRef = useRef([]);
 
   const bonusInfo = BONUS_RULES[bonusType] || BONUS_RULES.standard;
+  // Use actual spins count if provided (for natural triggers), otherwise use default
+  const actualSpins = freeSpinsToActivate > 0 ? freeSpinsToActivate : bonusInfo.spins;
 
   // Show/hide logic
   useEffect(() => {
@@ -218,9 +253,28 @@ const BonusBuyIntro = ({ show, bonusType, scatterCount, onComplete }) => {
         </div>
 
         {/* Spins Badge - Prominent display */}
-        <div className="bbi-spins-badge" ref={spinsBadgeRef}>
-          <span className="bbi-spins-value">{bonusInfo.spins}</span>
-          <span className="bbi-spins-label">FREE SPINS</span>
+        <div className={`bbi-spins-badge ${bonusType === 'wolf_burst' ? 'wolf-burst-badge' : ''} ${bonusType === 'scatter_hunt' ? 'scatter-hunt-badge' : ''} ${bonusType === 'wild_boost' ? 'wild-boost-badge' : ''}`} ref={spinsBadgeRef}>
+          {bonusType === 'wolf_burst' ? (
+            <>
+              <span className="bbi-spins-value bbi-wolf-icon">🐺</span>
+              <span className="bbi-spins-label">3-6 WILDS</span>
+            </>
+          ) : bonusType === 'scatter_hunt' ? (
+            <>
+              <span className="bbi-spins-value">{actualSpins}</span>
+              <span className="bbi-spins-label">SPINS x3 SCATTER</span>
+            </>
+          ) : bonusType === 'wild_boost' ? (
+            <>
+              <span className="bbi-spins-value">{actualSpins}</span>
+              <span className="bbi-spins-label">SPINS x5 WILD</span>
+            </>
+          ) : (
+            <>
+              <span className="bbi-spins-value">{actualSpins}</span>
+              <span className="bbi-spins-label">FREE SPINS</span>
+            </>
+          )}
         </div>
 
         {/* Rules Panel */}
@@ -241,7 +295,7 @@ const BonusBuyIntro = ({ show, bonusType, scatterCount, onComplete }) => {
 
         {/* Start Button */}
         <button className="bbi-start-btn" ref={buttonRef} onClick={handleStart}>
-          <span className="bbi-btn-text">START</span>
+          <span className="bbi-btn-text">JOUER</span>
           <div className="bbi-btn-shine" />
         </button>
       </div>

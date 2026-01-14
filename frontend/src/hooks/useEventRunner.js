@@ -32,11 +32,21 @@ const getTiming = (speedMultiplier = 1) => {
   );
 };
 
-// Sleep function that respects turbo mode
+// Sleep function that respects turbo mode AND current speed setting
 const sleep = (ms) => {
-  // Check turbo mode - if active, reduce time drastically
-  const turboMode = useGameStore.getState().turboMode;
-  const actualMs = turboMode ? Math.min(ms * 0.1, 20) : ms; // 10% of time, max 20ms
+  const state = useGameStore.getState();
+  const turboMode = state.turboMode;
+
+  // Get current speed multiplier (check every time for real-time speed changes)
+  const effectiveSpeed = state.autoSpinActive ? state.autoSpinSpeed : state.manualSpeedMode;
+  const speedMultiplier = SPEED_MULTIPLIERS[effectiveSpeed] || 1;
+
+  // Apply speed multiplier first, then turbo if active
+  let actualMs = ms * speedMultiplier;
+  if (turboMode) {
+    actualMs = Math.min(actualMs * 0.1, 20); // 10% of time, max 20ms
+  }
+
   return new Promise(resolve => setTimeout(resolve, actualMs));
 };
 
@@ -62,6 +72,7 @@ const useEventRunner = () => {
   const setFreeSpins = useGameStore((state) => state.setFreeSpins);
   const setMultiplierGrid = useGameStore((state) => state.setMultiplierGrid);
   const setSuspenseMode = useGameStore((state) => state.setSuspenseMode);
+  const addWolfAccessory = useGameStore((state) => state.addWolfAccessory);
 
   // Get state from store
   const betAmount = useGameStore((state) => state.betAmount);
@@ -117,9 +128,27 @@ const useEventRunner = () => {
    * @param {boolean} skipSuspense - If true, skip suspense animation (for bonus buy)
    */
   const processReveal = useCallback(async (event, skipSuspense = false) => {
-    const TIMING = getTiming(getSpeedMultiplier());
+    const TIMING = BASE_TIMING; // Speed is applied dynamically in sleep()
     console.log('EventRunner: Processing reveal (speed:', getSpeedMultiplier(), ', skipSuspense:', skipSuspense, ')');
     const { positions, symbols } = event;
+
+    // Validation: ensure we have the correct number of symbols
+    const expectedCells = GRID_ROWS * GRID_COLS;
+    if (!positions || !symbols) {
+      console.error('EventRunner: reveal event missing positions or symbols!');
+      return;
+    }
+    if (positions.length !== symbols.length) {
+      console.error(`EventRunner: positions (${positions.length}) and symbols (${symbols.length}) length mismatch!`);
+    }
+    if (positions.length !== expectedCells) {
+      console.warn(`EventRunner: expected ${expectedCells} cells but got ${positions.length}`);
+    }
+    // Check for null/undefined symbols
+    const nullSymbols = symbols.filter((s, i) => !s);
+    if (nullSymbols.length > 0) {
+      console.error(`EventRunner: ${nullSymbols.length} null/undefined symbols in reveal event!`);
+    }
 
     // If skipSuspense (bonus buy), do fast reveal
     if (skipSuspense) {
@@ -296,6 +325,30 @@ const useEventRunner = () => {
       updateCell(row, col, { isNew: false, isPendingReveal: false, isSpinning: false });
     }
 
+    // Safety check: verify all cells have symbols (detect potential issues)
+    const currentGrid = useGameStore.getState().grid;
+    let emptyCells = 0;
+    for (let row = 0; row < GRID_ROWS; row++) {
+      for (let col = 0; col < GRID_COLS; col++) {
+        if (!currentGrid[row]?.[col]?.symbol) {
+          emptyCells++;
+          console.error(`EventRunner: Cell [${row},${col}] has no symbol after reveal!`);
+        }
+      }
+    }
+    if (emptyCells > 0) {
+      console.error(`EventRunner: ${emptyCells} cells have no symbol after reveal! Attempting repair...`);
+      // Attempt to repair by re-applying symbols from the event
+      for (let i = 0; i < positions.length && i < symbols.length; i++) {
+        const [row, col] = positions[i];
+        const symbol = symbols[i];
+        if (symbol && !currentGrid[row]?.[col]?.symbol) {
+          updateCell(row, col, { symbol, isSpinning: false, isNew: false });
+          console.log(`EventRunner: Repaired cell [${row},${col}] with symbol ${symbol}`);
+        }
+      }
+    }
+
     // Reset suspense mode and stop suspense music after reveal completes
     setSuspenseMode(false);
     audioService.stopSuspenseLoop?.();
@@ -308,7 +361,7 @@ const useEventRunner = () => {
    * @param {boolean} shouldRemove - If true, remove symbols after animation
    */
   const processWin = useCallback(async (event, shouldRemove = true) => {
-    const TIMING = getTiming(getSpeedMultiplier());
+    const TIMING = BASE_TIMING; // Speed is applied dynamically in sleep()
     console.log('EventRunner: Processing win', event.amount, 'shouldRemove:', shouldRemove);
     const { positions, amount, symbol, size } = event;
 
@@ -334,6 +387,12 @@ const useEventRunner = () => {
 
     // Add to win counter DURING animation
     addToCurrentWin(amount);
+
+    // Wolf Dress-Up: Add accessory during Free Spins/Bonus on each winning connection
+    const state = useGameStore.getState();
+    if (state.isFreeSpin && state.wolfAccessoryCount < 5) {
+      addWolfAccessory();
+    }
 
     // Wait for highlight and pulse animation
     await sleep(TIMING.WIN_HIGHLIGHT + TIMING.WIN_PULSE);
@@ -364,13 +423,13 @@ const useEventRunner = () => {
 
       await sleep(TIMING.PAUSE_BETWEEN);
     }
-  }, [updateCell, addToCurrentWin, getSpeedMultiplier]);
+  }, [updateCell, addToCurrentWin, addWolfAccessory, getSpeedMultiplier]);
 
   /**
    * Remove cells - used after all wins in a phase are processed
    */
   const removeCells = useCallback(async (positions) => {
-    const TIMING = getTiming(getSpeedMultiplier());
+    const TIMING = BASE_TIMING; // Speed is applied dynamically in sleep()
     // Mark as removing (triggers fade out)
     for (const [row, col] of positions) {
       updateCell(row, col, { isRemoving: true, isWinning: false });
@@ -434,7 +493,7 @@ const useEventRunner = () => {
    * Process MULTIPLIER_UPGRADE event
    */
   const processMultiplierUpgrade = useCallback(async (event) => {
-    const TIMING = getTiming(getSpeedMultiplier());
+    const TIMING = BASE_TIMING; // Speed is applied dynamically in sleep()
     console.log('EventRunner: Processing multiplier upgrade');
     const { position, value } = event;
     const [row, col] = position;
@@ -447,7 +506,7 @@ const useEventRunner = () => {
    * The multiplier animation happens directly on the wild cell (no popup)
    */
   const processWildExplosion = useCallback(async (event) => {
-    const TIMING = getTiming(getSpeedMultiplier());
+    const TIMING = BASE_TIMING; // Speed is applied dynamically in sleep()
     console.log('EventRunner: Processing WILD EXPLOSION!', event);
     const { wildPosition, affectedCells, cellDetails, wheelMultiplier, explosionFactor } = event;
 
@@ -499,7 +558,7 @@ const useEventRunner = () => {
    * Process TUMBLE event - Move symbols down to fill gaps
    */
   const processTumble = useCallback(async (event) => {
-    const TIMING = getTiming(getSpeedMultiplier());
+    const TIMING = BASE_TIMING; // Speed is applied dynamically in sleep()
     console.log('EventRunner: Processing tumble');
     const { movements } = event;
 
@@ -545,7 +604,7 @@ const useEventRunner = () => {
    * Simplified: fast fill with brief highlight when scatter might complete
    */
   const processFill = useCallback(async (event) => {
-    const TIMING = getTiming(getSpeedMultiplier());
+    const TIMING = BASE_TIMING; // Speed is applied dynamically in sleep()
     const { fills } = event;
 
     if (!fills || fills.length === 0) return;
@@ -662,7 +721,7 @@ const useEventRunner = () => {
       return;
     }
 
-    const { isBonusEnd = false, bonusTotalWin = 0, isBonusBuy = false } = options;
+    const { isBonusEnd = false, bonusTotalWin = 0, isBonusBuy = false, wolfDressUpRef = null } = options;
 
     console.log('EventRunner: Starting playback', response.events?.length, 'events', 'isBonusBuy:', isBonusBuy);
     setIsRunning(true);
@@ -790,7 +849,26 @@ const useEventRunner = () => {
       });
 
       // Set final win using betAmount from store
-      const totalWin = payoutMultiplier * betAmount;
+      let totalWin = payoutMultiplier * betAmount;
+
+      // Check if wolf is fully dressed (5 accessories) during free spins
+      const wolfState = useGameStore.getState();
+      let wolfExtraWin = 0; // Extra win from wolf multiplier to add to bonus total
+      if (wolfState.isFreeSpin && wolfState.wolfAccessoryCount >= 5 && totalWin > 0 && wolfDressUpRef?.current) {
+        console.log('EventRunner: Wolf is fully dressed! Triggering multiplier animation for win:', totalWin);
+        try {
+          // Trigger the multiplier animation and WAIT for it to complete
+          const result = await wolfDressUpRef.current.triggerMultiplierAnimation(totalWin);
+          console.log('EventRunner: Wolf multiplier result:', result);
+          wolfExtraWin = result.multipliedWin - totalWin;
+          totalWin = result.multipliedWin;
+          // Reset wolf dress-up after multiplier is applied
+          useGameStore.getState().resetWolfDressUp?.();
+        } catch (error) {
+          console.error('EventRunner: Wolf multiplier animation error:', error);
+        }
+      }
+
       setLastWin(totalWin);
 
       // Call spin win callback for big win celebration (before bonus summary)
@@ -804,11 +882,12 @@ const useEventRunner = () => {
       // Capture the bonus total win BEFORE updating state
       // Priority: response value > passed value > 0
       // Use >= 0 check since 0 is a valid (though rare) total
+      // Also add any wolf multiplier extra win
       let actualBonusTotalWin = 0;
       if (typeof freeSpinTotalWin === 'number' && freeSpinTotalWin > 0) {
-        actualBonusTotalWin = freeSpinTotalWin;
+        actualBonusTotalWin = freeSpinTotalWin + wolfExtraWin;
       } else if (typeof bonusTotalWin === 'number' && bonusTotalWin > 0) {
-        actualBonusTotalWin = bonusTotalWin;
+        actualBonusTotalWin = bonusTotalWin + wolfExtraWin;
       }
 
       console.log('EventRunner: Complete', {
@@ -817,6 +896,7 @@ const useEventRunner = () => {
         betAmount,
         shouldShowBonusSummary,
         actualBonusTotalWin,
+        wolfExtraWin,
         'response.freeSpinTotalWin': freeSpinTotalWin,
         'options.bonusTotalWin': bonusTotalWin,
         bonusEnded,
@@ -833,7 +913,10 @@ const useEventRunner = () => {
         // Update free spins state normally (during bonus or when triggered)
         // BUT NOT for bonus buy - App.jsx handles that when user clicks COMMENCER
         if (freeSpinsTriggered > 0 || isFreeSpin) {
-          setFreeSpins(newFreeSpinsRemaining, freeSpinTotalWin);
+          // Server's freeSpinTotalWin + any extra from wolf multiplier
+          const actualTotalWin = freeSpinTotalWin + wolfExtraWin;
+          console.log('EventRunner: setFreeSpins with totalWin:', actualTotalWin, '(server:', freeSpinTotalWin, '+ wolfExtra:', wolfExtraWin, ')');
+          setFreeSpins(newFreeSpinsRemaining, actualTotalWin);
         } else if (newFreeSpinsRemaining <= 0 && freeSpinsRemaining > 0) {
           // Free spins just ended but no summary to show
           setFreeSpins(0, 0);
@@ -847,8 +930,29 @@ const useEventRunner = () => {
       setIsRunning(false);
       // Reset turbo mode at end of spin
       useGameStore.getState().resetTurbo?.();
+
+      // Final safety check: ensure no cells are stuck in spinning state or missing symbols
+      const finalGrid = useGameStore.getState().grid;
+      let issuesFound = 0;
+      for (let row = 0; row < GRID_ROWS; row++) {
+        for (let col = 0; col < GRID_COLS; col++) {
+          const cell = finalGrid[row]?.[col];
+          if (cell?.isSpinning) {
+            console.error(`EventRunner: Cell [${row},${col}] still spinning after playAllEvents!`);
+            updateCell(row, col, { isSpinning: false });
+            issuesFound++;
+          }
+          if (!cell?.symbol) {
+            console.error(`EventRunner: Cell [${row},${col}] has no symbol after playAllEvents!`);
+            issuesFound++;
+          }
+        }
+      }
+      if (issuesFound > 0) {
+        console.error(`EventRunner: ${issuesFound} cell issues found after playAllEvents completed`);
+      }
     }
-  }, [isRunning, resetForNewSpin, processEvent, setBalance, setLastWin, betAmount, setFreeSpins, setMultiplierGrid, freeSpinsRemaining]);
+  }, [isRunning, resetForNewSpin, processEvent, setBalance, setLastWin, betAmount, setFreeSpins, setMultiplierGrid, freeSpinsRemaining, updateCell]);
 
   // Compatibility functions
   const registerSprite = useCallback(() => {}, []);

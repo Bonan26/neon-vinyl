@@ -19,10 +19,10 @@ const GameInfoModal = ({ isOpen, onClose }) => {
     { id: 'WG', name: 'Loup Gris', img: '/symbols/wolf_gray.png', tier: 'medium', pays: { 4: '0.18x', 8: '1.40x', 10: '3.50x', 15: '38x' } },
     { id: 'W6', name: 'Loup Vert', img: '/symbols/wolf_green.png', tier: 'medium', pays: { 4: '0.16x', 8: '1.24x', 10: '3.03x', 15: '33x' } },
     { id: 'WS', name: 'Loup Spirit', img: '/symbols/wolf_spirit.png', tier: 'medium', pays: { 4: '0.13x', 8: '1.05x', 10: '2.60x', 15: '28x' } },
-    { id: 'HC', name: 'Casquette', img: '/symbols/hat_cap.png', tier: 'low', pays: { 4: '0.06x', 8: '0.50x', 10: '1.20x', 15: '13x' } },
-    { id: 'HS', name: 'Chapeau Steam', img: '/symbols/hat_steam.png', tier: 'low', pays: { 4: '0.05x', 8: '0.40x', 10: '1.00x', 15: '10.5x' } },
-    { id: 'HW', name: 'Chapeau Paille', img: '/symbols/hat_straw.png', tier: 'low', pays: { 4: '0.04x', 8: '0.30x', 10: '0.72x', 15: '7.9x' } },
-    { id: 'HK', name: 'Chapeau Plume', img: '/symbols/hat_peacock.png', tier: 'low', pays: { 4: '0.04x', 8: '0.30x', 10: '0.72x', 15: '7.9x' } },
+    { id: 'HC', name: 'Loup Blanc', img: '/symbols/wolf_white.png', tier: 'low', pays: { 4: '0.06x', 8: '0.50x', 10: '1.20x', 15: '13x' } },
+    { id: 'HS', name: 'Loup Serpent', img: '/symbols/wolf_snake.png', tier: 'low', pays: { 4: '0.05x', 8: '0.40x', 10: '1.00x', 15: '10.5x' } },
+    { id: 'HW', name: 'Loup Street', img: '/symbols/wolf_street.png', tier: 'low', pays: { 4: '0.04x', 8: '0.30x', 10: '0.72x', 15: '7.9x' } },
+    { id: 'HK', name: 'Loup Bleu', img: '/symbols/wolf_blue.png', tier: 'low', pays: { 4: '0.04x', 8: '0.30x', 10: '0.72x', 15: '7.9x' } },
   ];
 
   const modalContent = (

@@ -4,12 +4,12 @@
  */
 import React, { useRef, useEffect, useState } from 'react';
 import { Container, Graphics, Text, Sprite } from '@pixi/react';
-import { TextStyle, Texture } from 'pixi.js';
+import { TextStyle, Texture, Assets } from 'pixi.js';
 import gsap from 'gsap';
 import { CELL_SIZE, CELL_GAP, SYMBOLS, MULTIPLIER_COLORS } from '../../config/gameConfig';
 
 // Symbol to image mapping (with cache buster)
-const CACHE_VERSION = 'v11';
+const CACHE_VERSION = 'v23'; // Fixed texture loading
 const SYMBOL_IMAGES = {
   'WR': `/symbols/wolf_red.png?${CACHE_VERSION}`,
   'WB': `/symbols/wolf_black.png?${CACHE_VERSION}`,
@@ -17,23 +17,124 @@ const SYMBOL_IMAGES = {
   'WG': `/symbols/wolf_gray.png?${CACHE_VERSION}`,
   'W6': `/symbols/wolf_green.png?${CACHE_VERSION}`,
   'WS': `/symbols/wolf_spirit.png?${CACHE_VERSION}`,
-  'HC': `/symbols/hat_cap.png?${CACHE_VERSION}`,
-  'HS': `/symbols/hat_steam.png?${CACHE_VERSION}`,
-  'HW': `/symbols/hat_straw.png?${CACHE_VERSION}`,
-  'HK': `/symbols/hat_peacock.png?${CACHE_VERSION}`,
+  // Low tier wolves
+  'HC': `/symbols/wolf_white.png?${CACHE_VERSION}`,
+  'HS': `/symbols/wolf_snake.png?${CACHE_VERSION}`,
+  'HW': `/symbols/wolf_street.png?${CACHE_VERSION}`,
+  'HK': `/symbols/wolf_blue.png?${CACHE_VERSION}`,
   'SC': `/symbols/scatter_gold.jpg?${CACHE_VERSION}`,
   'WD': `/symbols/crown_matrix.png?${CACHE_VERSION}`,
 };
 
-// Preload textures
+// Texture cache - preloaded at startup
 const symbolTextures = {};
-Object.entries(SYMBOL_IMAGES).forEach(([id, path]) => {
-  try {
-    symbolTextures[id] = Texture.from(path);
-  } catch (e) {
-    console.warn(`Failed to load texture for ${id}`);
+let texturesLoaded = false;
+let textureLoadAttempts = 0;
+
+// Load a single image and create texture
+const loadImageTexture = (symbolId, imagePath) => {
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = () => {
+      try {
+        const texture = Texture.from(img);
+        symbolTextures[symbolId] = texture;
+        console.log(`✓ Loaded: ${symbolId}`);
+        resolve(true);
+      } catch (e) {
+        console.error(`✗ Texture create failed for ${symbolId}:`, e);
+        resolve(false);
+      }
+    };
+    img.onerror = (e) => {
+      console.error(`✗ Image load failed for ${symbolId}:`, e);
+      resolve(false);
+    };
+    img.src = imagePath;
+  });
+};
+
+// Preload all textures at startup
+const preloadTextures = async () => {
+  if (texturesLoaded) return;
+
+  textureLoadAttempts++;
+  console.log(`Preloading symbol textures (attempt ${textureLoadAttempts})...`);
+
+  const loadPromises = Object.entries(SYMBOL_IMAGES).map(([symbolId, imagePath]) => {
+    // Skip if already loaded
+    if (symbolTextures[symbolId]) return Promise.resolve(true);
+    return loadImageTexture(symbolId, imagePath);
+  });
+
+  await Promise.all(loadPromises);
+
+  // Check if all textures loaded
+  const loadedCount = Object.keys(symbolTextures).length;
+  const totalCount = Object.keys(SYMBOL_IMAGES).length;
+
+  if (loadedCount === totalCount) {
+    texturesLoaded = true;
+    console.log(`✓ All ${totalCount} textures preloaded successfully!`);
+  } else {
+    console.warn(`⚠ Only ${loadedCount}/${totalCount} textures loaded. Retrying...`);
+    // Retry after a short delay
+    if (textureLoadAttempts < 3) {
+      setTimeout(preloadTextures, 1000);
+    }
   }
-});
+};
+
+// Start preloading immediately
+preloadTextures();
+
+// Export for external use (e.g., loading screen)
+export const waitForTextures = () => {
+  return new Promise((resolve) => {
+    if (texturesLoaded) {
+      resolve();
+    } else {
+      const checkInterval = setInterval(() => {
+        if (texturesLoaded) {
+          clearInterval(checkInterval);
+          resolve();
+        }
+      }, 50);
+    }
+  });
+};
+
+// Get texture for a symbol
+const getTexture = (symbolId) => {
+  if (!symbolId) return null;
+
+  // Return cached texture
+  if (symbolTextures[symbolId]) {
+    return symbolTextures[symbolId];
+  }
+
+  // Texture not loaded yet - trigger preload and return null
+  const imagePath = SYMBOL_IMAGES[symbolId];
+  if (!imagePath) {
+    console.warn(`No image mapping for symbol: ${symbolId}`);
+    return null;
+  }
+
+  // Start loading this specific texture in background
+  if (!texturesLoaded) {
+    loadImageTexture(symbolId, imagePath);
+  }
+
+  return null;
+};
+
+// Symbol display names for fallback
+const SYMBOL_NAMES = {
+  'WR': '🔴', 'WB': '⚫', 'WP': '🟣', 'WG': '⚪',
+  'W6': '🟢', 'WS': '👻', 'HC': '🐺', 'HS': '🐍',
+  'HW': '🏠', 'HK': '💙', 'SC': '⭐', 'WD': '👑',
+};
 
 const WILD_MULTIPLIERS = [2, 4, 8, 16, 32, 64, 128, 256];
 
@@ -146,7 +247,7 @@ const Cell = ({
   }, [wildMultiplierTarget, symbol, onWildMultiplierComplete]);
 
   const displaySymbol = isSpinning ? null : symbol;
-  const symbolTexture = displaySymbol ? symbolTextures[displaySymbol] : null;
+  const symbolTexture = getTexture(displaySymbol);
   const glowColor = multiplier > 1 ? MULTIPLIER_COLORS[multiplier] : null;
 
   // New symbol animation
@@ -364,18 +465,31 @@ const Cell = ({
       {isSpinning && spinSymbols.map((sym, idx) => {
         const yOffset = (fallOffset + idx * CELL_SIZE * 0.7) % (CELL_SIZE * 2) - CELL_SIZE * 0.5;
         const alpha = yOffset > 0 && yOffset < CELL_SIZE ? 0.7 : 0.3;
-        const symTexture = symbolTextures[sym];
-        if (!symTexture) return null;
+        const symTexture = getTexture(sym);
+        if (symTexture) {
+          return (
+            <Sprite
+              key={idx}
+              texture={symTexture}
+              x={CELL_SIZE / 2}
+              y={yOffset + CELL_SIZE / 2}
+              anchor={0.5}
+              width={spriteSize * 0.8}
+              height={spriteSize * 0.8}
+              alpha={alpha}
+            />
+          );
+        }
+        // Fallback: show colored circle when texture not loaded
         return (
-          <Sprite
+          <Graphics
             key={idx}
-            texture={symTexture}
-            x={CELL_SIZE / 2}
-            y={yOffset + CELL_SIZE / 2}
-            anchor={0.5}
-            width={spriteSize * 0.8}
-            height={spriteSize * 0.8}
-            alpha={alpha}
+            draw={(g) => {
+              g.clear();
+              g.beginFill(0x00ff66, alpha * 0.6);
+              g.drawCircle(CELL_SIZE / 2, yOffset + CELL_SIZE / 2, spriteSize * 0.3);
+              g.endFill();
+            }}
           />
         );
       })}
@@ -478,22 +592,26 @@ const Cell = ({
             </>
           ) : (
             <>
+              {/* Fallback when texture not loaded - show colorful placeholder */}
               <Graphics
                 draw={(g) => {
                   g.clear();
-                  g.beginFill(0x555555, 0.8);
-                  g.drawRoundedRect(-spriteSize / 2, -spriteSize / 2, spriteSize, spriteSize, 4);
+                  // Gradient-like effect with border
+                  g.beginFill(0x2a2a40, 0.95);
+                  g.drawRoundedRect(-spriteSize / 2, -spriteSize / 2, spriteSize, spriteSize, 8);
                   g.endFill();
+                  g.lineStyle(2, 0x00ff66, 0.8);
+                  g.drawRoundedRect(-spriteSize / 2 + 2, -spriteSize / 2 + 2, spriteSize - 4, spriteSize - 4, 6);
                 }}
               />
               <Text
-                text={displaySymbol}
+                text={SYMBOL_NAMES[displaySymbol] || displaySymbol}
                 x={0}
                 y={0}
                 anchor={0.5}
                 style={new TextStyle({
                   fontFamily: 'Arial Black',
-                  fontSize: 14,
+                  fontSize: 32,
                   fill: '#ffffff',
                 })}
               />
