@@ -260,10 +260,32 @@ const useGameController = () => {
     }
   }, [sessionId, clientSeed, betAmount, setIsSpinning, setBalance]);
 
-  // NOTE: Boost toggles (Scatter Hunt, Wild Boost) are now managed entirely in the frontend store.
-  // When active, the effective bet is multiplied (scatterBoost = 2x, wildBoost = 5x).
-  // The spin() function sends the effective bet to the backend.
-  // No separate API call needed to "activate" boost.
+  /**
+   * Activate a boost (scatter or wild)
+   */
+  const activateBoost = useCallback(async (boostType) => {
+    if (!sessionId) {
+      console.error('GameController: No session');
+      return null;
+    }
+
+    try {
+      console.log('GameController: Activating boost', boostType);
+      const result = await apiService.activateBoost({
+        sessionID: sessionId,
+        boostType,
+        betAmount,
+      });
+
+      console.log('GameController: Boost activated', result);
+      setBalance(result.balance);
+
+      return result;
+    } catch (error) {
+      console.error('GameController: Boost activation error', error);
+      throw error;
+    }
+  }, [sessionId, betAmount, setBalance]);
 
   return {
     spin,
@@ -271,6 +293,7 @@ const useGameController = () => {
     initSession,
     buyBonus,
     bonusTriggerSpin,
+    activateBoost,
   };
 };
 

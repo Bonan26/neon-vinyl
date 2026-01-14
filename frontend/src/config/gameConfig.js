@@ -1,27 +1,28 @@
 /**
  * LES WOLFS 86 - Game Configuration
  * Frontend configuration mirroring backend settings
+ * Compact rectangular layout inspired by "Le Bandit" (Hacksaw Gaming)
  */
 
-// Grid Configuration
-export const GRID_ROWS = 7;
-export const GRID_COLS = 7;
-export const CELL_SIZE = 80;
-export const CELL_GAP = 4;
+// Grid Configuration - RECTANGULAR like Hacksaw (wider than tall)
+export const GRID_ROWS = 5;    // 5 rows (shorter)
+export const GRID_COLS = 6;    // 6 columns (wider)
+export const CELL_SIZE = 100;  // Larger size for better visibility
+export const CELL_GAP = 3;     // Subtle gap between cells
 
 // Calculate grid dimensions
 export const GRID_WIDTH = GRID_COLS * CELL_SIZE + (GRID_COLS - 1) * CELL_GAP;
 export const GRID_HEIGHT = GRID_ROWS * CELL_SIZE + (GRID_ROWS - 1) * CELL_GAP;
 
-// Stage dimensions (with padding for UI)
-export const STAGE_WIDTH = 900;
-export const STAGE_HEIGHT = 700;
+// Stage dimensions - Rectangular format (wider)
+export const STAGE_WIDTH = GRID_WIDTH + 12;
+export const STAGE_HEIGHT = GRID_HEIGHT + 12;
 
 // Symbol mapping - Les Wolfs 86 Theme
 export const SYMBOLS = {
   // Special symbols
-  WD: { id: 'WD', name: 'Wild', tier: 'special', color: 0x00ff00, isWild: true },  // Matrix Crown
-  SC: { id: 'SC', name: 'Scatter', tier: 'special', color: 0xf5d742, isScatter: true },  // Golden Wolf
+  WD: { id: 'WD', name: 'Wild', tier: 'special', color: 0x00ff00, isWild: true },
+  SC: { id: 'SC', name: 'Scatter', tier: 'special', color: 0xf5d742, isScatter: true },
   // High tier - Wolves
   WR: { id: 'WR', name: 'Red Wolf', tier: 'high', color: 0xcc3333 },
   WB: { id: 'WB', name: 'Black Wolf', tier: 'high', color: 0x333333 },
@@ -39,42 +40,42 @@ export const SYMBOLS = {
 
 // Free spins configuration
 export const FREE_SPINS_CONFIG = {
-  SCATTER_COUNT_FOR_TRIGGER: 3, // 3 scatters = free spins
+  SCATTER_COUNT_FOR_TRIGGER: 3,
   FREE_SPINS_AWARDED: {
-    3: 10,  // 3 scatters = 10 free spins
-    4: 15,  // 4 scatters = 15 free spins
-    5: 20,  // 5 scatters = 20 free spins
-    6: 25,  // 6+ scatters = 25 free spins
+    3: 10,
+    4: 15,
+    5: 20,
+    6: 25,
   },
-  RETRIGGER_SPINS: 5, // Additional spins on retrigger
+  RETRIGGER_SPINS: 5,
 };
 
-// Multiplier colors (for Ghost Spots)
+// Multiplier colors (for Ghost Spots) - Golden/Premium Theme
 export const MULTIPLIER_COLORS = {
-  1: null, // No glow
-  2: 0x00ffff,   // Cyan
-  4: 0x00ff66,   // Green
-  8: 0xffff00,   // Yellow
-  16: 0xff6600,  // Orange
-  32: 0xff00ff,  // Magenta
-  64: 0xff0066,  // Pink
-  128: 0xff0000, // Red
-  256: 0xffffff, // White
-  512: 0xffd700, // Gold
-  1024: 0xff00ff, // Neon Pink (max)
+  1: null,
+  2: 0xd4a84a,     // Light gold
+  4: 0xc9a855,     // Gold
+  8: 0xffd700,     // Bright gold
+  16: 0xffb000,    // Orange gold
+  32: 0xff8c00,    // Dark orange
+  64: 0xff6600,    // Orange
+  128: 0xff4500,   // Red orange
+  256: 0xff0066,   // Hot pink
+  512: 0xffffff,   // White (max glow)
+  1024: 0xffd700,  // Pure gold (legendary)
 };
 
 // Animation timing (ms)
 export const ANIMATION_TIMING = {
-  REVEAL_DELAY: 30,      // Delay between each symbol appearing
-  REVEAL_DURATION: 400,  // Single symbol reveal animation
-  WIN_FLASH: 300,        // Win flash duration
-  WIN_HOLD: 500,         // Hold on win before removing
-  REMOVE_DURATION: 300,  // Symbol removal animation
-  TUMBLE_DURATION: 400,  // Symbols falling
-  FILL_DELAY: 50,        // Delay between new symbols
-  FILL_DURATION: 350,    // New symbol drop animation
-  MULTIPLIER_UPGRADE: 500, // Multiplier upgrade effect
+  REVEAL_DELAY: 25,
+  REVEAL_DURATION: 350,
+  WIN_FLASH: 250,
+  WIN_HOLD: 400,
+  REMOVE_DURATION: 250,
+  TUMBLE_DURATION: 350,
+  FILL_DELAY: 40,
+  FILL_DURATION: 300,
+  MULTIPLIER_UPGRADE: 400,
 };
 
 // Bet options
@@ -84,7 +85,7 @@ export const DEFAULT_BET = 1.00;
 // API Configuration
 export const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
 
-// Sound effects (placeholder paths)
+// Sound effects
 export const SOUNDS = {
   SPIN: '/sounds/spin.mp3',
   WIN: '/sounds/win.mp3',
@@ -97,9 +98,9 @@ export const SOUNDS = {
 // Background music configuration
 export const MUSIC_CONFIG = {
   ENABLED_BY_DEFAULT: true,
-  DEFAULT_VOLUME: -6, // dB
-  FADE_DURATION: 2,   // seconds
+  DEFAULT_VOLUME: -6,
+  FADE_DURATION: 2,
 };
 
-// Placeholder symbol textures (colored squares until Gemini generates real ones)
+// Placeholder symbol textures
 export const PLACEHOLDER_SYMBOLS = true;

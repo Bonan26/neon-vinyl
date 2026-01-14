@@ -11,14 +11,14 @@ from dataclasses import dataclass
 
 
 # =============================================================================
-# GRID CONFIGURATION
+# GRID CONFIGURATION - RECTANGULAR (wider than tall, like Hacksaw Gaming)
 # =============================================================================
 
-GRID_ROWS: int = 7
-GRID_COLS: int = 7
-GRID_SIZE: int = GRID_ROWS * GRID_COLS  # 49 cells
+GRID_ROWS: int = 5  # 5 rows (shorter)
+GRID_COLS: int = 6  # 6 columns (wider)
+GRID_SIZE: int = GRID_ROWS * GRID_COLS  # 30 cells
 
-MIN_CLUSTER_SIZE: int = 5  # Minimum symbols for a win
+MIN_CLUSTER_SIZE: int = 4  # Minimum symbols for a win (6x5 rectangular grid)
 
 
 # =============================================================================
@@ -157,7 +157,7 @@ for w in FREE_SPIN_WEIGHTS_LIST:
 PAYTABLE: Dict[Symbol, Dict[int, float]] = {
     # Wild (Matrix Crown) pays same as best wolf
     Symbol.WILD: {
-        5: 0.65, 6: 1.07, 7: 1.72, 8: 2.89, 9: 4.32,
+        4: 0.40, 5: 0.65, 6: 1.07, 7: 1.72, 8: 2.89, 9: 4.32,
         10: 6.55, 11: 10.71, 12: 17.28, 13: 26.21, 14: 43.20,
         15: 65.53,
     },
@@ -169,58 +169,58 @@ PAYTABLE: Dict[Symbol, Dict[int, float]] = {
     },
     # High Tier: Red Wolf (best payouts)
     Symbol.WOLF_RED: {
-        5: 0.65, 6: 1.07, 7: 1.72, 8: 2.89, 9: 4.32,
+        4: 0.40, 5: 0.65, 6: 1.07, 7: 1.72, 8: 2.89, 9: 4.32,
         10: 6.55, 11: 10.71, 12: 17.28, 13: 26.21, 14: 43.20,
         15: 65.53,
     },
     # High Tier: Black Wolf
     Symbol.WOLF_BLACK: {
-        5: 0.50, 6: 0.85, 7: 1.50, 8: 2.50, 9: 3.80,
+        4: 0.30, 5: 0.50, 6: 0.85, 7: 1.50, 8: 2.50, 9: 3.80,
         10: 5.80, 11: 9.50, 12: 15.00, 13: 23.00, 14: 38.00,
         15: 58.00,
     },
     # High Tier: Purple Wolf
     Symbol.WOLF_PURPLE: {
-        5: 0.44, 6: 0.73, 7: 1.31, 8: 2.17, 9: 3.49,
+        4: 0.26, 5: 0.44, 6: 0.73, 7: 1.31, 8: 2.17, 9: 3.49,
         10: 5.23, 11: 8.64, 12: 13.77, 13: 21.64, 14: 34.76,
         15: 52.23,
     },
     # Mid Tier: Gray Wolf
     Symbol.WOLF_GRAY: {
-        5: 0.30, 6: 0.50, 7: 0.85, 8: 1.40, 9: 2.20,
+        4: 0.18, 5: 0.30, 6: 0.50, 7: 0.85, 8: 1.40, 9: 2.20,
         10: 3.50, 11: 6.00, 12: 9.00, 13: 15.00, 14: 25.00,
         15: 38.00,
     },
     # Mid Tier: Green Wolf
     Symbol.WOLF_GREEN: {
-        5: 0.27, 6: 0.44, 7: 0.73, 8: 1.24, 9: 1.96,
+        4: 0.16, 5: 0.27, 6: 0.44, 7: 0.73, 8: 1.24, 9: 1.96,
         10: 3.03, 11: 5.23, 12: 7.88, 13: 13.10, 14: 21.64,
         15: 32.75,
     },
     # Mid Tier: Spirit Wolf
     Symbol.WOLF_SPIRIT: {
-        5: 0.22, 6: 0.38, 7: 0.62, 8: 1.05, 9: 1.68,
+        4: 0.13, 5: 0.22, 6: 0.38, 7: 0.62, 8: 1.05, 9: 1.68,
         10: 2.60, 11: 4.40, 12: 7.00, 13: 11.20, 14: 18.00,
         15: 28.00,
     },
     # Low Tier: Hats - Lower payouts (they win most often!)
     Symbol.HAT_CAP: {
-        5: 0.10, 6: 0.18, 7: 0.30, 8: 0.50, 9: 0.80,
+        4: 0.06, 5: 0.10, 6: 0.18, 7: 0.30, 8: 0.50, 9: 0.80,
         10: 1.20, 11: 2.00, 12: 3.20, 13: 5.20, 14: 8.50,
         15: 13.00,
     },
     Symbol.HAT_STEAMPUNK: {
-        5: 0.08, 6: 0.14, 7: 0.24, 8: 0.40, 9: 0.65,
+        4: 0.05, 5: 0.08, 6: 0.14, 7: 0.24, 8: 0.40, 9: 0.65,
         10: 1.00, 11: 1.70, 12: 2.70, 13: 4.40, 14: 7.00,
         15: 10.50,
     },
     Symbol.HAT_STRAW: {
-        5: 0.062, 6: 0.105, 7: 0.162, 8: 0.295, 9: 0.476,
+        4: 0.04, 5: 0.062, 6: 0.105, 7: 0.162, 8: 0.295, 9: 0.476,
         10: 0.721, 11: 1.24, 12: 2.03, 13: 3.28, 14: 5.23,
         15: 7.88,
     },
     Symbol.HAT_PEACOCK: {
-        5: 0.062, 6: 0.105, 7: 0.162, 8: 0.295, 9: 0.476,
+        4: 0.04, 5: 0.062, 6: 0.105, 7: 0.162, 8: 0.295, 9: 0.476,
         10: 0.721, 11: 1.24, 12: 2.03, 13: 3.28, 14: 5.23,
         15: 7.88,
     },
@@ -253,13 +253,14 @@ def get_payout(symbol: Symbol, cluster_size: int) -> float:
 
 # Scatter requirements for free spins (BASE GAME)
 # Free spins are rarer but more rewarding!
-# 3 scatters = 10 free spins (increased from 8)
-# 4+ scatters = 15 free spins (increased from 12)
+# 3 scatters = 10 free spins (standard bonus)
+# 4 scatters = 15 free spins (super bonus)
+# 5+ scatters = 20 free spins (ULTRA bonus with sticky wilds!)
 SCATTER_FREE_SPINS: Dict[int, int] = {
     3: 10,  # 3 scatters = 10 free spins (standard bonus)
-    4: 15,  # 4+ scatters = 15 free spins (super bonus)
-    5: 15,  # Cap at 15 for super bonus
-    6: 15,
+    4: 15,  # 4 scatters = 15 free spins (super bonus)
+    5: 20,  # 5 scatters = 20 free spins + STICKY WILDS (ultra rare!)
+    6: 25,  # 6 scatters = 25 free spins + STICKY WILDS (legendary!)
 }
 
 # Scatter retrigger during FREE SPINS (different rules)
@@ -313,6 +314,14 @@ BONUS_BUY_OPTIONS: Dict[str, BonusBuyOption] = {
         volatility="extreme",
         feature="free_spins_enhanced",
     ),
+    "wolf_burst": BonusBuyOption(
+        id="wolf_burst",
+        name="Wolf Burst",
+        description="Wolf mascot blows 3-6 WILDs onto the grid",
+        cost_multiplier=25.0,  # x25 bet cost
+        volatility="medium",
+        feature="wolf_burst",
+    ),
     "wild_grid": BonusBuyOption(
         id="wild_grid",
         name="Wild Boost",
@@ -337,6 +346,13 @@ BONUS_BUY_OPTIONS: Dict[str, BonusBuyOption] = {
         volatility="extreme",
         feature="jackpot_boost",
     ),
+}
+
+# Super Bonus Configuration (5+ Scatters = Sticky Wilds)
+SUPER_BONUS_CONFIG = {
+    "scatter_count_threshold": 5,  # 5+ scatters triggers super bonus
+    "sticky_wilds_enabled": True,  # All wilds during bonus stay sticky
+    "extra_free_spins": 5,  # Bonus free spins on top of normal
 }
 
 
@@ -402,26 +418,87 @@ class EventType(Enum):
     JACKPOT_WIN = "jackpot_win"          # Jackpot hit
     BONUS_BUY = "bonus_buy"              # Bonus buy activated
     WILD_EXPLOSION = "wild_explosion"    # Wild explodes and sets adjacent cells to max multiplier
+    WOLF_BURST = "wolf_burst"            # Wolf mascot blows wilds onto grid
+    SUPER_BONUS_TRIGGER = "super_bonus_trigger"  # 5+ scatters - sticky wilds bonus
 
 
 # =============================================================================
-# ERROR CODES (Stake Standards)
+# ERROR CODES (Stake Engine Standards)
 # =============================================================================
 
 class StakeErrorCode(Enum):
-    """Standard Stake error codes."""
-    ERR_IPB = "ERR_IPB"  # Insufficient Player Balance
-    ERR_IS = "ERR_IS"    # Invalid Session
-    ERR_VAL = "ERR_VAL"  # Invalid Request
+    """Standard Stake Engine error codes."""
+    # Success
+    SUCCESS = "SUCCESS"
+    # 400 Client Errors
+    ERR_VAL = "ERR_VAL"          # Invalid Request
+    ERR_IPB = "ERR_IPB"          # Insufficient Player Balance
+    ERR_IS = "ERR_IS"            # Invalid Session
+    ERR_ATE = "ERR_ATE"          # Authentication Token Expired
+    ERR_GLE = "ERR_GLE"          # Gambling Limits Exceeded
+    ERR_LOC = "ERR_LOC"          # Invalid Player Location
+    ERR_BNF = "ERR_BNF"          # Bet/Bonus Not Found
+    ERR_SCR = "ERR_SCR"          # Script Error
+    ERR_OPT = "ERR_OPT"          # Option Error
+    ERR_UE = "ERR_UE"            # Unknown Error
+    # 500 Server Errors
+    ERR_GEN = "ERR_GEN"          # General Server Error
+    ERR_MAINTENANCE = "ERR_MAINTENANCE"  # Planned Maintenance
 
 
 # =============================================================================
-# GAME LIMITS
+# MONETARY CONFIGURATION (Stake Engine Standard)
+# =============================================================================
+# All monetary values are integers with 6 decimal places of precision
+# $1.00 = 1,000,000 units
+# $0.10 = 100,000 units
+
+MONETARY_PRECISION: int = 6
+MONETARY_MULTIPLIER: int = 1_000_000  # 10^6
+
+
+def to_stake_amount(value: float) -> int:
+    """Convert float currency to Stake Engine integer format."""
+    return int(round(value * MONETARY_MULTIPLIER))
+
+
+def from_stake_amount(value: int) -> float:
+    """Convert Stake Engine integer to float currency."""
+    return value / MONETARY_MULTIPLIER
+
+
+# =============================================================================
+# GAME LIMITS (Stake Engine Format - integers)
 # =============================================================================
 
-MIN_BET: float = 0.10
-MAX_BET: float = 100.0
-DEFAULT_BET: float = 1.0
+# Float values for internal calculations
+MIN_BET_FLOAT: float = 0.10
+MAX_BET_FLOAT: float = 100.0
+DEFAULT_BET_FLOAT: float = 1.0
+STEP_BET_FLOAT: float = 0.10  # Bet must be divisible by this
+
+# Integer values for Stake Engine API (×1,000,000)
+MIN_BET: int = to_stake_amount(MIN_BET_FLOAT)      # 100,000
+MAX_BET: int = to_stake_amount(MAX_BET_FLOAT)      # 100,000,000
+DEFAULT_BET: int = to_stake_amount(DEFAULT_BET_FLOAT)  # 1,000,000
+STEP_BET: int = to_stake_amount(STEP_BET_FLOAT)    # 100,000
+
+# Predefined bet levels (Stake Engine standard)
+BET_LEVELS: List[int] = [
+    to_stake_amount(0.10),   # 100,000
+    to_stake_amount(0.20),   # 200,000
+    to_stake_amount(0.50),   # 500,000
+    to_stake_amount(1.00),   # 1,000,000
+    to_stake_amount(2.00),   # 2,000,000
+    to_stake_amount(5.00),   # 5,000,000
+    to_stake_amount(10.00),  # 10,000,000
+    to_stake_amount(20.00),  # 20,000,000
+    to_stake_amount(50.00),  # 50,000,000
+    to_stake_amount(100.00), # 100,000,000
+]
+
+# Default currency
+DEFAULT_CURRENCY: str = "USD"
 
 # RTP Configuration
 TARGET_RTP: float = 96.0  # Target RTP percentage (96% target)

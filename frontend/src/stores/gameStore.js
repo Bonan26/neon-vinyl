@@ -1,9 +1,14 @@
 /**
  * LES WOLFS 86 - Game State Store
  * Zustand store for managing game state
+ * Stake Engine (Carrot) Standard compatible
  */
 import { create } from 'zustand';
 import { GRID_ROWS, GRID_COLS, DEFAULT_BET } from '../config/gameConfig';
+
+// Stake Engine monetary precision (6 decimals)
+const MONETARY_MULTIPLIER = 1_000_000;
+const fromStakeAmount = (value) => value / MONETARY_MULTIPLIER;
 
 // Available symbols for random generation (excluding special symbols)
 // Wolves (high/mid) and Hats (low)
@@ -135,19 +140,37 @@ const useGameStore = create((set, get) => ({
   turboMode: false,
   turboCounter: 0,  // Counts rapid inputs to trigger turbo
 
+  // Stake Engine config (from /wallet/authenticate)
+  stakeConfig: null,
+
   // Actions
-  setSession: (sessionData) => set({
-    sessionId: sessionData.sessionID,
-    balance: sessionData.balance,
-    serverSeedHash: sessionData.serverSeedHash,
-    nonce: sessionData.nonce,
-  }),
+  setSession: (sessionData) => {
+    // Handle both legacy format (balance as float) and Stake Engine format (balance as object)
+    let balance = sessionData.balance;
+    if (typeof balance === 'object' && balance.amount !== undefined) {
+      balance = fromStakeAmount(balance.amount);
+    }
+    set({
+      sessionId: sessionData.sessionID,
+      balance: balance,
+      serverSeedHash: sessionData.serverSeedHash,
+      nonce: sessionData.nonce,
+      stakeConfig: sessionData.config || null,
+    });
+  },
 
   setBetAmount: (amount) => set({ betAmount: amount }),
 
   setClientSeed: (seed) => set({ clientSeed: seed }),
 
-  setBalance: (balance) => set({ balance }),
+  setBalance: (balance) => {
+    // Handle both legacy format (balance as float) and Stake Engine format (balance as object)
+    let balanceValue = balance;
+    if (typeof balance === 'object' && balance.amount !== undefined) {
+      balanceValue = fromStakeAmount(balance.amount);
+    }
+    set({ balance: balanceValue });
+  },
 
   setIsSpinning: (spinning) => set({ isSpinning: spinning }),
 
@@ -342,11 +365,8 @@ const useGameStore = create((set, get) => ({
     if (state.autoSpinActive) {
       return state.autoSpinSpeed;
     }
-    // Use manual speed during free spins when not in autospin
-    if (state.freeSpinsRemaining > 0) {
-      return state.manualSpeedMode;
-    }
-    return AutoSpinSpeed.NORMAL;
+    // Always use manual speed mode when set (base game and free spins)
+    return state.manualSpeedMode;
   },
 
   // Game state machine

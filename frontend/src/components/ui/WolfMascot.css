@@ -1,0 +1,481 @@
+/**
+ * LES WOLFS 86 - Wolf Mascot CSS
+ * Spine 2D style skeletal animation
+ */
+
+.wolf-mascot {
+  position: relative;
+  width: 180px;
+  height: 220px;
+  transform-origin: center bottom;
+}
+
+/* Glow effect */
+.wolf-glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 200px;
+  height: 200px;
+  background: radial-gradient(
+    circle,
+    rgba(245, 215, 66, 0.6) 0%,
+    rgba(245, 150, 50, 0.3) 40%,
+    transparent 70%
+  );
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(1);
+  opacity: 0;
+  pointer-events: none;
+  filter: blur(20px);
+}
+
+/* Main skeleton container */
+.wolf-skeleton {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+/* ========== TAIL ========== */
+.wolf-tail {
+  position: absolute;
+  right: -10px;
+  bottom: 80px;
+  transform-origin: right center;
+  display: flex;
+  gap: 2px;
+}
+
+.tail-segment {
+  background: linear-gradient(180deg, #8b3a3a 0%, #5c2020 100%);
+  border-radius: 50%;
+}
+
+.tail-base {
+  width: 20px;
+  height: 16px;
+}
+
+.tail-mid {
+  width: 18px;
+  height: 14px;
+  transform: translateY(-2px);
+}
+
+.tail-tip {
+  width: 14px;
+  height: 12px;
+  transform: translateY(-4px);
+  background: linear-gradient(180deg, #ff6b6b 0%, #8b3a3a 100%);
+}
+
+/* ========== BODY ========== */
+.wolf-body {
+  position: absolute;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  transform-origin: center bottom;
+}
+
+.wolf-torso {
+  width: 90px;
+  height: 70px;
+  background: linear-gradient(
+    180deg,
+    #b84848 0%,
+    #8b3a3a 40%,
+    #5c2020 100%
+  );
+  border-radius: 50% 50% 40% 40%;
+  box-shadow:
+    inset 5px 5px 15px rgba(255, 100, 100, 0.3),
+    inset -5px -5px 15px rgba(0, 0, 0, 0.3);
+}
+
+/* ========== LEGS ========== */
+.wolf-leg {
+  position: absolute;
+  bottom: -20px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  transform-origin: top center;
+}
+
+.wolf-front-leg {
+  left: 15px;
+}
+
+.wolf-back-leg {
+  right: 15px;
+}
+
+.leg-upper {
+  width: 18px;
+  height: 25px;
+  background: linear-gradient(90deg, #7a2d2d 0%, #8b3a3a 50%, #6a2525 100%);
+  border-radius: 10px;
+}
+
+.leg-lower {
+  width: 14px;
+  height: 20px;
+  background: linear-gradient(90deg, #6a2525 0%, #7a2d2d 50%, #5a1e1e 100%);
+  border-radius: 8px;
+  margin-top: -5px;
+}
+
+.leg-paw {
+  width: 20px;
+  height: 12px;
+  background: linear-gradient(180deg, #4a1818 0%, #2a0e0e 100%);
+  border-radius: 50% 50% 60% 60%;
+  margin-top: -2px;
+}
+
+/* ========== HEAD ========== */
+.wolf-head {
+  position: absolute;
+  top: -65px;
+  left: 50%;
+  transform: translateX(-50%);
+  transform-origin: center bottom;
+}
+
+/* ========== EARS ========== */
+.wolf-ear {
+  position: absolute;
+  top: -25px;
+  width: 28px;
+  height: 40px;
+  background: linear-gradient(
+    180deg,
+    #c85050 0%,
+    #8b3a3a 60%,
+    #5c2020 100%
+  );
+  clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+  transform-origin: bottom center;
+}
+
+.wolf-ear::after {
+  content: '';
+  position: absolute;
+  top: 30%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 14px;
+  height: 20px;
+  background: linear-gradient(180deg, #ffb4b4 0%, #d88080 100%);
+  clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+}
+
+.wolf-ear-left {
+  left: -8px;
+  transform: rotate(-10deg);
+}
+
+.wolf-ear-right {
+  right: -8px;
+  transform: rotate(10deg);
+}
+
+/* ========== FACE ========== */
+.wolf-face {
+  position: relative;
+  width: 80px;
+  height: 75px;
+  background: linear-gradient(
+    180deg,
+    #d45050 0%,
+    #b84848 30%,
+    #8b3a3a 100%
+  );
+  border-radius: 50% 50% 45% 45%;
+  box-shadow:
+    inset 3px 3px 10px rgba(255, 150, 150, 0.3),
+    inset -3px -3px 10px rgba(0, 0, 0, 0.2);
+}
+
+/* ========== EYES ========== */
+.wolf-eye {
+  position: absolute;
+  top: 18px;
+  width: 18px;
+  height: 20px;
+  background: linear-gradient(180deg, #fff 0%, #f0f0f0 100%);
+  border-radius: 50%;
+  overflow: hidden;
+  transform-origin: center center;
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.3),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.wolf-eye-left {
+  left: 12px;
+}
+
+.wolf-eye-right {
+  right: 12px;
+}
+
+.eye-pupil {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 10px;
+  height: 12px;
+  background: radial-gradient(
+    circle at 40% 40%,
+    #4a1010 0%,
+    #1a0505 100%
+  );
+  border-radius: 50%;
+}
+
+.eye-shine {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 5px;
+  height: 5px;
+  background: #fff;
+  border-radius: 50%;
+  opacity: 0.9;
+}
+
+/* ========== MUZZLE ========== */
+.wolf-muzzle {
+  position: absolute;
+  bottom: -5px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 50px;
+  height: 35px;
+  transform-origin: top center;
+}
+
+.muzzle-top {
+  width: 100%;
+  height: 25px;
+  background: linear-gradient(
+    180deg,
+    #d88080 0%,
+    #c06060 100%
+  );
+  border-radius: 40% 40% 50% 50%;
+  box-shadow:
+    inset 2px 2px 5px rgba(255, 200, 200, 0.3),
+    0 3px 8px rgba(0, 0, 0, 0.2);
+}
+
+.wolf-nose {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 20px;
+  height: 14px;
+  background: linear-gradient(
+    180deg,
+    #2a1515 0%,
+    #0a0505 100%
+  );
+  border-radius: 40% 40% 50% 50%;
+  box-shadow:
+    0 2px 4px rgba(0, 0, 0, 0.4),
+    inset 0 2px 3px rgba(255, 255, 255, 0.1);
+}
+
+.wolf-nose::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 8px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 50%;
+}
+
+/* ========== JAW ========== */
+.wolf-jaw {
+  position: absolute;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 20px;
+  transform-origin: top center;
+}
+
+.jaw-inner {
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(
+    180deg,
+    #a04040 0%,
+    #803030 100%
+  );
+  border-radius: 30% 30% 50% 50%;
+  box-shadow: inset 0 -3px 8px rgba(0, 0, 0, 0.3);
+}
+
+.wolf-tongue {
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 16px;
+  height: 0;
+  background: linear-gradient(
+    180deg,
+    #ff8888 0%,
+    #ff5555 100%
+  );
+  border-radius: 40% 40% 50% 50%;
+  opacity: 0;
+  transition: height 0.2s, opacity 0.2s;
+}
+
+/* Show tongue when jaw is open */
+.wolf-jaw[style*="rotation"] .wolf-tongue,
+.wolf-mascot:hover .wolf-tongue {
+  height: 12px;
+  opacity: 1;
+}
+
+/* ========== BREATH PARTICLES ========== */
+.breath-particles {
+  position: absolute;
+  top: 45%;
+  left: 0;
+  width: 100px;
+  height: 60px;
+  opacity: 0;
+  transform: scale(0.5);
+  pointer-events: none;
+}
+
+.breath-particle {
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background: radial-gradient(
+    circle,
+    rgba(100, 255, 150, 0.8) 0%,
+    rgba(50, 255, 100, 0.4) 50%,
+    transparent 70%
+  );
+  border-radius: 50%;
+  filter: blur(3px);
+  animation: particleFloat 1s ease-out forwards;
+}
+
+.breath-particle.p1 {
+  top: 20px;
+  left: 0;
+  animation-delay: 0s;
+}
+
+.breath-particle.p2 {
+  top: 10px;
+  left: 20px;
+  width: 25px;
+  height: 25px;
+  animation-delay: 0.05s;
+}
+
+.breath-particle.p3 {
+  top: 30px;
+  left: 15px;
+  width: 18px;
+  height: 18px;
+  animation-delay: 0.1s;
+}
+
+.breath-particle.p4 {
+  top: 5px;
+  left: 10px;
+  width: 15px;
+  height: 15px;
+  animation-delay: 0.15s;
+}
+
+.breath-particle.p5 {
+  top: 25px;
+  left: 30px;
+  width: 22px;
+  height: 22px;
+  animation-delay: 0.08s;
+}
+
+@keyframes particleFloat {
+  0% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.8;
+  }
+  100% {
+    transform: translate(-80px, 0) scale(1.5);
+    opacity: 0;
+  }
+}
+
+/* ========== HOVER & STATES ========== */
+.wolf-mascot:hover .wolf-ear-left {
+  animation: earTwitch 0.3s ease;
+}
+
+@keyframes earTwitch {
+  0%, 100% { transform: rotate(-10deg); }
+  50% { transform: rotate(-25deg) scaleY(0.9); }
+}
+
+/* Win state - excited */
+.wolf-mascot.winning {
+  animation: wolfExcited 0.5s ease infinite;
+}
+
+@keyframes wolfExcited {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-8px); }
+}
+
+/* Blowing state */
+.wolf-mascot.blowing .wolf-glow {
+  opacity: 0.8;
+  transform: translate(-50%, -50%) scale(2);
+}
+
+/* Howling state */
+.wolf-mascot.howling .wolf-glow {
+  opacity: 0.6;
+  background: radial-gradient(
+    circle,
+    rgba(200, 150, 255, 0.6) 0%,
+    rgba(150, 100, 200, 0.3) 40%,
+    transparent 70%
+  );
+}
+
+/* Premium shadow */
+.wolf-mascot::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100px;
+  height: 20px;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(0, 0, 0, 0.4) 0%,
+    transparent 70%
+  );
+  border-radius: 50%;
+}

@@ -1,0 +1,1156 @@
+/**
+ * LES WOLFS 86 - Game Info Modal Styles
+ * Premium Casino-Quality Design
+ */
+
+/* ============================================
+   OVERLAY & ANIMATIONS
+   ============================================ */
+
+.gim-overlay {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(ellipse at center, rgba(20, 15, 10, 0.95) 0%, rgba(0, 0, 0, 0.98) 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 5000;
+  animation: gimFadeIn 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  backdrop-filter: blur(12px);
+}
+
+@keyframes gimFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% center; }
+  100% { background-position: 200% center; }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(245, 215, 66, 0.3); }
+  50% { box-shadow: 0 0 40px rgba(245, 215, 66, 0.6); }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+/* ============================================
+   MODAL CONTAINER
+   ============================================ */
+
+.gim-modal {
+  width: 95%;
+  max-width: 520px;
+  max-height: 80vh;
+  background:
+    linear-gradient(180deg,
+      rgba(70, 55, 40, 1) 0%,
+      rgba(50, 40, 28, 1) 50%,
+      rgba(40, 30, 20, 1) 100%
+    );
+  border: 3px solid #c4a050;
+  border-radius: 16px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow:
+    0 0 0 1px rgba(245, 215, 66, 0.5),
+    0 0 60px rgba(245, 215, 66, 0.4),
+    0 0 100px rgba(200, 150, 50, 0.25),
+    0 30px 80px rgba(0, 0, 0, 0.9),
+    inset 0 1px 0 rgba(255, 255, 255, 0.15),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.3);
+  animation: gimSlideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes gimSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(50px) scale(0.9);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* ============================================
+   HEADER
+   ============================================ */
+
+.gim-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 18px;
+  background:
+    linear-gradient(180deg,
+      rgba(245, 215, 66, 0.12) 0%,
+      rgba(196, 160, 80, 0.08) 50%,
+      rgba(0, 0, 0, 0.4) 100%
+    );
+  border-bottom: 2px solid;
+  border-image: linear-gradient(90deg, transparent, #c4a060, transparent) 1;
+  position: relative;
+}
+
+.gim-header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+}
+
+.gim-logo {
+  display: flex;
+  align-items: center;
+}
+
+.gim-logo .gim-main-logo {
+  max-width: 180px;
+  width: 100%;
+  height: auto;
+  filter: drop-shadow(0 4px 15px rgba(0, 0, 0, 0.5));
+  animation: gimLogoFloat 4s ease-in-out infinite;
+}
+
+@keyframes gimLogoFloat {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.02); }
+}
+
+.gim-logo img:not(.gim-main-logo) {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+  border-radius: 12px;
+  border: 2px solid rgba(245, 215, 66, 0.4);
+  box-shadow:
+    0 4px 16px rgba(0, 0, 0, 0.5),
+    0 0 20px rgba(245, 215, 66, 0.2);
+  animation: float 3s ease-in-out infinite;
+}
+
+.gim-logo h2 {
+  margin: 0;
+  font-family: 'Arial Black', Impact, sans-serif;
+  font-size: 26px;
+  background: linear-gradient(180deg, #fff 0%, #f5d742 40%, #c4a050 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: 2px;
+  text-shadow: 0 2px 10px rgba(245, 215, 66, 0.5);
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.5));
+}
+
+.gim-logo h2 span {
+  background: linear-gradient(180deg, #ff8855 0%, #ff5522 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+}
+
+.gim-logo p {
+  margin: 4px 0 0;
+  font-family: Arial, sans-serif;
+  font-size: 11px;
+  color: #d4c4a0;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+}
+
+.gim-close {
+  width: 42px;
+  height: 42px;
+  border: 2px solid rgba(196, 160, 80, 0.5);
+  background: rgba(60, 50, 30, 0.8);
+  border-radius: 50%;
+  color: #e8d8b0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.gim-close:hover {
+  background: rgba(255, 80, 80, 0.2);
+  border-color: rgba(255, 80, 80, 0.5);
+  color: #ff6b6b;
+  transform: rotate(90deg) scale(1.1);
+  box-shadow: 0 0 20px rgba(255, 80, 80, 0.3);
+}
+
+.gim-close svg {
+  width: 22px;
+  height: 22px;
+}
+
+/* ============================================
+   TABS
+   ============================================ */
+
+.gim-tabs {
+  display: flex;
+  background: linear-gradient(180deg, rgba(50, 40, 25, 0.8) 0%, rgba(40, 32, 20, 0.6) 100%);
+  border-bottom: 2px solid rgba(196, 160, 80, 0.4);
+  padding: 0 12px;
+  gap: 4px;
+}
+
+.gim-tabs button {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 10px 8px;
+  background: transparent;
+  border: none;
+  border-bottom: 3px solid transparent;
+  color: #c4b090;
+  font-family: Arial, sans-serif;
+  font-size: 11px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.gim-tabs button svg {
+  width: 20px;
+  height: 20px;
+  opacity: 0.6;
+  transition: all 0.3s ease;
+}
+
+.gim-tabs button:hover {
+  color: #b0a080;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.gim-tabs button:hover svg {
+  opacity: 0.9;
+}
+
+.gim-tabs button.active {
+  color: #f5d742;
+  border-bottom-color: #f5d742;
+  background: linear-gradient(180deg, rgba(245, 215, 66, 0.15) 0%, transparent 100%);
+}
+
+.gim-tabs button.active svg {
+  opacity: 1;
+  color: #f5d742;
+  filter: drop-shadow(0 0 6px rgba(245, 215, 66, 0.8));
+}
+
+.gim-tabs button.active::after {
+  content: '';
+  position: absolute;
+  bottom: -1px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 3px;
+  background: #f5d742;
+  box-shadow: 0 0 15px #f5d742;
+  border-radius: 3px 3px 0 0;
+}
+
+/* ============================================
+   CONTENT AREA
+   ============================================ */
+
+.gim-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 14px;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.1) 0%, transparent 100%);
+}
+
+.gim-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.gim-content::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 4px;
+}
+
+.gim-content::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg, #6a5a40 0%, #4a4030 100%);
+  border-radius: 4px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.gim-content::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg, #8a7a50 0%, #5a5040 100%);
+}
+
+/* ============================================
+   SECTIONS
+   ============================================ */
+
+.gim-section {
+  margin-bottom: 28px;
+}
+
+.gim-section:last-child {
+  margin-bottom: 0;
+}
+
+.gim-section h3 {
+  margin: 0 0 16px;
+  font-family: 'Arial Black', Impact, sans-serif;
+  font-size: 14px;
+  color: #f5d742;
+  text-transform: uppercase;
+  letter-spacing: 3px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-shadow: 0 0 20px rgba(245, 215, 66, 0.6);
+}
+
+.gim-section h3::before {
+  content: '';
+  width: 4px;
+  height: 20px;
+  background: linear-gradient(180deg, #f5d742 0%, #c4a050 100%);
+  border-radius: 2px;
+  box-shadow: 0 0 10px rgba(245, 215, 66, 0.5);
+}
+
+.gim-section h3::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: linear-gradient(90deg, rgba(196, 160, 96, 0.5) 0%, transparent 100%);
+}
+
+.gim-subtitle {
+  margin: -10px 0 16px 16px;
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  color: #c4b490;
+  font-style: italic;
+}
+
+/* ============================================
+   SPECIAL SYMBOLS
+   ============================================ */
+
+.gim-special-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
+}
+
+.gim-special-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px;
+  background: linear-gradient(135deg, rgba(60, 50, 35, 0.95) 0%, rgba(45, 38, 25, 0.98) 100%);
+  border: 2px solid rgba(196, 160, 80, 0.5);
+  border-radius: 16px;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.gim-special-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+}
+
+.gim-special-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+}
+
+.gim-special-card.wild {
+  border-color: rgba(245, 215, 66, 0.4);
+  background: linear-gradient(135deg, rgba(245, 215, 66, 0.1) 0%, rgba(20, 15, 10, 0.95) 100%);
+}
+
+.gim-special-card.wild:hover {
+  border-color: rgba(245, 215, 66, 0.7);
+  box-shadow: 0 0 30px rgba(245, 215, 66, 0.2), 0 12px 30px rgba(0, 0, 0, 0.4);
+}
+
+.gim-special-card.scatter {
+  border-color: rgba(255, 150, 100, 0.4);
+  background: linear-gradient(135deg, rgba(255, 150, 100, 0.1) 0%, rgba(20, 15, 10, 0.95) 100%);
+}
+
+.gim-special-card.scatter:hover {
+  border-color: rgba(255, 150, 100, 0.7);
+  box-shadow: 0 0 30px rgba(255, 150, 100, 0.2), 0 12px 30px rgba(0, 0, 0, 0.4);
+}
+
+.gim-special-img {
+  width: 70px;
+  height: 70px;
+  border-radius: 14px;
+  overflow: hidden;
+  flex-shrink: 0;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.5);
+}
+
+.gim-special-img img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.gim-special-info h4 {
+  margin: 0 0 6px;
+  font-family: 'Arial Black', Impact, sans-serif;
+  font-size: 18px;
+  letter-spacing: 3px;
+}
+
+.gim-special-card.wild .gim-special-info h4 {
+  background: linear-gradient(180deg, #fff 0%, #f5d742 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: none;
+  filter: drop-shadow(0 2px 4px rgba(245, 215, 66, 0.5));
+}
+
+.gim-special-card.scatter .gim-special-info h4 {
+  background: linear-gradient(180deg, #fff 0%, #ff9966 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  text-shadow: none;
+  filter: drop-shadow(0 2px 4px rgba(255, 150, 100, 0.5));
+}
+
+.gim-special-info p {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  color: #d4c4a0;
+  line-height: 1.5;
+}
+
+/* ============================================
+   PAYTABLE
+   ============================================ */
+
+.gim-paytable {
+  background: linear-gradient(180deg, rgba(50, 40, 28, 0.9) 0%, rgba(35, 28, 18, 0.95) 100%);
+  border: 2px solid rgba(196, 160, 80, 0.5);
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: inset 0 2px 10px rgba(0, 0, 0, 0.3);
+}
+
+.gim-pay-header,
+.gim-pay-row {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+  gap: 8px;
+  padding: 12px 16px;
+  align-items: center;
+}
+
+.gim-pay-header {
+  background: linear-gradient(180deg, rgba(196, 160, 96, 0.15) 0%, rgba(0, 0, 0, 0.3) 100%);
+  border-bottom: 2px solid rgba(196, 160, 96, 0.3);
+}
+
+.gim-pay-header span {
+  font-family: 'Arial Black', sans-serif;
+  font-size: 11px;
+  font-weight: bold;
+  color: #c4a060;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.gim-pay-row {
+  border-bottom: 1px solid rgba(100, 80, 50, 0.2);
+  transition: all 0.2s ease;
+}
+
+.gim-pay-row:last-child {
+  border-bottom: none;
+}
+
+.gim-pay-row:hover {
+  background: rgba(245, 215, 66, 0.05);
+}
+
+.gim-pay-row.premium {
+  background: linear-gradient(90deg, rgba(220, 60, 60, 0.12) 0%, transparent 100%);
+  border-left: 3px solid #dc3c3c;
+}
+
+.gim-pay-row.medium {
+  background: linear-gradient(90deg, rgba(180, 140, 60, 0.1) 0%, transparent 100%);
+  border-left: 3px solid #b48c3c;
+}
+
+.gim-pay-row.low {
+  background: linear-gradient(90deg, rgba(100, 80, 60, 0.08) 0%, transparent 100%);
+  border-left: 3px solid #64503c;
+}
+
+.gim-pay-symbol {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.gim-pay-symbol img {
+  width: 38px;
+  height: 38px;
+  object-fit: contain;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+}
+
+.gim-pay-symbol span {
+  font-family: Arial, sans-serif;
+  font-size: 13px;
+  color: #e0d0b0;
+  font-weight: bold;
+}
+
+.gim-pay-row span {
+  font-family: 'Courier New', monospace;
+  font-size: 13px;
+  color: #e8d8b0;
+  text-align: center;
+  font-weight: bold;
+}
+
+.gim-pay-row span.highlight {
+  color: #4ade80;
+  font-size: 15px;
+  text-shadow: 0 0 15px rgba(74, 222, 128, 0.7);
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* ============================================
+   RULES CARDS
+   ============================================ */
+
+.gim-rule-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+
+.gim-rule-card {
+  padding: 20px 16px;
+  background: linear-gradient(180deg, rgba(40, 32, 22, 0.9) 0%, rgba(20, 15, 10, 0.95) 100%);
+  border: 2px solid rgba(100, 80, 50, 0.3);
+  border-radius: 16px;
+  text-align: center;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.gim-rule-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+}
+
+.gim-rule-card:hover {
+  transform: translateY(-6px);
+  border-color: rgba(196, 160, 96, 0.5);
+  box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4), 0 0 30px rgba(196, 160, 96, 0.1);
+}
+
+.gim-rule-icon {
+  width: 52px;
+  height: 52px;
+  margin: 0 auto 14px;
+  background: linear-gradient(180deg, #f5d742 0%, #c4a050 50%, #9a7830 100%);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow:
+    0 4px 15px rgba(245, 215, 66, 0.4),
+    inset 0 -2px 4px rgba(0, 0, 0, 0.2),
+    inset 0 2px 4px rgba(255, 255, 255, 0.3);
+}
+
+.gim-rule-icon svg {
+  width: 26px;
+  height: 26px;
+  color: #1a1208;
+}
+
+.gim-rule-card h4 {
+  margin: 0 0 8px;
+  font-family: 'Arial Black', Impact, sans-serif;
+  font-size: 14px;
+  color: #f5d742;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.gim-rule-card p {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  color: #9a8a70;
+  line-height: 1.5;
+}
+
+/* ============================================
+   GRID STATS
+   ============================================ */
+
+.gim-grid-info {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+}
+
+.gim-grid-stat {
+  padding: 20px 12px;
+  background: linear-gradient(180deg, rgba(40, 32, 22, 0.9) 0%, rgba(20, 15, 10, 0.95) 100%);
+  border: 2px solid rgba(100, 80, 50, 0.3);
+  border-radius: 14px;
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.gim-grid-stat:hover {
+  border-color: rgba(245, 215, 66, 0.4);
+  transform: translateY(-3px);
+}
+
+.gim-stat-value {
+  display: block;
+  font-family: 'Arial Black', Impact, sans-serif;
+  font-size: 24px;
+  background: linear-gradient(180deg, #fff 0%, #f5d742 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  margin-bottom: 6px;
+  filter: drop-shadow(0 2px 4px rgba(245, 215, 66, 0.4));
+}
+
+.gim-stat-label {
+  font-family: Arial, sans-serif;
+  font-size: 10px;
+  color: #7a6a50;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+}
+
+/* ============================================
+   FREE SPINS CARDS
+   ============================================ */
+
+.gim-fs-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.gim-fs-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  background: linear-gradient(135deg, rgba(30, 25, 18, 0.9) 0%, rgba(20, 15, 10, 0.95) 100%);
+  border: 2px solid rgba(100, 80, 50, 0.3);
+  border-radius: 14px;
+  transition: all 0.3s ease;
+}
+
+.gim-fs-card:hover {
+  transform: translateX(5px);
+  border-color: rgba(150, 120, 70, 0.5);
+}
+
+.gim-fs-card.featured {
+  border-color: rgba(245, 215, 66, 0.5);
+  background: linear-gradient(135deg, rgba(245, 215, 66, 0.1) 0%, rgba(20, 15, 10, 0.95) 100%);
+}
+
+.gim-fs-card.featured:hover {
+  box-shadow: 0 0 25px rgba(245, 215, 66, 0.15);
+}
+
+.gim-fs-card.super {
+  border-color: rgba(74, 222, 128, 0.5);
+  background: linear-gradient(135deg, rgba(74, 222, 128, 0.1) 0%, rgba(20, 15, 10, 0.95) 100%);
+}
+
+.gim-fs-card.super:hover {
+  box-shadow: 0 0 25px rgba(74, 222, 128, 0.15);
+}
+
+.gim-fs-scatter {
+  display: flex;
+  gap: 6px;
+}
+
+.gim-fs-scatter img {
+  width: 36px;
+  height: 36px;
+  object-fit: cover;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+}
+
+.gim-fs-info {
+  text-align: right;
+}
+
+.gim-fs-count {
+  display: block;
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  color: #8a7a60;
+  margin-bottom: 4px;
+}
+
+.gim-fs-reward {
+  font-family: 'Arial Black', Impact, sans-serif;
+  font-size: 16px;
+  color: #f5d742;
+  letter-spacing: 1px;
+  text-shadow: 0 0 10px rgba(245, 215, 66, 0.4);
+}
+
+.gim-fs-card.super .gim-fs-reward {
+  color: #4ade80;
+  text-shadow: 0 0 10px rgba(74, 222, 128, 0.4);
+}
+
+/* ============================================
+   BUY BONUS CARDS
+   ============================================ */
+
+.gim-buy-cards {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+
+.gim-buy-card {
+  padding: 20px 14px;
+  background: linear-gradient(180deg, rgba(40, 32, 22, 0.9) 0%, rgba(20, 15, 10, 0.95) 100%);
+  border: 2px solid rgba(100, 80, 50, 0.3);
+  border-radius: 16px;
+  text-align: center;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.gim-buy-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+}
+
+.gim-buy-card:hover {
+  transform: translateY(-5px);
+  border-color: rgba(196, 160, 96, 0.5);
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.4);
+}
+
+.gim-buy-card.premium {
+  border-color: rgba(74, 222, 128, 0.5);
+  background: linear-gradient(180deg, rgba(74, 222, 128, 0.08) 0%, rgba(20, 15, 10, 0.95) 100%);
+}
+
+.gim-buy-card.premium:hover {
+  box-shadow: 0 0 30px rgba(74, 222, 128, 0.15), 0 15px 35px rgba(0, 0, 0, 0.4);
+}
+
+.gim-buy-card img {
+  width: 56px;
+  height: 56px;
+  object-fit: contain;
+  border-radius: 12px;
+  margin-bottom: 12px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+}
+
+.gim-buy-card h4 {
+  margin: 0 0 6px;
+  font-family: 'Arial Black', Impact, sans-serif;
+  font-size: 13px;
+  color: #f5d742;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.gim-buy-card p {
+  margin: 0 0 12px;
+  font-family: Arial, sans-serif;
+  font-size: 11px;
+  color: #8a7a60;
+  line-height: 1.4;
+}
+
+.gim-buy-cost {
+  display: inline-block;
+  padding: 8px 16px;
+  background: linear-gradient(180deg, rgba(245, 215, 66, 0.2) 0%, rgba(196, 160, 80, 0.15) 100%);
+  border: 2px solid rgba(245, 215, 66, 0.4);
+  border-radius: 20px;
+  font-family: 'Arial Black', sans-serif;
+  font-size: 13px;
+  color: #f5d742;
+  text-shadow: 0 0 10px rgba(245, 215, 66, 0.4);
+}
+
+.gim-buy-card.premium .gim-buy-cost {
+  background: linear-gradient(180deg, rgba(74, 222, 128, 0.2) 0%, rgba(50, 180, 100, 0.15) 100%);
+  border-color: rgba(74, 222, 128, 0.4);
+  color: #4ade80;
+  text-shadow: 0 0 10px rgba(74, 222, 128, 0.4);
+}
+
+/* ============================================
+   MULTIPLIERS
+   ============================================ */
+
+.gim-multi-display {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 16px;
+  justify-content: center;
+}
+
+.gim-multi-badge {
+  padding: 10px 18px;
+  background: linear-gradient(180deg,
+    hsl(calc(var(--hue, 45)), 80%, 55%) 0%,
+    hsl(calc(var(--hue, 45)), 80%, 40%) 100%);
+  border-radius: 25px;
+  font-family: 'Arial Black', Impact, sans-serif;
+  font-size: 14px;
+  color: #fff;
+  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+  box-shadow:
+    0 4px 15px rgba(0, 0, 0, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+.gim-multi-badge:hover {
+  transform: translateY(-3px) scale(1.05);
+  box-shadow:
+    0 8px 25px rgba(0, 0, 0, 0.4),
+    0 0 20px hsla(calc(var(--hue, 45)), 80%, 50%, 0.4);
+}
+
+.gim-feature-desc {
+  font-family: Arial, sans-serif;
+  font-size: 13px;
+  color: #9a8a70;
+  line-height: 1.6;
+  margin: 0;
+  padding: 12px 16px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  border-left: 3px solid rgba(196, 160, 96, 0.4);
+}
+
+/* ============================================
+   BOOST CARDS
+   ============================================ */
+
+.gim-boost-cards {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 14px;
+}
+
+.gim-boost-card {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px;
+  background: linear-gradient(135deg, rgba(30, 25, 18, 0.9) 0%, rgba(20, 15, 10, 0.95) 100%);
+  border: 2px solid rgba(100, 80, 50, 0.3);
+  border-radius: 16px;
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.gim-boost-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+}
+
+.gim-boost-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4);
+}
+
+.gim-boost-card.scatter {
+  border-color: rgba(255, 100, 255, 0.4);
+  background: linear-gradient(135deg, rgba(255, 100, 255, 0.08) 0%, rgba(20, 15, 10, 0.95) 100%);
+}
+
+.gim-boost-card.scatter:hover {
+  border-color: rgba(255, 100, 255, 0.7);
+  box-shadow: 0 0 30px rgba(255, 100, 255, 0.15), 0 12px 30px rgba(0, 0, 0, 0.4);
+}
+
+.gim-boost-card.wild {
+  border-color: rgba(0, 255, 100, 0.4);
+  background: linear-gradient(135deg, rgba(0, 255, 100, 0.08) 0%, rgba(20, 15, 10, 0.95) 100%);
+}
+
+.gim-boost-card.wild:hover {
+  border-color: rgba(0, 255, 100, 0.7);
+  box-shadow: 0 0 30px rgba(0, 255, 100, 0.15), 0 12px 30px rgba(0, 0, 0, 0.4);
+}
+
+.gim-boost-icon {
+  width: 60px;
+  height: 60px;
+  border-radius: 14px;
+  overflow: hidden;
+  flex-shrink: 0;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
+}
+
+.gim-boost-icon img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.gim-boost-info {
+  flex: 1;
+}
+
+.gim-boost-info h4 {
+  margin: 0 0 6px;
+  font-family: 'Arial Black', Impact, sans-serif;
+  font-size: 15px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+.gim-boost-card.scatter .gim-boost-info h4 {
+  background: linear-gradient(180deg, #fff 0%, #ff66ff 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gim-boost-card.wild .gim-boost-info h4 {
+  background: linear-gradient(180deg, #fff 0%, #00ff66 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.gim-boost-info p {
+  margin: 0 0 8px;
+  font-family: Arial, sans-serif;
+  font-size: 12px;
+  color: #9a8a70;
+  line-height: 1.4;
+}
+
+.gim-boost-price {
+  display: inline-block;
+  padding: 6px 14px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 15px;
+  font-family: 'Arial Black', sans-serif;
+  font-size: 13px;
+  color: #f5d742;
+}
+
+/* ============================================
+   VOLATILITY
+   ============================================ */
+
+.gim-volatility {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 20px 24px;
+  background: linear-gradient(135deg, rgba(255, 100, 50, 0.08) 0%, rgba(20, 15, 10, 0.95) 100%);
+  border: 2px solid rgba(255, 100, 50, 0.3);
+  border-radius: 16px;
+  margin-bottom: 16px;
+}
+
+.gim-vol-bars {
+  display: flex;
+  gap: 6px;
+}
+
+.gim-vol-bars span {
+  width: 28px;
+  height: 10px;
+  background: rgba(100, 80, 50, 0.4);
+  border-radius: 3px;
+  transition: all 0.3s ease;
+}
+
+.gim-vol-bars span.active {
+  background: linear-gradient(180deg, #ff8844 0%, #ff5522 100%);
+  box-shadow: 0 0 10px rgba(255, 85, 34, 0.5);
+}
+
+.gim-vol-label {
+  font-family: 'Arial Black', Impact, sans-serif;
+  font-size: 16px;
+  background: linear-gradient(180deg, #fff 0%, #ff6633 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: 3px;
+  filter: drop-shadow(0 2px 4px rgba(255, 100, 50, 0.4));
+}
+
+/* ============================================
+   FOOTER
+   ============================================ */
+
+.gim-footer {
+  padding: 14px 28px;
+  background: linear-gradient(180deg, rgba(0, 0, 0, 0.3) 0%, rgba(0, 0, 0, 0.5) 100%);
+  border-top: 1px solid rgba(100, 80, 50, 0.3);
+  text-align: center;
+}
+
+.gim-footer span {
+  font-family: Arial, sans-serif;
+  font-size: 11px;
+  color: #5a4a30;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+/* ============================================
+   RESPONSIVE
+   ============================================ */
+
+@media (max-width: 600px) {
+  .gim-modal {
+    max-height: 92vh;
+    border-radius: 20px;
+    margin: 8px;
+  }
+
+  .gim-header {
+    padding: 16px 20px;
+  }
+
+  .gim-logo .gim-main-logo {
+    max-width: 200px;
+  }
+
+  .gim-logo img:not(.gim-main-logo) {
+    width: 46px;
+    height: 46px;
+  }
+
+  .gim-logo h2 {
+    font-size: 20px;
+  }
+
+  .gim-tabs button {
+    padding: 14px 6px;
+    font-size: 10px;
+  }
+
+  .gim-tabs button svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  .gim-content {
+    padding: 18px;
+  }
+
+  .gim-special-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .gim-rule-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .gim-grid-info {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .gim-buy-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .gim-boost-cards {
+    grid-template-columns: 1fr;
+  }
+
+  .gim-pay-symbol span {
+    display: none;
+  }
+
+  .gim-pay-symbol img {
+    width: 32px;
+    height: 32px;
+  }
+
+  .gim-pay-row span {
+    font-size: 11px;
+  }
+}

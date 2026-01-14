@@ -612,6 +612,45 @@ class AudioService {
   }
 
   /**
+   * Play Wolf Burst sound - Intense wolf howl effect (2.5 seconds)
+   */
+  playWolfBurstSound() {
+    if (!this.isInitialized || !this.sfxEnabled) return;
+
+    const now = Tone.now();
+
+    // Deep bass growl
+    this.sfxSynths.scatter.triggerAttackRelease('C2', '2n', now, 0.8);
+    this.sfxSynths.scatter.triggerAttackRelease('G1', '2n', now + 0.1, 0.6);
+
+    // Rising howl - dramatic sweep
+    const howl = ['G3', 'C4', 'E4', 'G4', 'C5', 'E5', 'G5'];
+    howl.forEach((note, i) => {
+      this.sfxSynths.bigWin.triggerAttackRelease(note, '4n', now + 0.3 + (i * 0.2), 0.5 + (i * 0.05));
+    });
+
+    // Wild energy bursts (green glow effect)
+    for (let i = 0; i < 8; i++) {
+      this.sfxSynths.winChime.triggerAttackRelease('C6', '32n', now + 0.5 + (i * 0.25), 0.6);
+      this.sfxSynths.winChime.triggerAttackRelease('G6', '32n', now + 0.6 + (i * 0.25), 0.5);
+    }
+
+    // Powerful whoosh effects
+    this.sfxSynths.whoosh.triggerAttackRelease('4n', now + 0.8, 0.7);
+    this.sfxSynths.whoosh.triggerAttackRelease('4n', now + 1.3, 0.8);
+    this.sfxSynths.whoosh.triggerAttackRelease('4n', now + 1.8, 0.9);
+
+    // Final powerful chord
+    this.sfxSynths.bigWin.triggerAttackRelease(['C4', 'E4', 'G4', 'C5'], '2n', now + 2.0, 0.7);
+
+    // Sparkle finish
+    const finale = ['E6', 'G6', 'C7'];
+    finale.forEach((note, i) => {
+      this.sfxSynths.winChime.triggerAttackRelease(note, '8n', now + 2.2 + (i * 0.1), 0.8);
+    });
+  }
+
+  /**
    * Play coin counter tick sound (for win counter animation)
    */
   playCoinTick() {
@@ -726,26 +765,27 @@ class AudioService {
   }
 
   /**
-   * Create musical sequences
+   * Create musical sequences - Casino/Wolf Theme
+   * Darker, more mysterious with occasional tension
    */
   _createSequences() {
-    // BPM
-    Tone.Transport.bpm.value = 108;
+    // BPM - Slightly slower for mysterious vibe
+    Tone.Transport.bpm.value = 92;
 
-    // Chord progression - Am, Em, F, G (classic synthwave)
+    // Chord progression - Dm, Am, Bb, Gm (darker, more dramatic)
     const chordProgression = [
-      ['A3', 'C4', 'E4'],  // Am
-      ['E3', 'G3', 'B3'],  // Em
-      ['F3', 'A3', 'C4'],  // F
-      ['G3', 'B3', 'D4'],  // G
+      ['D3', 'F3', 'A3'],  // Dm - mysterious
+      ['A2', 'C3', 'E3'],  // Am - tension
+      ['Bb2', 'D3', 'F3'], // Bb - drama
+      ['G2', 'Bb2', 'D3'], // Gm - resolve
     ];
 
-    // Lower octave chords for pad2
+    // Lower octave chords for pad2 - deep and rumbling
     const chordProgression2 = [
-      ['A2', 'E3'],  // Am bass
-      ['E2', 'B2'],  // Em bass
-      ['F2', 'C3'],  // F bass
-      ['G2', 'D3'],  // G bass
+      ['D2', 'A2'],  // Dm bass
+      ['A1', 'E2'],  // Am bass
+      ['Bb1', 'F2'], // Bb bass
+      ['G1', 'D2'],  // Gm bass
     ];
 
     // Pad sequence - long sustained chords
@@ -764,12 +804,12 @@ class AudioService {
       chord2Index++;
     }, '1n');
 
-    // Bass line - more groove
+    // Bass line - darker, prowling wolf feel
     const bassPattern = [
-      ['A1', '8n'], [null, '16n'], ['A1', '16n'], ['A2', '8n'], [null, '8n'],
-      ['E1', '8n'], [null, '16n'], ['E1', '16n'], ['E2', '8n'], [null, '8n'],
-      ['F1', '8n'], [null, '16n'], ['F1', '16n'], ['F2', '8n'], [null, '8n'],
-      ['G1', '8n'], [null, '16n'], ['G2', '16n'], ['G1', '8n'], [null, '8n'],
+      ['D1', '4n'], [null, '8n'], ['D2', '8n'], ['D1', '16n'], [null, '16n'],
+      ['A1', '4n'], [null, '8n'], ['A2', '8n'], ['E2', '16n'], [null, '16n'],
+      ['Bb1', '4n'], [null, '8n'], ['F2', '8n'], ['Bb1', '16n'], [null, '16n'],
+      ['G1', '4n'], [null, '8n'], ['D2', '8n'], ['G1', '16n'], [null, '16n'],
     ];
 
     let bassIndex = 0;
@@ -781,8 +821,8 @@ class AudioService {
       bassIndex++;
     }, '8n');
 
-    // Main arpeggio pattern
-    const arpNotes = ['E4', 'A4', 'C5', 'E5', 'C5', 'A4', 'G4', 'A4'];
+    // Main arpeggio pattern - mysterious, wolf-like
+    const arpNotes = ['D4', 'F4', 'A4', 'D5', 'A4', 'F4', 'E4', 'D4'];
     let arpIndex = 0;
     this.sequences.arp = new Tone.Loop((time) => {
       const note = arpNotes[arpIndex % arpNotes.length];
@@ -790,23 +830,23 @@ class AudioService {
       arpIndex++;
     }, '8n');
 
-    // Second arpeggio - ghostly high notes
-    const arp2Notes = [null, 'E6', null, 'C6', null, 'A5', null, 'G5', null, 'E6', null, null, null, 'B5', null, null];
+    // Second arpeggio - eerie wolf howl-like high notes
+    const arp2Notes = [null, 'D6', null, 'A5', null, 'F5', null, null, null, 'D6', null, 'Bb5', null, null, null, null];
     let arp2Index = 0;
     this.sequences.arp2 = new Tone.Loop((time) => {
       const note = arp2Notes[arp2Index % arp2Notes.length];
       if (note) {
-        this.synths.arp2.triggerAttackRelease(note, '8n', time, 0.4);
+        this.synths.arp2.triggerAttackRelease(note, '8n', time, 0.35);
       }
       arp2Index++;
     }, '16n');
 
-    // Lead melody - plays every 4 bars with variation
+    // Lead melody - wolf howl inspired, dramatic
     const leadMelodies = [
-      ['E5', 'G5', 'A5', 'C6', 'B5', 'A5', 'G5', 'E5'],
-      ['A5', 'C6', 'E6', 'D6', 'C6', 'A5', 'G5', 'A5'],
-      ['C5', 'E5', 'G5', 'A5', 'G5', 'E5', 'D5', 'C5'],
-      ['G5', 'A5', 'B5', 'C6', 'B5', 'G5', 'E5', 'G5'],
+      ['D5', 'F5', 'A5', 'D6', 'A5', 'F5', 'E5', 'D5'],
+      ['A5', 'Bb5', 'D6', 'F6', 'D6', 'Bb5', 'A5', 'G5'],
+      ['Bb4', 'D5', 'F5', 'A5', 'F5', 'D5', 'C5', 'Bb4'],
+      ['G5', 'Bb5', 'D6', 'F6', 'D6', 'Bb5', 'G5', 'F5'],
     ];
     let leadMelodyIndex = 0;
     let leadNoteIndex = 0;
@@ -823,8 +863,8 @@ class AudioService {
       }
     }, '4n');
 
-    // Pluck accents - sporadic
-    const pluckPattern = ['A4', null, null, null, 'E4', null, null, null, 'C5', null, null, null, null, null, 'G4', null];
+    // Pluck accents - casino coins/chips feel
+    const pluckPattern = ['D5', null, null, null, 'A4', null, null, null, 'F4', null, null, 'D4', null, null, null, null];
     let pluckIndex = 0;
     this.sequences.pluck = new Tone.Loop((time) => {
       const note = pluckPattern[pluckIndex % pluckPattern.length];

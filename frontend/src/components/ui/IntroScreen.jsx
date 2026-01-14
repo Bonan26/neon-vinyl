@@ -1,375 +1,202 @@
 /**
- * LES WOLFS 86 - Intro Screen
- * Modern animated intro screen
+ * LES WOLFS 86 - Intro Screen with Loading
+ * Clean design inspired by "Le Bandit" (Hacksaw Gaming)
  */
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { gsap } from 'gsap';
+import React, { useState, useEffect, useCallback } from 'react';
 import './IntroScreen.css';
 
-const STORAGE_KEY = 'neonvinyl_skip_intro';
+const STORAGE_KEY = 'wolfs86_skip_intro';
+
+// All images to preload (with cache buster)
+const CACHE_VERSION = 'v14';
+const PRELOAD_IMAGES = [
+  `/logo.png?${CACHE_VERSION}`,
+  `/symbols/wolf_red.png?${CACHE_VERSION}`,
+  `/symbols/wolf_black.png?${CACHE_VERSION}`,
+  `/symbols/wolf_purple.png?${CACHE_VERSION}`,
+  `/symbols/wolf_gray.png?${CACHE_VERSION}`,
+  `/symbols/wolf_green.png?${CACHE_VERSION}`,
+  `/symbols/wolf_spirit.png?${CACHE_VERSION}`,
+  `/symbols/hat_cap.png?${CACHE_VERSION}`,
+  `/symbols/hat_steam.png?${CACHE_VERSION}`,
+  `/symbols/hat_straw.png?${CACHE_VERSION}`,
+  `/symbols/hat_peacock.png?${CACHE_VERSION}`,
+  `/symbols/scatter_gold.jpg?${CACHE_VERSION}`,
+  `/symbols/crown_matrix.png?${CACHE_VERSION}`,
+];
 
 const IntroScreen = ({ onStart }) => {
   const [showIntro, setShowIntro] = useState(true);
   const [skipNextTime, setSkipNextTime] = useState(false);
-  const [isExiting, setIsExiting] = useState(false);
-  const [isReady, setIsReady] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadProgress, setLoadProgress] = useState(0);
+  const [loadedImages, setLoadedImages] = useState(0);
 
-  const titleRef = useRef(null);
-  const subtitleRef = useRef(null);
-  const badgeRef = useRef(null);
-  const infoRef = useRef(null);
-  const featuresRef = useRef(null);
-  const buttonRef = useRef(null);
-
-  // Check localStorage on mount
+  // Preload all images
   useEffect(() => {
-    const skipIntro = localStorage.getItem(STORAGE_KEY) === 'true';
-    if (skipIntro) {
-      setShowIntro(false);
-      onStart?.();
-    } else {
-      // Trigger entrance animations
-      setTimeout(() => setIsReady(true), 100);
+    let loaded = 0;
+    const totalImages = PRELOAD_IMAGES.length;
+
+    const preloadImage = (src) => {
+      return new Promise((resolve) => {
+        const img = new Image();
+        img.onload = () => {
+          loaded++;
+          setLoadedImages(loaded);
+          setLoadProgress(Math.round((loaded / totalImages) * 100));
+          resolve();
+        };
+        img.onerror = () => {
+          loaded++;
+          setLoadedImages(loaded);
+          setLoadProgress(Math.round((loaded / totalImages) * 100));
+          resolve(); // Continue even if image fails
+        };
+        img.src = src;
+      });
+    };
+
+    // Load all images
+    Promise.all(PRELOAD_IMAGES.map(preloadImage)).then(() => {
+      // Add minimum loading time for smooth UX
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 500);
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!isLoading) {
+      const skipIntro = localStorage.getItem(STORAGE_KEY) === 'true';
+      if (skipIntro) {
+        setShowIntro(false);
+        onStart?.();
+      }
     }
-  }, [onStart]);
-
-  // Entrance animations
-  useEffect(() => {
-    if (!isReady || isExiting) return;
-
-    const tl = gsap.timeline();
-
-    // Title entrance
-    tl.fromTo(titleRef.current,
-      { y: -100, opacity: 0, scale: 0.5 },
-      { y: 0, opacity: 1, scale: 1, duration: 1, ease: 'elastic.out(1, 0.5)' }
-    );
-
-    // Subtitle
-    tl.fromTo(subtitleRef.current,
-      { y: 30, opacity: 0 },
-      { y: 0, opacity: 1, duration: 0.5, ease: 'power2.out' },
-      '-=0.5'
-    );
-
-    // Badge
-    tl.fromTo(badgeRef.current,
-      { scale: 0, rotation: -20 },
-      { scale: 1, rotation: 0, duration: 0.6, ease: 'back.out(2)' },
-      '-=0.3'
-    );
-
-    // Info cards
-    tl.fromTo('.intro-card',
-      { y: 50, opacity: 0 },
-      { y: 0, opacity: 1, duration: 0.5, stagger: 0.1, ease: 'power2.out' },
-      '-=0.3'
-    );
-
-    // Features
-    tl.fromTo('.intro-feature',
-      { x: -30, opacity: 0 },
-      { x: 0, opacity: 1, duration: 0.4, stagger: 0.1, ease: 'power2.out' },
-      '-=0.2'
-    );
-
-    // Button with pulse
-    tl.fromTo(buttonRef.current,
-      { scale: 0, opacity: 0 },
-      { scale: 1, opacity: 1, duration: 0.5, ease: 'back.out(2)' },
-      '-=0.2'
-    );
-
-    // Continuous animations
-    tl.to(titleRef.current, {
-      textShadow: '0 0 60px #00ffff, 0 0 120px #00ffff',
-      duration: 2,
-      yoyo: true,
-      repeat: -1,
-      ease: 'sine.inOut',
-    }, '-=0.5');
-
-    tl.to(badgeRef.current, {
-      y: -10,
-      duration: 2,
-      yoyo: true,
-      repeat: -1,
-      ease: 'sine.inOut',
-    }, '<');
-
-    return () => tl.kill();
-  }, [isReady, isExiting]);
+  }, [isLoading, onStart]);
 
   const handleStart = useCallback(() => {
     if (skipNextTime) {
       localStorage.setItem(STORAGE_KEY, 'true');
     }
-
-    setIsExiting(true);
-
-    // Exit animation
-    const tl = gsap.timeline({
-      onComplete: () => {
-        setShowIntro(false);
-        onStart?.();
-      }
-    });
-
-    tl.to('.intro-content', {
-      scale: 1.1,
-      opacity: 0,
-      duration: 0.5,
-      ease: 'power2.in',
-    });
-
-    tl.to('.intro-screen', {
-      opacity: 0,
-      duration: 0.3,
-    }, '-=0.2');
+    setShowIntro(false);
+    onStart?.();
   }, [skipNextTime, onStart]);
-
-  const handleCheckboxChange = useCallback((e) => {
-    setSkipNextTime(e.target.checked);
-  }, []);
 
   if (!showIntro) return null;
 
+  // Show loading screen while images load
+  if (isLoading) {
+    return (
+      <div className="intro-screen loading-screen">
+        <div className="loading-content">
+          {/* Logo */}
+          <div className="loading-logo">
+            <img src={`/logo.png?v14`} alt="Les Wolfs 86" className="main-logo-img" />
+          </div>
+
+          {/* Loading bar */}
+          <div className="loading-bar-container">
+            <div className="loading-bar">
+              <div
+                className="loading-bar-fill"
+                style={{ width: `${loadProgress}%` }}
+              />
+            </div>
+            <span className="loading-text">CHARGEMENT... {loadProgress}%</span>
+          </div>
+
+          {/* Loading spinner */}
+          <div className="loading-spinner">
+            <div className="spinner-ring"></div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="intro-screen">
-      {/* Animated background */}
+      {/* Background illustration */}
       <div className="intro-bg">
-        {/* Floating particles */}
-        <div className="intro-particles">
-          {[...Array(40)].map((_, i) => (
-            <div
-              key={i}
-              className="intro-particle"
-              style={{
-                '--x': `${Math.random() * 100}%`,
-                '--delay': `${Math.random() * 5}s`,
-                '--duration': `${4 + Math.random() * 6}s`,
-                '--size': `${3 + Math.random() * 6}px`,
-              }}
-            />
-          ))}
-        </div>
-
-        {/* Light rays */}
-        <div className="intro-rays">
-          <div className="intro-ray intro-ray-1" />
-          <div className="intro-ray intro-ray-2" />
-          <div className="intro-ray intro-ray-3" />
-          <div className="intro-ray intro-ray-4" />
-        </div>
-
-        {/* Glow orbs */}
-        <div className="intro-glow intro-glow-1" />
-        <div className="intro-glow intro-glow-2" />
-        <div className="intro-glow intro-glow-3" />
-
-        {/* Grid lines */}
-        <div className="intro-grid" />
+        <div className="intro-bg-gradient" />
+        <img
+          src="/symbols/wolf_gray.png"
+          alt=""
+          className="intro-bg-wolf intro-bg-wolf-1"
+        />
+        <img
+          src="/symbols/wolf_black.png"
+          alt=""
+          className="intro-bg-wolf intro-bg-wolf-2"
+        />
       </div>
 
-      {/* Main content */}
+      {/* Content */}
       <div className="intro-content">
-        {/* Logo Section */}
-        <div className="intro-logo-section">
-          <h1 className="intro-title" ref={titleRef}>LES WOLFS</h1>
-          <h2 className="intro-subtitle" ref={subtitleRef}>86</h2>
+        {/* Title - Main Logo */}
+        <div className="intro-header">
+          <img src={`/logo.png?v14`} alt="Les Wolfs 86" className="intro-main-logo" />
         </div>
 
-        {/* Max Win Badge */}
-        <div className="intro-max-badge" ref={badgeRef}>
-          <span className="badge-label">MAX WIN</span>
-          <span className="badge-value">40,000x</span>
-          <div className="badge-shine" />
-        </div>
-
-        {/* Info Cards */}
-        <div className="intro-info-grid" ref={infoRef}>
-          <div className="intro-card">
-            <div className="card-icon">
-              <svg viewBox="0 0 24 24" fill="currentColor">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
-              </svg>
-            </div>
-            <div className="card-content">
-              <span className="card-label">GRID</span>
-              <span className="card-value">7x7</span>
-            </div>
-          </div>
-
-          <div className="intro-card">
-            <div className="card-icon volatility-icon">
-              <svg viewBox="0 0 24 24" fill="currentColor">
-                <path d="M7 2v11h3v9l7-12h-4l4-8z"/>
-              </svg>
-            </div>
-            <div className="card-content">
-              <span className="card-label">VOLATILITY</span>
-              <span className="card-value high">HIGH</span>
-            </div>
-          </div>
-
-          <div className="intro-card">
-            <div className="card-icon rtp-icon">
-              <svg viewBox="0 0 24 24" fill="currentColor">
-                <path d="M11.8 10.9c-2.27-.59-3-1.2-3-2.15 0-1.09 1.01-1.85 2.7-1.85 1.78 0 2.44.85 2.5 2.1h2.21c-.07-1.72-1.12-3.3-3.21-3.81V3h-3v2.16c-1.94.42-3.5 1.68-3.5 3.61 0 2.31 1.91 3.46 4.7 4.13 2.5.6 3 1.48 3 2.41 0 .69-.49 1.79-2.7 1.79-2.06 0-2.87-.92-2.98-2.1h-2.2c.12 2.19 1.76 3.42 3.68 3.83V21h3v-2.15c1.95-.37 3.5-1.5 3.5-3.55 0-2.84-2.43-3.81-4.7-4.4z"/>
-              </svg>
-            </div>
-            <div className="card-content">
-              <span className="card-label">RTP</span>
-              <span className="card-value">96.0%</span>
-            </div>
+        {/* Volatility indicator */}
+        <div className="intro-volatility">
+          <span>VOLATILITE</span>
+          <div className="volatility-bars">
+            <span className="bar active"></span>
+            <span className="bar active"></span>
+            <span className="bar active"></span>
+            <span className="bar active"></span>
           </div>
         </div>
 
-        {/* Features Section */}
-        <div className="intro-features-section" ref={featuresRef}>
-          {/* Main Mechanics */}
-          <div className="intro-features-group">
-            <h3 className="features-group-title">Mechanics</h3>
-            <div className="intro-features">
-              <div className="intro-feature">
-                <div className="feature-icon cluster-icon">
-                  <svg viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M4 4h4v4H4zm6 0h4v4h-4zm6 0h4v4h-4zM4 10h4v4H4zm6 0h4v4h-4zm6 0h4v4h-4zM4 16h4v4H4zm6 0h4v4h-4zm6 0h4v4h-4z"/>
-                  </svg>
-                </div>
-                <div className="feature-text">
-                  <span className="feature-name">CLUSTER PAYS</span>
-                  <span className="feature-desc">5+ connected symbols = win</span>
-                </div>
-              </div>
-
-              <div className="intro-feature">
-                <div className="feature-icon tumble-icon">
-                  <svg viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z"/>
-                  </svg>
-                </div>
-                <div className="feature-text">
-                  <span className="feature-name">TUMBLE</span>
-                  <span className="feature-desc">Wins explode, new symbols fall</span>
-                </div>
-              </div>
-
-              <div className="intro-feature">
-                <div className="feature-icon mult-icon">x256</div>
-                <div className="feature-text">
-                  <span className="feature-name">MULTIPLIERS</span>
-                  <span className="feature-desc">Stack on every tumble (max x256)</span>
-                </div>
-              </div>
+        {/* Feature cards */}
+        <div className="intro-features">
+          <div className="feature-card">
+            <div className="feature-icon">
+              <img src="/symbols/wolf_red.png" alt="" />
             </div>
+            <h3>LOUPS SAUVAGES</h3>
+            <p>Les loups sont les symboles premium. Connectez 5+ loups identiques pour gagner gros!</p>
           </div>
 
-          {/* Special Symbols */}
-          <div className="intro-features-group">
-            <h3 className="features-group-title">Special Symbols</h3>
-            <div className="intro-features">
-              <div className="intro-feature">
-                <div className="feature-icon wild-icon">W</div>
-                <div className="feature-text">
-                  <span className="feature-name">EXPLOSIVE WILD</span>
-                  <span className="feature-desc">Substitutes all, multiplies adjacent cells</span>
-                </div>
-              </div>
-
-              <div className="intro-feature">
-                <div className="feature-icon scatter-icon">SC</div>
-                <div className="feature-text">
-                  <span className="feature-name">SCATTER</span>
-                  <span className="feature-desc">3+ scatters = 8-20 free spins</span>
-                </div>
-              </div>
+          <div className="feature-card">
+            <div className="feature-icon scatter">
+              <img src="/symbols/scatter_gold.jpg" alt="" />
             </div>
+            <h3>FREE SPINS</h3>
+            <p>3+ Loups Dorés declenchent les tours gratuits avec multiplicateurs croissants!</p>
           </div>
 
-          {/* Boost Features */}
-          <div className="intro-features-group">
-            <h3 className="features-group-title">Bonus Boosts</h3>
-            <div className="intro-features">
-              <div className="intro-feature scatter-hunt-feature">
-                <div className="feature-icon scatter-hunt-icon">
-                  <svg viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
-                  </svg>
-                </div>
-                <div className="feature-text">
-                  <span className="feature-name">SCATTER HUNT</span>
-                  <span className="feature-desc">Collect scatters to boost your bonus chances</span>
-                </div>
-                <div className="feature-badge">5 SPINS</div>
-              </div>
-
-              <div className="intro-feature wild-boost-feature">
-                <div className="feature-icon wild-boost-icon">
-                  <svg viewBox="0 0 24 24" fill="currentColor">
-                    <path d="M7 2v11h3v9l7-12h-4l4-8z"/>
-                  </svg>
-                </div>
-                <div className="feature-text">
-                  <span className="feature-name">WILD BOOST</span>
-                  <span className="feature-desc">Wilds with guaranteed x2-x5 multipliers</span>
-                </div>
-                <div className="feature-badge orange">3 SPINS</div>
-              </div>
+          <div className="feature-card">
+            <div className="feature-icon crown">
+              <img src="/symbols/crown_matrix.png" alt="" />
             </div>
-          </div>
-
-          {/* Bonus Buy */}
-          <div className="intro-features-group">
-            <h3 className="features-group-title">Bonus Buy</h3>
-            <div className="intro-features">
-              <div className="intro-feature bonus-buy-feature">
-                <div className="feature-icon bonus-icon">$</div>
-                <div className="feature-text">
-                  <span className="feature-name">BUY BONUS</span>
-                  <span className="feature-desc">Instantly access Free Spins</span>
-                </div>
-              </div>
-
-              <div className="intro-bonus-options">
-                <div className="bonus-option">
-                  <span className="bonus-name">Scatter Hunt</span>
-                  <span className="bonus-price">2x bet</span>
-                </div>
-                <div className="bonus-option">
-                  <span className="bonus-name">Wild Boost</span>
-                  <span className="bonus-price">5x bet</span>
-                </div>
-                <div className="bonus-option">
-                  <span className="bonus-name">Free Spins</span>
-                  <span className="bonus-price">24x bet</span>
-                </div>
-                <div className="bonus-option highlight">
-                  <span className="bonus-name">Super Spins</span>
-                  <span className="bonus-price">36x bet</span>
-                </div>
-              </div>
-            </div>
+            <h3>GAIN MAX</h3>
+            <p>Gagnez jusqu'a 40,000x votre mise grace aux multiplicateurs qui s'accumulent!</p>
           </div>
         </div>
 
-        {/* Start Button */}
-        <button className="intro-start-btn" ref={buttonRef} onClick={handleStart}>
-          <span className="btn-bg" />
-          <span className="btn-text">PLAY</span>
-          <span className="btn-shine" />
+        {/* Start button */}
+        <button className="intro-start-btn" onClick={handleStart}>
+          CLIQUEZ POUR JOUER
         </button>
 
-        {/* Skip Option */}
-        <label className="intro-skip-option">
+        {/* Skip option */}
+        <label className="intro-skip">
           <input
             type="checkbox"
             checked={skipNextTime}
-            onChange={handleCheckboxChange}
+            onChange={(e) => setSkipNextTime(e.target.checked)}
           />
-          <span className="checkmark" />
-          <span>Don't show again</span>
+          <span className="checkmark"></span>
+          Ne plus afficher
         </label>
+      </div>
+
+      {/* Corner logo */}
+      <div className="intro-corner-logo">
+        <img src={`/logo.png?v14`} alt="Les Wolfs 86" />
       </div>
     </div>
   );
