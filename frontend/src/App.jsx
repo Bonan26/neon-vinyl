@@ -22,7 +22,51 @@ import './App.css';
 
 const AUTO_SPIN_OPTIONS = [10, 25, 50, 100, 500, 1000, Infinity];
 
+// Game dimensions from config (6*100 + 5*3 + 12 = 627px, 5*100 + 4*3 + 12 = 524px)
+const GAME_BASE_WIDTH = 627 + 24; // Including frame padding
+const GAME_BASE_HEIGHT = 524 + 24 + 125 + 80; // Including frame, logo, and controls
+
+// Custom hook for responsive scaling
+const useResponsiveScale = () => {
+  const [scale, setScale] = useState(1);
+
+  useEffect(() => {
+    const calculateScale = () => {
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+
+      // Calculate scale based on viewport
+      const scaleX = (vw - 20) / GAME_BASE_WIDTH;
+      const scaleY = (vh - 40) / GAME_BASE_HEIGHT;
+
+      // Use the smaller scale to fit both dimensions
+      let newScale = Math.min(scaleX, scaleY, 1); // Max scale is 1
+
+      // Clamp minimum scale for readability
+      newScale = Math.max(newScale, 0.45);
+
+      setScale(newScale);
+    };
+
+    calculateScale();
+    window.addEventListener('resize', calculateScale);
+    window.addEventListener('orientationchange', () => {
+      setTimeout(calculateScale, 100); // Delay for orientation change
+    });
+
+    return () => {
+      window.removeEventListener('resize', calculateScale);
+      window.removeEventListener('orientationchange', calculateScale);
+    };
+  }, []);
+
+  return scale;
+};
+
 function App() {
+  // Responsive scaling
+  const gameScale = useResponsiveScale();
+
   // Game controller for API calls
   const { spin, rotateSeed, buyBonus, bonusTriggerSpin, activateBoost } = useGameController();
 
@@ -108,6 +152,10 @@ function App() {
 
   // Wolf Burst animation state
   const [wolfBurstActive, setWolfBurstActive] = useState(false);
+
+  // Win animation state (auto-resets after 2 seconds)
+  const [winAnimationActive, setWinAnimationActive] = useState(false);
+  const winAnimationTimeoutRef = useRef(null);
 
   // Track if we were in free spins (to detect when they end)
   const wasInFreeSpinsRef = useRef(false);
@@ -232,6 +280,27 @@ function App() {
       audioService.dispose();
     };
   }, []);
+
+  // Trigger win animation for 2 seconds when there's a win
+  useEffect(() => {
+    if (lastWin > 0) {
+      // Clear any existing timeout
+      if (winAnimationTimeoutRef.current) {
+        clearTimeout(winAnimationTimeoutRef.current);
+      }
+      // Start animation
+      setWinAnimationActive(true);
+      // Stop after 2 seconds
+      winAnimationTimeoutRef.current = setTimeout(() => {
+        setWinAnimationActive(false);
+      }, 2000);
+    }
+    return () => {
+      if (winAnimationTimeoutRef.current) {
+        clearTimeout(winAnimationTimeoutRef.current);
+      }
+    };
+  }, [lastWin]);
 
   // Keyboard controls
   useEffect(() => {
@@ -495,7 +564,13 @@ function App() {
       )}
 
       {/* MAIN GAME AREA - Le Bandit style */}
-      <div className="game-area">
+      <div
+        className="game-area"
+        style={{
+          transform: `scale(${gameScale})`,
+          transformOrigin: 'top center',
+        }}
+      >
         {/* Machine Frame with integrated title */}
         <div className="machine-frame">
           {/* Title in decorative header - Logo */}
@@ -522,8 +597,8 @@ function App() {
           </div>
 
           {/* Mascot wolf on right side with animated image */}
-          <div className={`mascot-character ${wolfBurstActive ? 'wolf-burst' : ''} ${lastWin > 0 ? 'excited' : ''} ${isSpinning ? 'breathing' : ''}`} id="mascot-wolf">
-            <img src="/symbols/wolf_red.png" alt="Wolf Mascot" className="wolf-image" />
+          <div className={`mascot-character ${wolfBurstActive ? 'wolf-burst' : ''} ${winAnimationActive ? 'excited' : ''} ${isSpinning ? 'breathing' : ''}`} id="mascot-wolf">
+            <img src="/mascotte.png" alt="Wolf Mascot" className="wolf-image" />
           </div>
         </div>
 

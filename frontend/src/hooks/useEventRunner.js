@@ -72,19 +72,17 @@ const useEventRunner = () => {
 
   // Calculate timing based on effective speed
   // - During autospin: use autoSpinSpeed
-  // - During free spins (not autospin): use manualSpeedMode
-  // - Otherwise: NORMAL speed
+  // - Otherwise: always use manualSpeedMode (base game and free spins)
   const getSpeedMultiplier = useCallback(() => {
     let effectiveSpeed;
     if (autoSpinActive) {
       effectiveSpeed = autoSpinSpeed;
-    } else if (freeSpinsRemaining > 0) {
-      effectiveSpeed = manualSpeedMode;
     } else {
-      effectiveSpeed = 'normal';
+      // Always use manual speed mode (x2 or x4 from settings)
+      effectiveSpeed = manualSpeedMode;
     }
     return SPEED_MULTIPLIERS[effectiveSpeed] || 1;
-  }, [autoSpinActive, autoSpinSpeed, freeSpinsRemaining, manualSpeedMode]);
+  }, [autoSpinActive, autoSpinSpeed, manualSpeedMode]);
 
   /**
    * Set callback for bonus trigger event

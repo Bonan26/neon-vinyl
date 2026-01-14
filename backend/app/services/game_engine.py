@@ -12,8 +12,8 @@ from app.models.symbols import Symbol, SYMBOL_CONFIG, get_payout, SymbolTier, SP
 
 
 # Constants
-GRID_SIZE = 7
-MIN_CLUSTER_SIZE = 5
+GRID_SIZE = 6
+MIN_CLUSTER_SIZE = 4
 MAX_MULTIPLIER = 1024
 
 # Wild Wheel multiplier weights (lower weight = rarer)
