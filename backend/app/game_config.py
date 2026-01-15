@@ -88,25 +88,25 @@ class SymbolConfig:
 # =============================================================================
 
 SYMBOL_WEIGHTS: Dict[Symbol, SymbolConfig] = {
-    # Special symbols - Tuned for excitement and RTP
-    Symbol.WILD: SymbolConfig(Symbol.WILD, SymbolTier.SPECIAL, 1),      # Matrix Crown - Rare but pays BIG
-    Symbol.SCATTER: SymbolConfig(Symbol.SCATTER, SymbolTier.SPECIAL, 1), # Golden Wolf - triggers free spins
+    # Special symbols - Tuned for 96% RTP
+    Symbol.WILD: SymbolConfig(Symbol.WILD, SymbolTier.SPECIAL, 3),      # Matrix Crown - Balanced for RTP
+    Symbol.SCATTER: SymbolConfig(Symbol.SCATTER, SymbolTier.SPECIAL, 2), # Golden Wolf - ~0.5% trigger rate
 
-    # High tier wolves - rare (weight 6-10)
-    Symbol.WOLF_RED: SymbolConfig(Symbol.WOLF_RED, SymbolTier.HIGH, 6),     # Red Wolf - best payout
-    Symbol.WOLF_BLACK: SymbolConfig(Symbol.WOLF_BLACK, SymbolTier.HIGH, 8),  # Black Wolf
-    Symbol.WOLF_PURPLE: SymbolConfig(Symbol.WOLF_PURPLE, SymbolTier.HIGH, 10), # Purple Wolf
+    # High tier wolves - slightly increased (weight 8-12)
+    Symbol.WOLF_RED: SymbolConfig(Symbol.WOLF_RED, SymbolTier.HIGH, 8),     # Red Wolf - best payout
+    Symbol.WOLF_BLACK: SymbolConfig(Symbol.WOLF_BLACK, SymbolTier.HIGH, 10),  # Black Wolf
+    Symbol.WOLF_PURPLE: SymbolConfig(Symbol.WOLF_PURPLE, SymbolTier.HIGH, 12), # Purple Wolf
 
-    # Mid tier wolves - medium (weight 14-20)
-    Symbol.WOLF_GRAY: SymbolConfig(Symbol.WOLF_GRAY, SymbolTier.MID, 14),
-    Symbol.WOLF_GREEN: SymbolConfig(Symbol.WOLF_GREEN, SymbolTier.MID, 17),
-    Symbol.WOLF_SPIRIT: SymbolConfig(Symbol.WOLF_SPIRIT, SymbolTier.MID, 20),
+    # Mid tier wolves - medium (weight 16-22)
+    Symbol.WOLF_GRAY: SymbolConfig(Symbol.WOLF_GRAY, SymbolTier.MID, 16),
+    Symbol.WOLF_GREEN: SymbolConfig(Symbol.WOLF_GREEN, SymbolTier.MID, 19),
+    Symbol.WOLF_SPIRIT: SymbolConfig(Symbol.WOLF_SPIRIT, SymbolTier.MID, 22),
 
-    # Low tier wolves - common (weight 25-35)
-    Symbol.WOLF_WHITE: SymbolConfig(Symbol.WOLF_WHITE, SymbolTier.LOW, 25),
-    Symbol.WOLF_SNAKE: SymbolConfig(Symbol.WOLF_SNAKE, SymbolTier.LOW, 28),
-    Symbol.WOLF_STREET: SymbolConfig(Symbol.WOLF_STREET, SymbolTier.LOW, 32),
-    Symbol.WOLF_BLUE: SymbolConfig(Symbol.WOLF_BLUE, SymbolTier.LOW, 35),
+    # Low tier wolves - common (weight 26-36)
+    Symbol.WOLF_WHITE: SymbolConfig(Symbol.WOLF_WHITE, SymbolTier.LOW, 26),
+    Symbol.WOLF_SNAKE: SymbolConfig(Symbol.WOLF_SNAKE, SymbolTier.LOW, 29),
+    Symbol.WOLF_STREET: SymbolConfig(Symbol.WOLF_STREET, SymbolTier.LOW, 33),
+    Symbol.WOLF_BLUE: SymbolConfig(Symbol.WOLF_BLUE, SymbolTier.LOW, 36),
 }
 
 # Weights for regular spins (includes Wild and Scatter)
@@ -123,19 +123,20 @@ for w in WEIGHTS_LIST:
 
 # Weights for Free Spins (WITH Scatter for retriggers!)
 # IMPORTANT: Scatter can land during free spins for retrigger mechanic
+# Slightly more Wilds during free spins for exciting gameplay
 FREE_SPIN_WEIGHTS: Dict[Symbol, int] = {
-    Symbol.WILD: 1,  # Matrix Crown - rare but powerful
-    Symbol.SCATTER: 1,  # Golden Wolf - rare retriggres
-    Symbol.WOLF_RED: 6,
-    Symbol.WOLF_BLACK: 8,
-    Symbol.WOLF_PURPLE: 10,
-    Symbol.WOLF_GRAY: 14,
-    Symbol.WOLF_GREEN: 17,
-    Symbol.WOLF_SPIRIT: 20,
-    Symbol.WOLF_WHITE: 25,
-    Symbol.WOLF_SNAKE: 28,
-    Symbol.WOLF_STREET: 32,
-    Symbol.WOLF_BLUE: 35,
+    Symbol.WILD: 5,  # Matrix Crown - slightly more frequent during free spins
+    Symbol.SCATTER: 3,  # Golden Wolf - some retrigger chance
+    Symbol.WOLF_RED: 8,
+    Symbol.WOLF_BLACK: 10,
+    Symbol.WOLF_PURPLE: 12,
+    Symbol.WOLF_GRAY: 16,
+    Symbol.WOLF_GREEN: 19,
+    Symbol.WOLF_SPIRIT: 22,
+    Symbol.WOLF_WHITE: 26,
+    Symbol.WOLF_SNAKE: 29,
+    Symbol.WOLF_STREET: 33,
+    Symbol.WOLF_BLUE: 36,
 }
 FREE_SPIN_SYMBOLS_LIST = list(FREE_SPIN_WEIGHTS.keys())
 FREE_SPIN_WEIGHTS_LIST = list(FREE_SPIN_WEIGHTS.values())
@@ -155,11 +156,11 @@ for w in FREE_SPIN_WEIGHTS_LIST:
 # =============================================================================
 
 PAYTABLE: Dict[Symbol, Dict[int, float]] = {
-    # Wild (Matrix Crown) pays same as best wolf
+    # Wild (Matrix Crown) pays same as best wolf - Tuned for 96% RTP
     Symbol.WILD: {
-        4: 0.40, 5: 0.65, 6: 1.07, 7: 1.72, 8: 2.89, 9: 4.32,
-        10: 6.55, 11: 10.71, 12: 17.28, 13: 26.21, 14: 43.20,
-        15: 65.53,
+        4: 0.78, 5: 1.25, 6: 2.04, 7: 3.29, 8: 5.49, 9: 8.15,
+        10: 12.54, 11: 20.38, 12: 32.93, 13: 50.18, 14: 81.54,
+        15: 125.44,
     },
     # Scatter (Golden Wolf) - no direct payout, triggers free spins
     Symbol.SCATTER: {
@@ -169,60 +170,60 @@ PAYTABLE: Dict[Symbol, Dict[int, float]] = {
     },
     # High Tier: Red Wolf (best payouts)
     Symbol.WOLF_RED: {
-        4: 0.40, 5: 0.65, 6: 1.07, 7: 1.72, 8: 2.89, 9: 4.32,
-        10: 6.55, 11: 10.71, 12: 17.28, 13: 26.21, 14: 43.20,
-        15: 65.53,
+        4: 0.78, 5: 1.25, 6: 2.04, 7: 3.29, 8: 5.49, 9: 8.15,
+        10: 12.54, 11: 20.38, 12: 32.93, 13: 50.18, 14: 81.54,
+        15: 125.44,
     },
     # High Tier: Black Wolf
     Symbol.WOLF_BLACK: {
-        4: 0.30, 5: 0.50, 6: 0.85, 7: 1.50, 8: 2.50, 9: 3.80,
-        10: 5.80, 11: 9.50, 12: 15.00, 13: 23.00, 14: 38.00,
-        15: 58.00,
+        4: 0.63, 5: 1.02, 6: 1.65, 7: 2.82, 8: 4.70, 9: 7.21,
+        10: 10.98, 11: 18.03, 12: 28.22, 13: 43.90, 14: 72.13,
+        15: 109.76,
     },
     # High Tier: Purple Wolf
     Symbol.WOLF_PURPLE: {
-        4: 0.26, 5: 0.44, 6: 0.73, 7: 1.31, 8: 2.17, 9: 3.49,
-        10: 5.23, 11: 8.64, 12: 13.77, 13: 21.64, 14: 34.76,
-        15: 52.23,
+        4: 0.50, 5: 0.84, 6: 1.41, 7: 2.51, 8: 4.16, 9: 6.66,
+        10: 10.04, 11: 16.46, 12: 26.34, 13: 41.40, 14: 66.64,
+        15: 100.35,
     },
     # Mid Tier: Gray Wolf
     Symbol.WOLF_GRAY: {
-        4: 0.18, 5: 0.30, 6: 0.50, 7: 0.85, 8: 1.40, 9: 2.20,
-        10: 3.50, 11: 6.00, 12: 9.00, 13: 15.00, 14: 25.00,
-        15: 38.00,
+        4: 0.34, 5: 0.58, 6: 0.94, 7: 1.65, 8: 2.67, 9: 4.23,
+        10: 6.66, 11: 11.45, 12: 17.25, 13: 28.22, 14: 47.04,
+        15: 72.13,
     },
     # Mid Tier: Green Wolf
     Symbol.WOLF_GREEN: {
-        4: 0.16, 5: 0.27, 6: 0.44, 7: 0.73, 8: 1.24, 9: 1.96,
-        10: 3.03, 11: 5.23, 12: 7.88, 13: 13.10, 14: 21.64,
-        15: 32.75,
+        4: 0.31, 5: 0.52, 6: 0.84, 7: 1.41, 8: 2.35, 9: 3.76,
+        10: 5.80, 11: 10.04, 12: 15.05, 13: 25.09, 14: 41.40,
+        15: 62.72,
     },
     # Mid Tier: Spirit Wolf
     Symbol.WOLF_SPIRIT: {
-        4: 0.13, 5: 0.22, 6: 0.38, 7: 0.62, 8: 1.05, 9: 1.68,
-        10: 2.60, 11: 4.40, 12: 7.00, 13: 11.20, 14: 18.00,
-        15: 28.00,
+        4: 0.25, 5: 0.42, 6: 0.73, 7: 1.20, 8: 2.01, 9: 3.21,
+        10: 5.02, 11: 8.47, 12: 13.33, 13: 21.48, 14: 34.50,
+        15: 53.31,
     },
-    # Low Tier: Wolves - Lower payouts (they win most often!)
+    # Low Tier: Wolves - Lower payouts (win more often)
     Symbol.WOLF_WHITE: {
-        4: 0.06, 5: 0.10, 6: 0.18, 7: 0.30, 8: 0.50, 9: 0.80,
-        10: 1.20, 11: 2.00, 12: 3.20, 13: 5.20, 14: 8.50,
-        15: 13.00,
+        4: 0.13, 5: 0.19, 6: 0.34, 7: 0.57, 8: 0.94, 9: 1.57,
+        10: 2.35, 11: 3.84, 12: 6.12, 13: 10.04, 14: 16.31,
+        15: 25.09,
     },
     Symbol.WOLF_SNAKE: {
-        4: 0.05, 5: 0.08, 6: 0.14, 7: 0.24, 8: 0.40, 9: 0.65,
-        10: 1.00, 11: 1.70, 12: 2.70, 13: 4.40, 14: 7.00,
-        15: 10.50,
+        4: 0.10, 5: 0.16, 6: 0.26, 7: 0.47, 8: 0.78, 9: 1.25,
+        10: 1.91, 11: 3.29, 12: 5.17, 13: 8.47, 14: 13.48,
+        15: 20.38,
     },
     Symbol.WOLF_STREET: {
-        4: 0.04, 5: 0.062, 6: 0.105, 7: 0.162, 8: 0.295, 9: 0.476,
-        10: 0.721, 11: 1.24, 12: 2.03, 13: 3.28, 14: 5.23,
-        15: 7.88,
+        4: 0.08, 5: 0.13, 6: 0.21, 7: 0.31, 8: 0.57, 9: 0.91,
+        10: 1.38, 11: 2.35, 12: 3.92, 13: 6.27, 14: 10.04,
+        15: 15.05,
     },
     Symbol.WOLF_BLUE: {
-        4: 0.04, 5: 0.062, 6: 0.105, 7: 0.162, 8: 0.295, 9: 0.476,
-        10: 0.721, 11: 1.24, 12: 2.03, 13: 3.28, 14: 5.23,
-        15: 7.88,
+        4: 0.08, 5: 0.13, 6: 0.21, 7: 0.31, 8: 0.57, 9: 0.91,
+        10: 1.38, 11: 2.35, 12: 3.92, 13: 6.27, 14: 10.04,
+        15: 15.05,
     },
 }
 

@@ -105,6 +105,15 @@ const useGameController = () => {
       const scatterHuntActive = scatterBoostActive || (activeFeatureMode?.id === 'scatter_hunt');
       const wildBoostModeActive = wildBoostActive || (activeFeatureMode?.id === 'wild_boost');
 
+      // Immediately deduct bet from balance when spin button is pressed
+      // (but not during free spins - those are free!)
+      const spinCost = activeFeatureMode ? totalSpinCost : effectiveBet;
+      const isFreeSpin = freeSpinsRemaining > 0;
+      if (!isFreeSpin) {
+        const currentBalance = useGameStore.getState().balance;
+        setBalance(currentBalance - spinCost);
+      }
+
       console.log('GameController: Calling API...', {
         baseBet: betAmount,
         effectiveBet,
@@ -112,6 +121,7 @@ const useGameController = () => {
         activeFeatureMode: activeFeatureMode?.id,
         scatterHunt: scatterHuntActive,
         wildBoost: wildBoostModeActive,
+        deductedFromBalance: spinCost,
       });
       setIsSpinning(true);
 
@@ -149,6 +159,12 @@ const useGameController = () => {
 
     } catch (error) {
       console.error('GameController: Spin error', error);
+      // Restore balance on error (bet was already deducted, but not for free spins)
+      if (freeSpinsRemaining <= 0) {
+        const currentBalance = useGameStore.getState().balance;
+        const spinCost = activeFeatureMode ? getTotalSpinCost() : getEffectiveBet();
+        setBalance(currentBalance + spinCost);
+      }
       setIsSpinning(false);
       throw error;
     }
@@ -163,6 +179,7 @@ const useGameController = () => {
     activeFeatureMode,
     getTotalSpinCost,
     setIsSpinning,
+    setBalance,
     setTumbleCount,
     setMaxMultiplier,
     setMultiplierGrid,
