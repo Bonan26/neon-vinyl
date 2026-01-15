@@ -574,8 +574,6 @@ async def wallet_play(request: PlayRequest):
     payout_float = result.payout_multiplier * bet_amount_float
     payout_int = to_stake_amount(payout_float)
 
-    # Credit winnings
-    session["balance"] += payout_int
     session["nonce"] = nonce + 1
 
     # Update round with results (using 'state' per Stake spec)
@@ -593,23 +591,32 @@ async def wallet_play(request: PlayRequest):
     round_data["jackpotWon"] = result.jackpot_won
     round_data["jackpotAmount"] = to_stake_amount(result.jackpot_amount) if result.jackpot_amount else 0
 
-    # Handle free spins state
+    # Handle free spins and balance updates
     if result.free_spins_triggered > 0 and not is_free_spin:
-        # Free spins triggered from base game - initialize total to 0
-        # (base game win is separate, not part of free spin total)
+        # Free spins triggered from base game
+        # Credit base game win to balance immediately
+        session["balance"] += payout_int
+        # Initialize free spins state - total starts at 0
         session["free_spins_remaining"] = result.free_spins_remaining
         session["free_spin_bet_amount"] = bet_amount_int
         session["free_spin_multipliers"] = result.final_multipliers
         session["free_spin_total_win"] = 0
+        session["balance_before_free_spins"] = session["balance"]
     elif is_free_spin:
-        # During free spins - accumulate wins
+        # During free spins - DO NOT credit balance yet, only accumulate total
         session["free_spins_remaining"] = result.free_spins_remaining
         session["free_spin_multipliers"] = result.final_multipliers
         session["free_spin_total_win"] = session.get("free_spin_total_win", 0) + payout_int
 
         if result.free_spins_remaining <= 0:
+            # Free spins ended - NOW credit all accumulated wins to balance
+            total_free_spin_wins = session.get("free_spin_total_win", 0)
+            session["balance"] += total_free_spin_wins
             session["free_spin_multipliers"] = None
             session["free_spin_bet_amount"] = 0
+    else:
+        # Normal base game spin
+        session["balance"] += payout_int
 
     # Record history
     session["history"].append({
@@ -842,26 +849,37 @@ async def play_legacy(request: LegacyPlayRequest):
     payout_float = result.payout_multiplier * bet_amount_float
     payout_int = to_stake_amount(payout_float)
 
-    session["balance"] += payout_int
     session["nonce"] = nonce + 1
 
-    # Handle free spins
+    # Handle free spins and balance updates
     if result.free_spins_triggered > 0 and not is_free_spin:
-        # Free spins triggered from base game - initialize total to 0
-        # (base game win is separate, not part of free spin total)
+        # Free spins triggered from base game
+        # Credit base game win to balance immediately
+        session["balance"] += payout_int
+        # Initialize free spins state - total starts at 0
         session["free_spins_remaining"] = result.free_spins_remaining
         session["free_spin_bet_amount"] = bet_amount_int
         session["free_spin_multipliers"] = result.final_multipliers
         session["free_spin_total_win"] = 0
+        # Store balance BEFORE free spins for restoration if needed
+        session["balance_before_free_spins"] = session["balance"]
     elif is_free_spin:
-        # During free spins - accumulate wins
+        # During free spins - DO NOT credit balance yet, only accumulate total
         session["free_spins_remaining"] = result.free_spins_remaining
         session["free_spin_multipliers"] = result.final_multipliers
         session["free_spin_total_win"] = session.get("free_spin_total_win", 0) + payout_int
 
         if result.free_spins_remaining <= 0:
+            # Free spins ended - NOW credit all accumulated wins to balance
+            total_free_spin_wins = session.get("free_spin_total_win", 0)
+            session["balance"] += total_free_spin_wins
+            # Clean up free spin state
             session["free_spin_multipliers"] = None
             session["free_spin_bet_amount"] = 0
+            # Don't reset free_spin_total_win yet - frontend needs it for the summary popup
+    else:
+        # Normal base game spin (no free spins involved)
+        session["balance"] += payout_int
 
     session["history"].append({
         "nonce": nonce,

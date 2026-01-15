@@ -881,14 +881,22 @@ const useEventRunner = () => {
 
       // Capture the bonus total win BEFORE updating state
       // Priority: response value > passed value > 0
-      // Use >= 0 check since 0 is a valid (though rare) total
+      // Use >= 0 check since 0 is a valid total
       // Also add any wolf multiplier extra win
       let actualBonusTotalWin = 0;
-      if (typeof freeSpinTotalWin === 'number' && freeSpinTotalWin > 0) {
+      // Always prefer freeSpinTotalWin from server response (it's the accumulated total)
+      if (typeof freeSpinTotalWin === 'number' && freeSpinTotalWin >= 0) {
         actualBonusTotalWin = freeSpinTotalWin + wolfExtraWin;
-      } else if (typeof bonusTotalWin === 'number' && bonusTotalWin > 0) {
+      } else if (typeof bonusTotalWin === 'number' && bonusTotalWin >= 0) {
         actualBonusTotalWin = bonusTotalWin + wolfExtraWin;
       }
+
+      console.log('EventRunner: Bonus total win calculation', {
+        serverFreeSpinTotalWin: freeSpinTotalWin,
+        passedBonusTotalWin: bonusTotalWin,
+        wolfExtraWin,
+        actualBonusTotalWin,
+      });
 
       console.log('EventRunner: Complete', {
         totalWin,
@@ -903,23 +911,54 @@ const useEventRunner = () => {
         isBonusEnd
       });
 
+      // Get cumulative wolf extra from store for final total calculation
+      const storeState = useGameStore.getState();
+      const previousCumulativeWolfExtra = storeState.cumulativeWolfExtraWin || 0;
+      const totalCumulativeWolfExtra = previousCumulativeWolfExtra + wolfExtraWin;
+
       // If bonus just ended, show summary FIRST, then reset state
       if (shouldShowBonusSummary && onBonusEndRef.current) {
-        console.log('EventRunner: Showing bonus end summary with total:', actualBonusTotalWin);
-        await onBonusEndRef.current({ totalWin: actualBonusTotalWin });
-        // Reset free spins state AFTER summary is dismissed
-        setFreeSpins(0, 0);
+        // Final total = server total + ALL accumulated wolf extras (including this spin)
+        const finalBonusTotal = freeSpinTotalWin + totalCumulativeWolfExtra;
+        console.log('EventRunner: Showing bonus end summary', {
+          serverTotal: freeSpinTotalWin,
+          previousWolfExtra: previousCumulativeWolfExtra,
+          thisSpinWolfExtra: wolfExtraWin,
+          totalCumulativeWolfExtra,
+          finalBonusTotal,
+        });
+        await onBonusEndRef.current({ totalWin: finalBonusTotal });
+
+        // CRITICAL: Credit wolf extra wins to balance
+        // The backend only knows about base wins, not wolf multiplier bonuses
+        // So we must add the wolf extras to balance locally
+        if (totalCumulativeWolfExtra > 0) {
+          const currentBalance = useGameStore.getState().balance;
+          const newBalance = currentBalance + totalCumulativeWolfExtra;
+          console.log('EventRunner: Crediting wolf extra to balance', {
+            currentBalance,
+            totalCumulativeWolfExtra,
+            newBalance,
+          });
+          setBalance(newBalance);
+        }
+
+        // Reset free spins state AFTER summary is dismissed (clears cumulative wolf extra too)
+        setFreeSpins(0, 0, 0);
       } else if (!isBonusBuy) {
         // Update free spins state normally (during bonus or when triggered)
         // BUT NOT for bonus buy - App.jsx handles that when user clicks COMMENCER
         if (freeSpinsTriggered > 0 || isFreeSpin) {
-          // Server's freeSpinTotalWin + any extra from wolf multiplier
-          const actualTotalWin = freeSpinTotalWin + wolfExtraWin;
-          console.log('EventRunner: setFreeSpins with totalWin:', actualTotalWin, '(server:', freeSpinTotalWin, '+ wolfExtra:', wolfExtraWin, ')');
-          setFreeSpins(newFreeSpinsRemaining, actualTotalWin);
+          // Pass: remaining, serverTotal, wolfExtraWin (to accumulate)
+          console.log('EventRunner: setFreeSpins', {
+            remaining: newFreeSpinsRemaining,
+            serverTotal: freeSpinTotalWin,
+            wolfExtraWin,
+          });
+          setFreeSpins(newFreeSpinsRemaining, freeSpinTotalWin, wolfExtraWin);
         } else if (newFreeSpinsRemaining <= 0 && freeSpinsRemaining > 0) {
           // Free spins just ended but no summary to show
-          setFreeSpins(0, 0);
+          setFreeSpins(0, 0, 0);
         }
       }
       // For isBonusBuy, App.jsx will call setFreeSpins when user clicks COMMENCER

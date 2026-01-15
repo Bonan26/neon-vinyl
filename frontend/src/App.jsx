@@ -393,10 +393,8 @@ function App() {
     // Check if Wolf Burst mode is active
     const currentFeatureMode = useGameStore.getState().activeFeatureMode;
     if (currentFeatureMode?.id === 'wolf_burst') {
-      // Clear the mode first (one-time action)
-      useGameStore.getState().clearActiveFeatureMode();
-
-      // Execute wolf burst inline
+      // DO NOT clear the mode - it stays active until user clicks DISABLE
+      // Execute wolf burst for this spin
       try {
         setIsAnimating(true);
         const buyResult = await buyBonus('wolf_burst');

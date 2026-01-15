@@ -385,14 +385,7 @@ const Cell = ({
       g.drawRect(1, 1, CELL_SIZE - 2, CELL_SIZE - 2);
     }
 
-    // Multiplier glow
-    if (multiplier > 1 && glowColor) {
-      g.beginFill(glowColor, 0.25);
-      g.drawRect(0, 0, CELL_SIZE, CELL_SIZE);
-      g.endFill();
-      g.lineStyle(2, glowColor, 0.5);
-      g.drawRect(1, 1, CELL_SIZE - 2, CELL_SIZE - 2);
-    }
+    // Multiplier glow - removed, now using small centered box instead
 
     // Explosion glow
     if (explosionGlow > 0) {
@@ -402,18 +395,6 @@ const Cell = ({
     }
   };
 
-  const multStyle = new TextStyle({
-    fontFamily: 'Arial Black, sans-serif',
-    fontSize: 24,
-    fontWeight: 'bold',
-    fill: '#ffffff',
-    stroke: glowColor ? `#${glowColor.toString(16).padStart(6, '0')}` : '#f5d742',
-    strokeThickness: 6,
-    dropShadow: true,
-    dropShadowColor: glowColor ? `#${glowColor.toString(16).padStart(6, '0')}` : '#f5d742',
-    dropShadowBlur: 15,
-    dropShadowDistance: 0,
-  });
 
   // Symbol size - ALL symbols contained within cell
   const isWild = displaySymbol === 'WD';
@@ -457,9 +438,48 @@ const Cell = ({
     }
   }, [isSpinning]);
 
+  // Background multiplier text style - centered, visible
+  const bgMultStyle = new TextStyle({
+    fontFamily: 'Arial Black, sans-serif',
+    fontSize: 32,
+    fontWeight: 'bold',
+    fill: '#ffffff',
+    stroke: glowColor ? `#${glowColor.toString(16).padStart(6, '0')}` : '#f5d742',
+    strokeThickness: 4,
+  });
+
   return (
     <Container x={x} y={y} ref={containerRef}>
       <Graphics draw={drawCell} />
+
+      {/* BACKGROUND MULTIPLIER - Centered with subtle background box */}
+      {multiplier > 1 && (
+        <>
+          {/* Small rounded rectangle behind text - very subtle */}
+          <Graphics
+            draw={(g) => {
+              g.clear();
+              const boxW = 50;
+              const boxH = 36;
+              const boxX = (CELL_SIZE - boxW) / 2;
+              const boxY = (CELL_SIZE - boxH) / 2;
+              // Subtle yellow/gold background
+              g.beginFill(glowColor || 0xf5d742, 0.2); // Very light opacity
+              g.drawRoundedRect(boxX, boxY, boxW, boxH, 8);
+              g.endFill();
+            }}
+          />
+          {/* Multiplier text - fully visible */}
+          <Text
+            text={`x${multiplier}`}
+            x={CELL_SIZE / 2}
+            y={CELL_SIZE / 2}
+            anchor={0.5}
+            alpha={1} // Fully opaque text
+            style={bgMultStyle}
+          />
+        </>
+      )}
 
       {/* Falling symbols during spin */}
       {isSpinning && spinSymbols.map((sym, idx) => {
@@ -659,34 +679,6 @@ const Cell = ({
         </Container>
       )}
 
-      {/* Multiplier badge - large and centered at bottom */}
-      {multiplier > 1 && (
-        <>
-          <Graphics
-            draw={(g) => {
-              g.clear();
-              // Large background pill centered
-              const badgeW = 55;
-              const badgeH = 28;
-              const badgeX = (CELL_SIZE - badgeW) / 2;
-              const badgeY = CELL_SIZE - badgeH - 4;
-              g.beginFill(0x000000, 0.9);
-              g.drawRoundedRect(badgeX, badgeY, badgeW, badgeH, 8);
-              g.endFill();
-              // Thick glow border
-              g.lineStyle(3, glowColor || 0xf5d742, 1);
-              g.drawRoundedRect(badgeX, badgeY, badgeW, badgeH, 8);
-            }}
-          />
-          <Text
-            text={`x${multiplier}`}
-            x={CELL_SIZE / 2}
-            y={CELL_SIZE - 18}
-            anchor={0.5}
-            style={multStyle}
-          />
-        </>
-      )}
     </Container>
   );
 };

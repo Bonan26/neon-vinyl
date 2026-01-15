@@ -65,10 +65,11 @@ export const AutoSpinSpeed = {
 };
 
 // Speed multipliers for animations (lower = faster)
+// More aggressive values for noticeable difference
 export const SPEED_MULTIPLIERS = {
   [AutoSpinSpeed.NORMAL]: 1.0,
-  [AutoSpinSpeed.BOOSTER]: 0.5,      // x2 speed
-  [AutoSpinSpeed.SUPER_BOOSTER]: 0.25, // x4 speed
+  [AutoSpinSpeed.BOOSTER]: 0.35,      // x2 speed (~3x faster)
+  [AutoSpinSpeed.SUPER_BOOSTER]: 0.12, // x4 speed (~8x faster)
 };
 
 const useGameStore = create((set, get) => ({
@@ -101,6 +102,8 @@ const useGameStore = create((set, get) => ({
   freeSpinsRemaining: 0,
   freeSpinTotalWin: 0,
   isFreeSpin: false,
+  // Cumulative wolf extra wins (wolf multiplier gains not tracked by server)
+  cumulativeWolfExtraWin: 0,
 
   // Boost state (Scatter Hunt / Wild Boost)
   scatterBoostActive: false,
@@ -299,15 +302,39 @@ const useGameStore = create((set, get) => ({
   })),
 
   // Free Spins actions
-  setFreeSpins: (remaining, totalWin = 0) => set((state) => ({
-    freeSpinsRemaining: remaining,
-    freeSpinTotalWin: totalWin,
-    isFreeSpin: remaining > 0,
-    // Reset wolf dress-up when starting fresh free spins
-    wolfAccessoryCount: totalWin === 0 ? 0 : state.wolfAccessoryCount,
-    wolfDressUpMultiplier: totalWin === 0 ? null : state.wolfDressUpMultiplier,
-    wolfDressUpPending: totalWin === 0 ? false : state.wolfDressUpPending,
-  })),
+  setFreeSpins: (remaining, serverTotalWin = 0, wolfExtraWin = 0) => set((state) => {
+    // Check if this is starting fresh free spins (both totals are 0)
+    const isStartingFresh = serverTotalWin === 0 && wolfExtraWin === 0;
+
+    // Accumulate wolf extra wins across all spins (reset if starting fresh)
+    const newCumulativeWolfExtra = isStartingFresh
+      ? 0
+      : state.cumulativeWolfExtraWin + wolfExtraWin;
+
+    // Total win = server total (base gains) + all accumulated wolf extras
+    const totalWin = serverTotalWin + newCumulativeWolfExtra;
+
+    console.log('Store: setFreeSpins', {
+      remaining,
+      serverTotalWin,
+      wolfExtraWin,
+      isStartingFresh,
+      prevCumulativeWolfExtra: state.cumulativeWolfExtraWin,
+      newCumulativeWolfExtra,
+      totalWin,
+    });
+
+    return {
+      freeSpinsRemaining: remaining,
+      freeSpinTotalWin: totalWin,
+      isFreeSpin: remaining > 0,
+      cumulativeWolfExtraWin: newCumulativeWolfExtra,
+      // Reset wolf dress-up when starting fresh free spins
+      wolfAccessoryCount: isStartingFresh ? 0 : state.wolfAccessoryCount,
+      wolfDressUpMultiplier: isStartingFresh ? null : state.wolfDressUpMultiplier,
+      wolfDressUpPending: isStartingFresh ? false : state.wolfDressUpPending,
+    };
+  }),
 
   updateFreeSpinWin: (amount) => set((state) => ({
     freeSpinTotalWin: state.freeSpinTotalWin + amount,
@@ -317,6 +344,7 @@ const useGameStore = create((set, get) => ({
     freeSpinsRemaining: 0,
     freeSpinTotalWin: 0,
     isFreeSpin: false,
+    cumulativeWolfExtraWin: 0, // Reset wolf extra wins
     // Reset wolf dress-up when free spins end
     wolfAccessoryCount: 0,
     wolfDressUpMultiplier: null,

@@ -37,6 +37,10 @@ const ControlPanel = ({
   const getEffectiveBet = useGameStore((state) => state.getEffectiveBet);
   const toggleBonusMenu = useGameStore((state) => state.toggleBonusMenu);
 
+  // Speed control
+  const manualSpeedMode = useGameStore((state) => state.manualSpeedMode);
+  const setManualSpeedMode = useGameStore((state) => state.setManualSpeedMode);
+
   const effectiveBet = getEffectiveBet();
   const hasActiveBoost = scatterBoostActive || wildBoostActive;
   const isBonusActive = freeSpinsRemaining > 0;
@@ -141,6 +145,28 @@ const ControlPanel = ({
               +
             </button>
           </div>
+        </div>
+
+        {/* Speed Controls - Always visible */}
+        <div className="speed-controls">
+          <button
+            className={`speed-btn ${manualSpeedMode === AutoSpinSpeed.NORMAL ? 'active' : ''}`}
+            onClick={() => setManualSpeedMode(AutoSpinSpeed.NORMAL)}
+          >
+            x1
+          </button>
+          <button
+            className={`speed-btn ${manualSpeedMode === AutoSpinSpeed.BOOSTER ? 'active' : ''}`}
+            onClick={() => setManualSpeedMode(AutoSpinSpeed.BOOSTER)}
+          >
+            x2
+          </button>
+          <button
+            className={`speed-btn ${manualSpeedMode === AutoSpinSpeed.SUPER_BOOSTER ? 'active' : ''}`}
+            onClick={() => setManualSpeedMode(AutoSpinSpeed.SUPER_BOOSTER)}
+          >
+            x4
+          </button>
         </div>
 
         {/* Right Side Controls */}

@@ -133,6 +133,44 @@
   color: #ff6600;
 }
 
+/* Speed Controls - Always visible */
+.speed-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  background: rgba(0, 0, 0, 0.3);
+  border: 1px solid #3a3530;
+  border-radius: 25px;
+}
+
+.speed-btn {
+  width: 42px;
+  height: 32px;
+  border: 2px solid #4a4540;
+  border-radius: 16px;
+  background: transparent;
+  color: #8b8070;
+  font-family: Arial, sans-serif;
+  font-size: 13px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.speed-btn:hover {
+  border-color: #6a6050;
+  color: #c0b090;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.speed-btn.active {
+  border-color: #f5d742;
+  background: rgba(245, 215, 66, 0.2);
+  color: #f5d742;
+  box-shadow: 0 0 10px rgba(245, 215, 66, 0.3);
+}
+
 /* Right Actions */
 .hud-actions {
   display: flex;
@@ -448,5 +486,16 @@
   .action-btn svg {
     width: 18px;
     height: 18px;
+  }
+
+  .speed-controls {
+    padding: 4px 8px;
+    gap: 4px;
+  }
+
+  .speed-btn {
+    width: 36px;
+    height: 28px;
+    font-size: 11px;
   }
 }
